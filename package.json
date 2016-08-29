@@ -1,0 +1,44 @@
+{
+  "name": "@awayjs/view",
+  "version": "0.0.1",
+  "description": "View for AwayJS",
+  "url": "http://www.away3d.com",
+  "author": "Rob Bateman",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awayjs/view.git"
+  },
+  "scripts": {
+    "rimraf": "rimraf",
+    "tsc": "tsc",
+    "clean": "npm cache clean && npm run rimraf -- node_modules dist",
+    "clean:dist": "npm run rimraf -- dist",
+    "watch": "npm run build -- --w",
+    "prebuild": "npm run clean:dist",
+    "build": "tsc",
+    "version": "npm run build",
+    "postversion": "git push && git push --tags && npm publish"
+  },
+  "keywords": [
+    "AwayJS",
+    "WebGL",
+    "2D",
+    "3D",
+    "graphics"
+  ],
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/awayjs/view/issues"
+  },
+  "homepage": "https://github.com/awayjs/view#readme",
+  "dependencies": {
+    "@awayjs/core": "^0.6.0",
+    "@awayjs/display": "^0.8.0",
+    "@awayjs/stage": "^0.8.0",
+    "@awayjs/renderer": "^0.8.0"
+  },
+  "devDependencies": {
+    "rimraf": "^2.5.2",
+    "typescript": "^1.9.0-dev.20160603-1.0"
+  }
+}

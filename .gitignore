@@ -1,0 +1,16 @@
+# Build and Release Folders
+node_modules/
+dist/
+
+# Dev files
+npm-debug.log
+
+
+# Project property files
+.actionScriptProperties
+.flexLibProperties
+.settings/
+.idea/
+.project
+.DS_Store
+*.iml
