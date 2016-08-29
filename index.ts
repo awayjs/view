@@ -13,7 +13,6 @@ import {PointLight}						from "@awayjs/display/lib/display/PointLight";
 import {MovieClip}						from "@awayjs/display/lib/display/MovieClip";
 import {Skybox}						from "@awayjs/display/lib/display/Skybox";
 import {Billboard}					from "@awayjs/display/lib/display/Billboard";
-import {LineSegment}					from "@awayjs/display/lib/display/LineSegment";
 
 import {View}							from "./lib/View";
 
