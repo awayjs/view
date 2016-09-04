@@ -94,6 +94,8 @@ export class View implements IView
 
 			this._htmlElement = document.createElement("div");
 			this._htmlElement.style.position = "absolute";
+			this._htmlElement.style.left = "0px";
+			this._htmlElement.style.top = "0px";
 
 			document.body.appendChild(this._htmlElement);
 		}
