@@ -1,4 +1,4 @@
-import {ITraverser}				from "@awayjs/display/lib/ITraverser";
+import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
 
 import {EntityNode}					from "../partition/EntityNode";
 
@@ -10,7 +10,7 @@ export class CameraNode extends EntityNode
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:ITraverser):void
+	public acceptTraverser(traverser:TraverserBase):void
 	{
 		// todo: dead end for now, if it has a debug sprite, then sure accept that
 	}

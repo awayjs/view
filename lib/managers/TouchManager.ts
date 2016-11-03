@@ -1,9 +1,9 @@
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
 import {DisplayObject}				from "@awayjs/display/lib/display/DisplayObject";
-import {PickingCollision}				from "@awayjs/display/lib/pick/PickingCollision";
 import {TouchEvent}					from "@awayjs/display/lib/events/TouchEvent";
 
+import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
 import {View}							from "../View";
 
 export class TouchManager

@@ -1,5 +1,5 @@
-import {ITraverser}				from "@awayjs/display/lib/ITraverser";
-import {IContainerNode}				from "@awayjs/display/lib/partition/IContainerNode";
+import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
+import {IContainerNode}				from "@awayjs/graphics/lib/base/IContainerNode";
 
 import {DisplayObjectNode}			from "../partition/DisplayObjectNode";
 
@@ -22,7 +22,7 @@ export class SceneGraphNode extends DisplayObjectNode implements IContainerNode
 	 *
 	 * @param traverser
 	 */
-	public acceptTraverser(traverser:ITraverser):void
+	public acceptTraverser(traverser:TraverserBase):void
 	{
 		//containers nodes are for ordering only, no need to check enterNode or debugVisible
 		if (this.numEntities == 0)
@@ -45,11 +45,11 @@ export class SceneGraphNode extends DisplayObjectNode implements IContainerNode
 	{
 		node.parent = this;
 
-		if (node._displayObject.maskMode) {
+		if (node._entity.maskMode) {
 			this._childMasks.push(node);
 			this._numMasks++;
 		} else {
-			var depth:number = node._displayObject._depthID;
+			var depth:number = node._entity._depthID;
 			var len:number = this._childDepths.length;
 			var index:number = len;
 
@@ -84,7 +84,7 @@ export class SceneGraphNode extends DisplayObjectNode implements IContainerNode
 	 */
 	public iRemoveNode(node:DisplayObjectNode):void
 	{
-		if (node._displayObject.maskMode) {
+		if (node._entity.maskMode) {
 			this._childMasks.splice(this._childMasks.indexOf(node), 1);
 			this._numMasks--;
 		} else {

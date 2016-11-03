@@ -1,10 +1,11 @@
 import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
-import {ITraverser}					from "@awayjs/display/lib/ITraverser";
-import {IEntity}						from "@awayjs/display/lib/display/IEntity";
-import {INode}						from "@awayjs/display/lib/partition/INode";
-import {IContainerNode}				from "@awayjs/display/lib/partition/IContainerNode";
+import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
+import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+import {INode}						from "@awayjs/graphics/lib/base/INode";
+import {IContainerNode}				from "@awayjs/graphics/lib/base/IContainerNode";
+
 import {BoundingVolumeBase}			from "@awayjs/display/lib/bounds/BoundingVolumeBase";
 import {NullBounds}					from "@awayjs/display/lib/bounds/NullBounds";
 
@@ -86,6 +87,11 @@ export class NodeBase implements IContainerNode
 	{
 		return true;
 	}
+	
+	public renderBounds(traverser:TraverserBase):void
+	{
+		//nothing to do here
+	}
 
 
 	/**
@@ -107,7 +113,7 @@ export class NodeBase implements IContainerNode
 	 *
 	 * @param traverser
 	 */
-	public acceptTraverser(traverser:ITraverser):void
+	public acceptTraverser(traverser:TraverserBase):void
 	{
 		if (this.numEntities == 0)
 			return;

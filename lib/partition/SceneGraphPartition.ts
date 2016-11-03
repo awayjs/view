@@ -1,9 +1,8 @@
 import {IAbstractionPool}				from "@awayjs/core/lib/library/IAbstractionPool";
 
-import {DisplayObject}				from "@awayjs/display/lib/display/DisplayObject";
-import {DisplayObjectContainer}		from "@awayjs/display/lib/display/DisplayObjectContainer";
-import {ITraverser}				from "@awayjs/display/lib/ITraverser";
-import {IContainerNode}				from "@awayjs/display/lib/partition/IContainerNode";
+import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
+import {IContainerNode}				from "@awayjs/graphics/lib/base/IContainerNode";
+import {IEntity}				from "@awayjs/graphics/lib/base/IEntity";
 
 import {SceneGraphNode}				from "../partition/SceneGraphNode";
 import {PartitionBase}				from "../partition/PartitionBase";
@@ -16,14 +15,14 @@ export class SceneGraphPartition extends PartitionBase
 {
 	private _sceneGraphNodePool:SceneGraphNodePool;
 
-	constructor(root:DisplayObject)
+	constructor(root:IEntity)
 	{
 		super(root);
 
 		this._sceneGraphNodePool = new SceneGraphNodePool();
 	}
 
-	public traverse(traverser:ITraverser):void
+	public traverse(traverser:TraverserBase):void
 	{
 		super.traverse(traverser);
 	}
@@ -36,37 +35,37 @@ export class SceneGraphPartition extends PartitionBase
 	 */
 	public findParentForNode(node:DisplayObjectNode):IContainerNode
 	{
-		if (this._root == node._displayObject) {
+		if (this._root == node._entity) {
 			this._rootNode = <SceneGraphNode> node;
 			return null;
 		}
 
-		if (!node.isSceneGraphNode && node._displayObject.isContainer)
-			return this._sceneGraphNodePool.getAbstraction(<DisplayObjectContainer> node._displayObject);
+		if (!node.isSceneGraphNode && node._entity.isContainer)
+			return this._sceneGraphNodePool.getAbstraction(node._entity);
 
-		return this._sceneGraphNodePool.getAbstraction(node._displayObject.parent);
+		return this._sceneGraphNodePool.getAbstraction(node._entity.parent);
 	}
 
 	/**
 	 * @internal
 	 */
-	public _iRegisterEntity(displayObject:DisplayObject):void
+	public _iRegisterEntity(entity:IEntity):void
 	{
-		super._iRegisterEntity(displayObject);
+		super._iRegisterEntity(entity);
 
-		if (displayObject.isContainer)
-			this.iMarkForUpdate(this._sceneGraphNodePool.getAbstraction(<DisplayObjectContainer> displayObject));
+		if (entity.isContainer)
+			this.iMarkForUpdate(this._sceneGraphNodePool.getAbstraction(entity));
 	}
 
 	/**
 	 * @internal
 	 */
-	public _iUnregisterEntity(displayObject:DisplayObject):void
+	public _iUnregisterEntity(entity:IEntity):void
 	{
-		super._iUnregisterEntity(displayObject);
+		super._iUnregisterEntity(entity);
 
-		if (displayObject.isContainer)
-			this.iRemoveEntity(this._sceneGraphNodePool.getAbstraction(<DisplayObjectContainer> displayObject));
+		if (entity.isContainer)
+			this.iRemoveEntity(this._sceneGraphNodePool.getAbstraction(entity));
 	}
 }
 
@@ -84,9 +83,9 @@ export class SceneGraphNodePool implements IAbstractionPool
 	 * @param entity
 	 * @returns EntityNode
 	 */
-	public getAbstraction(displayObjectContainer:DisplayObjectContainer):SceneGraphNode
+	public getAbstraction(entity:IEntity):SceneGraphNode
 	{
-		return (this._abstractionPool[displayObjectContainer.id] || (this._abstractionPool[displayObjectContainer.id] = new SceneGraphNode(displayObjectContainer, this)));
+		return (this._abstractionPool[entity.id] || (this._abstractionPool[entity.id] = new SceneGraphNode(entity, this)));
 	}
 
 	/**
@@ -94,8 +93,8 @@ export class SceneGraphNodePool implements IAbstractionPool
 	 *
 	 * @param entity
 	 */
-	public clearAbstraction(displayObjectContainer:DisplayObjectContainer):void
+	public clearAbstraction(entity:IEntity):void
 	{
-		delete this._abstractionPool[displayObjectContainer.id];
+		delete this._abstractionPool[entity.id];
 	}
 }

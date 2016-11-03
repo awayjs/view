@@ -2,10 +2,14 @@ import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
 import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
+import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
+import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
+
 import {DisplayObject}				from "@awayjs/display/lib/display/DisplayObject";
-import {ITraverser}					from "@awayjs/display/lib/ITraverser";
 import {DisplayObjectEvent}			from "@awayjs/display/lib/events/DisplayObjectEvent";
-import {PickingCollision}				from "@awayjs/display/lib/pick/PickingCollision";
+
+import {IPickingCollider}				from "../pick/IPickingCollider";
 
 import {DisplayObjectNode}			from "../partition/DisplayObjectNode";
 import {PartitionBase}				from "../partition/PartitionBase";
@@ -15,6 +19,11 @@ import {PartitionBase}				from "../partition/PartitionBase";
  */
 export class EntityNode extends DisplayObjectNode
 {
+	/**
+	 *
+	 */
+	public pickingCollider:IPickingCollider;
+	
 	public numEntities:number = 1;
 
 	private _partition:PartitionBase;
@@ -43,7 +52,7 @@ export class EntityNode extends DisplayObjectNode
 	 */
 	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
 	{
-		if (!this._displayObject._iIsVisible())
+		if (!this._entity._iIsVisible())
 			return false;
 
 		return true; // todo: hack for 2d. attention. might break stuff in 3d.
@@ -56,12 +65,12 @@ export class EntityNode extends DisplayObjectNode
 	 */
 	public isIntersectingRay(globalRayPosition:Vector3D, globalRayDirection:Vector3D):boolean
 	{
-		if (!this._displayObject._iIsVisible() || !this.isIntersectingMasks(globalRayPosition, globalRayDirection, this._displayObject._iAssignedMasks()))
+		if (!this._entity._iIsVisible() || !this.isIntersectingMasks(globalRayPosition, globalRayDirection, this._entity._iAssignedMasks()))
 			return false;
 
-		var pickingCollision:PickingCollision = this._displayObject._iPickingCollision;
-		pickingCollision.rayPosition = this._displayObject.inverseSceneTransform.transformVector(globalRayPosition);
-		pickingCollision.rayDirection = this._displayObject.inverseSceneTransform.deltaTransformVector(globalRayDirection);
+		var pickingCollision:PickingCollision = this._entity._iPickingCollision;
+		pickingCollision.rayPosition = this._entity.inverseSceneTransform.transformVector(globalRayPosition);
+		pickingCollision.rayDirection = this._entity.inverseSceneTransform.deltaTransformVector(globalRayDirection);
 
 		if (!pickingCollision.normal)
 			pickingCollision.normal = new Vector3D();
@@ -85,16 +94,16 @@ export class EntityNode extends DisplayObjectNode
 	 */
 	public isRenderable():boolean
 	{
-		return this._displayObject._iAssignedColorTransform()._isRenderable();
+		return this._entity._iAssignedColorTransform()._isRenderable();
 	}
 	
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:ITraverser):void
+	public acceptTraverser(traverser:TraverserBase):void
 	{
 		if (traverser.enterNode(this))
-			traverser.applyEntity(this._displayObject);
+			traverser[this._entity.traverseName](this._entity);
 	}
 
 	public _onInvalidatePartitionBounds(event:DisplayObjectEvent):void
@@ -104,14 +113,14 @@ export class EntityNode extends DisplayObjectNode
 		this._partition.iMarkForUpdate(this);
 	}
 
-	private isIntersectingMasks(globalRayPosition:Vector3D, globalRayDirection:Vector3D, masks:Array<Array<DisplayObject>>):boolean
+	private isIntersectingMasks(globalRayPosition:Vector3D, globalRayDirection:Vector3D, masks:Array<Array<IEntity>>):boolean
 	{
 		//horrible hack for 2d masks
 		if (masks != null) {
 			this._maskPosition.x = globalRayPosition.x + globalRayDirection.x*1000;
 			this._maskPosition.y = globalRayPosition.y + globalRayDirection.y*1000;
 			var numLayers:number = masks.length;
-			var children:Array<DisplayObject>;
+			var children:Array<IEntity>;
 			var numChildren:number;
 			var layerHit:boolean;
 			for (var i:number = 0; i < numLayers; i++) {

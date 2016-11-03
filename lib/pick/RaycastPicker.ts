@@ -1,14 +1,19 @@
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
 
-import {ITraverser}					from "@awayjs/display/lib/ITraverser";
-import {PickingCollision}				from "@awayjs/display/lib/pick/PickingCollision";
-import {IEntity}						from "@awayjs/display/lib/display/IEntity";
-import {IRenderable}					from "@awayjs/display/lib/base/IRenderable";
-import {INode}						from "@awayjs/display/lib/partition/INode";
-import {IPickingCollider}				from "@awayjs/display/lib/pick/IPickingCollider";
+import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
+import {INode}						from "@awayjs/graphics/lib/base/INode";
+import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+import {TriangleElements}				from "@awayjs/graphics/lib/elements/TriangleElements";
+import {LineElements}					from "@awayjs/graphics/lib/elements/LineElements";
+import {Graphic}						from "@awayjs/graphics/lib/Graphic";
+import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
 
+import {Billboard}					from "@awayjs/display/lib/display/Billboard";
+
+import {IPickingCollider}				from "./IPickingCollider";
 import {IPicker}						from "./IPicker";
+
 import {View}							from "../View";
 
 /**
@@ -18,13 +23,10 @@ import {View}							from "../View";
  *
  * @class away.pick.RaycastPicker
  */
-export class RaycastPicker implements IPicker, ITraverser
+export class RaycastPicker extends TraverserBase implements IPicker
 {
 	private _rayPosition:Vector3D;
 	private _rayDirection:Vector3D;
-	private _x:number;
-	private _y:number;
-	private _view:View;
 	private _findClosestCollision:boolean;
 	private _bestCollision:PickingCollision;
 	private _testCollision:PickingCollision;
@@ -32,7 +34,6 @@ export class RaycastPicker implements IPicker, ITraverser
 	private _ignoredEntities:Array<IEntity>;
 
 	private _entities:Array<IEntity> = new Array<IEntity>();
-	private _hasCollisions:boolean;
 
 	/**
 	 * @inheritDoc
@@ -47,6 +48,8 @@ export class RaycastPicker implements IPicker, ITraverser
 	 */
 	constructor(findClosestCollision:boolean = false)
 	{
+		super();
+		
 		this._findClosestCollision = findClosestCollision;
 	}
 
@@ -75,7 +78,7 @@ export class RaycastPicker implements IPicker, ITraverser
 		if (!this._entities.length)
 			return null;
 
-		var collision:PickingCollision = this.getPickingCollision();
+		var collision:PickingCollision = this.getPickingCollision(view);
 
 		//discard entities
 		this._entities.length = 0;
@@ -125,7 +128,7 @@ export class RaycastPicker implements IPicker, ITraverser
 		return entity1._iPickingCollision.rayEntryDistance > entity2._iPickingCollision.rayEntryDistance? 1 : -1;
 	}
 
-	private getPickingCollision():PickingCollision
+	private getPickingCollision(view:View):PickingCollision
 	{
 		// Sort entities from closest to furthest to reduce tests.
 		this._entities = this._entities.sort(this.sortOnNearT); // TODO - test sort filter in JS
@@ -143,7 +146,7 @@ export class RaycastPicker implements IPicker, ITraverser
 			entity = this._entities[i];
 			this._testCollision = entity._iPickingCollision;
 			if (this._bestCollision == null || this._testCollision.rayEntryDistance < this._bestCollision.rayEntryDistance) {
-				this._testCollider = entity.pickingCollider;
+				this._testCollider = view.getPartition(entity).getAbstraction(entity).pickingCollider;
 				if (this._testCollider) {
 					this._testCollision.rayEntryDistance = Number.MAX_VALUE;
 					entity._acceptTraverser(this);
@@ -195,13 +198,21 @@ export class RaycastPicker implements IPicker, ITraverser
 			this._entities.push(entity);
 	}
 
-	/**
-	 *
-	 * @param entity
-	 */
-	public applyRenderable(renderable:IRenderable):void
+	public applyBillboard(billboard:Billboard):void
 	{
-		if (renderable._iTestCollision(this._testCollision, this._testCollider))
+		if (this._testCollider.testBillboardCollision(billboard, billboard.material, this._testCollision))
+			this._bestCollision = this._testCollision;
+	}
+
+	public applyLineGraphic(graphic:Graphic):void
+	{
+		if (this._testCollider.testLineCollision(<LineElements> graphic.elements, graphic.material, this._testCollision, graphic.count || graphic.elements.numVertices, graphic.offset))
+			this._bestCollision = this._testCollision;
+	}
+
+	public applyTriangleGraphic(graphic:Graphic):void
+	{
+		if (this._testCollider.testTriangleCollision(<TriangleElements> graphic.elements, graphic.material, this._testCollision, graphic.count || graphic.elements.numVertices, graphic.offset))
 			this._bestCollision = this._testCollision;
 	}
 	

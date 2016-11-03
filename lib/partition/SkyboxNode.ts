@@ -1,4 +1,4 @@
-import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
+import {Plane3D}				from "@awayjs/core/lib/geom/Plane3D";
 
 import {EntityNode}					from "../partition/EntityNode";
 
@@ -17,7 +17,7 @@ export class SkyboxNode extends EntityNode
 	 */
 	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
 	{
-		if (!this._displayObject._iIsVisible)
+		if (!this._entity._iIsVisible)
 			return false;
 
 		//a skybox is always in view unless its visibility is set to false

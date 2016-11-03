@@ -1,20 +1,24 @@
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 import {getTimer}						from "@awayjs/core/lib/utils/getTimer";
 
-import {ITraverser}					from "@awayjs/display/lib/ITraverser";
+import {IEntity}					from "@awayjs/graphics/lib/base/IEntity";
+import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
+import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
+
 import {IRenderer}					from "@awayjs/display/lib/IRenderer";
 import {DisplayObject}				from "@awayjs/display/lib/display/DisplayObject";
 import {TouchPoint}					from "@awayjs/display/lib/base/TouchPoint";
 import {Scene}						from "@awayjs/display/lib/display/Scene";
-import {PickingCollision}				from "@awayjs/display/lib/pick/PickingCollision";
 import {Camera}						from "@awayjs/display/lib/display/Camera";
 import {CameraEvent}					from "@awayjs/display/lib/events/CameraEvent";
 import {DisplayObjectEvent}			from "@awayjs/display/lib/events/DisplayObjectEvent";
 import {IView}			from "@awayjs/display/lib/IView";
 
 import {RendererEvent}				from "@awayjs/renderer/lib/events/RendererEvent";
+import {DefaultRenderer}				from "@awayjs/renderer/lib/DefaultRenderer";
 
 import {IPicker}						from "./pick/IPicker";
+import {IPickingCollider}				from "./pick/IPickingCollider";
 import {RaycastPicker}				from "./pick/RaycastPicker";
 import {MouseManager}					from "./managers/MouseManager";
 import {PartitionBase}					from "./partition/PartitionBase";
@@ -78,7 +82,7 @@ export class View implements IView
 	 * public _pTouch3DManager:away.managers.Touch3DManager;
 	 *
 	 */
-	constructor(renderer:IRenderer, scene:Scene = null, camera:Camera = null)
+	constructor(renderer:IRenderer = null, scene:Scene = null, camera:Camera = null)
 	{
 		this._onProjectionChangedDelegate = (event:CameraEvent) => this._onProjectionChanged(event);
 		this._onViewportUpdatedDelegate = (event:RendererEvent) => this._onViewportUpdated(event);
@@ -86,7 +90,7 @@ export class View implements IView
 
 		this.scene = scene || new Scene();
 		this.camera = camera || new Camera();
-		this.renderer = renderer;
+		this.renderer = renderer || new DefaultRenderer();
 
 		//make sure document border is zero
 		if(typeof document !== "undefined") {
@@ -109,30 +113,40 @@ export class View implements IView
 
 	public layeredView:boolean; //TODO: something to enable this correctly
 
-	public getPartition(displayObject:DisplayObject):PartitionBase
+	public getPartition(entity:IEntity):PartitionBase
 	{
 		//use registered partition for the displayobject or fallback for scene
-		return this._partitions[displayObject.partition.id] || this._partitions[this._pScene.id];
+		return this._partitions[entity.partition.id] || this._partitions[this._pScene.id];
 	}
 
-	public setPartition(displayObject:DisplayObject, partition:PartitionBase)
+	public setPartition(entity:IEntity, partition:PartitionBase)
 	{
-		var oldPartition:PartitionBase = this._partitions[displayObject.id];
+		var oldPartition:PartitionBase = this._partitions[entity.id];
 		if (oldPartition == partition)
 			return;
 		
 		//clears all existing entities on the partition
-		displayObject.isPartition = false;
+		entity.isPartition = false;
 		
 		if (oldPartition) {
 			oldPartition.dispose();
-			delete this._partitions[displayObject.id];
+			delete this._partitions[entity.id];
 		}
 		
 		if (partition) {
-			this._partitions[displayObject.id] = partition;
-			displayObject.isPartition = true;
+			this._partitions[entity.id] = partition;
+			entity.isPartition = true;
 		}
+	}
+
+	public getCollider(entity:DisplayObject):IPickingCollider
+	{
+		return this.getPartition(entity).getAbstraction(entity).pickingCollider;
+	}
+
+	public setCollider(entity:DisplayObject, collider:IPickingCollider)
+	{
+		this.getPartition(entity).getAbstraction(entity).pickingCollider = collider;
 	}
 	
 	public get mouseX():number
@@ -642,7 +656,7 @@ export class View implements IView
 	}
 
 
-	public traversePartitions(traverser:ITraverser):void
+	public traversePartitions(traverser:TraverserBase):void
 	{
 		for (var key in this._partitions)
 			this._partitions[key].traverse(traverser);

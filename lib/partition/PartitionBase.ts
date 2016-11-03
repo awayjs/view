@@ -1,8 +1,8 @@
 import {IAssetClass}					from "@awayjs/core/lib/library/IAssetClass";
 
-import {ITraverser}					from "@awayjs/display/lib/ITraverser";
-import {DisplayObject}				from "@awayjs/display/lib/display/DisplayObject";
-import {IContainerNode}				from "@awayjs/display/lib/partition/IContainerNode";
+import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
+import {IContainerNode}				from "@awayjs/graphics/lib/base/IContainerNode";
+import {IEntity}				from "@awayjs/graphics/lib/base/IEntity";
 
 import {EntityNode}					from "../partition/EntityNode";
 import {IEntityNodeClass}				from "../partition/IEntityNodeClass";
@@ -17,44 +17,43 @@ export class PartitionBase
 
 	private _abstractionPool:Object = new Object();
 	
-	public _root:DisplayObject;
+	public _root:IEntity;
 	public _rootNode:IContainerNode;
 
 	private _updatesMade:Boolean = false;
 	private _updateQueue:DisplayObjectNode;
 
-	public get root():DisplayObject
+	public get root():IEntity
 	{
 		return this._root;
 	}
 	
-	constructor(root:DisplayObject)
+	constructor(root:IEntity)
 	{
 		this._root = root;
 	}
 
-	public getAbstraction(displayObject:DisplayObject):EntityNode
+	public getAbstraction(entity:IEntity):EntityNode
 	{
-		return (this._abstractionPool[displayObject.id] || (this._abstractionPool[displayObject.id] = new (<IEntityNodeClass> PartitionBase._abstractionClassPool[displayObject.assetType])(displayObject, this)));
+		return (this._abstractionPool[entity.id] || (this._abstractionPool[entity.id] = new (<IEntityNodeClass> PartitionBase._abstractionClassPool[entity.assetType])(entity, this)));
 	}
 
 	/**
 	 *
 	 * @param image
 	 */
-	public clearAbstraction(displayObject:DisplayObject):void
+	public clearAbstraction(entity:IEntity):void
 	{
-		this._abstractionPool[displayObject.id] = null;
+		this._abstractionPool[entity.id] = null;
 	}
 
-	public traverse(traverser:ITraverser):void
+	public traverse(traverser:TraverserBase):void
 	{
 		if (this._updatesMade)
 			this.updateEntities();
 
-		if (this._rootNode) {
+		if (this._rootNode)
 			this._rootNode.acceptTraverser(traverser);
-		}
 	}
 
 	public iMarkForUpdate(node:DisplayObjectNode):void
@@ -116,7 +115,7 @@ export class PartitionBase
 		var node:DisplayObjectNode = this._updateQueue;
 		while (node) {
 			//required for controllers with autoUpdate set to true and queued events
-			node._displayObject._iInternalUpdate();
+			node._entity._iInternalUpdate();
 			node = node._iUpdateQueueNext;
 		}
 
@@ -145,19 +144,19 @@ export class PartitionBase
 	/**
 	 * @internal
 	 */
-	public _iRegisterEntity(displayObject:DisplayObject):void
+	public _iRegisterEntity(entity:IEntity):void
 	{
-		if (displayObject.isEntity)
-			this.iMarkForUpdate(this.getAbstraction(displayObject));
+		if (entity.isEntity)
+			this.iMarkForUpdate(this.getAbstraction(entity));
 	}
 
 	/**
 	 * @internal
 	 */
-	public _iUnregisterEntity(displayObject:DisplayObject):void
+	public _iUnregisterEntity(entity:IEntity):void
 	{
-		if (displayObject.isEntity)
-			this.iRemoveEntity(this.getAbstraction(displayObject));
+		if (entity.isEntity)
+			this.iRemoveEntity(this.getAbstraction(entity));
 	}
 
 	public dispose()

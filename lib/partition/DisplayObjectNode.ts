@@ -5,15 +5,16 @@ import {AbstractionBase}				from "@awayjs/core/lib/library/AbstractionBase";
 import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
-import {DisplayObject}				from "@awayjs/display/lib/display/DisplayObject";
-import {ITraverser}					from "@awayjs/display/lib/ITraverser";
+import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
+import {INode}						from "@awayjs/graphics/lib/base/INode";
+import {IEntity}				from "@awayjs/graphics/lib/base/IEntity";
+
 import {DisplayObjectEvent}			from "@awayjs/display/lib/events/DisplayObjectEvent";
 import {AxisAlignedBoundingBox}		from "@awayjs/display/lib/bounds/AxisAlignedBoundingBox";
 import {BoundingSphere}				from "@awayjs/display/lib/bounds/BoundingSphere";
 import {BoundingVolumeBase}			from "@awayjs/display/lib/bounds/BoundingVolumeBase";
 import {BoundsType}					from "@awayjs/display/lib/bounds/BoundsType";
 import {NullBounds}					from "@awayjs/display/lib/bounds/NullBounds";
-import {INode}						from "@awayjs/display/lib/partition/INode";
 
 import {SceneGraphNode}				from "../partition/SceneGraphNode";
 
@@ -30,7 +31,7 @@ export class DisplayObjectNode extends AbstractionBase implements INode
 
 	private _onInvalidatePartitionBoundsDelegate:(event:DisplayObjectEvent) => void;
 	
-	public _displayObject:DisplayObject;
+	public _entity:IEntity;
 	private _boundsDirty:boolean = true;
 	private _bounds:BoundingVolumeBase;
 
@@ -42,7 +43,7 @@ export class DisplayObjectNode extends AbstractionBase implements INode
 
 	public get debugVisible():boolean
 	{
-		return this._displayObject.debugVisible;
+		return this._entity.debugVisible;
 	}
 
 	/**
@@ -56,16 +57,16 @@ export class DisplayObjectNode extends AbstractionBase implements INode
 		return this._bounds;
 	}
 
-	constructor(displayObject:DisplayObject, pool:IAbstractionPool)
+	constructor(entity:IEntity, pool:IAbstractionPool)
 	{
-		super(displayObject, pool);
+		super(entity, pool);
 
 		this._onInvalidatePartitionBoundsDelegate = (event:DisplayObjectEvent) => this._onInvalidatePartitionBounds(event);
 
-		this._displayObject = displayObject;
-		this._displayObject.addEventListener(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this._onInvalidatePartitionBoundsDelegate);
+		this._entity = entity;
+		this._entity.addEventListener(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this._onInvalidatePartitionBoundsDelegate);
 
-		this._boundsType = this._displayObject.boundsType;
+		this._boundsType = this._entity.boundsType;
 	}
 
 	/**
@@ -74,7 +75,7 @@ export class DisplayObjectNode extends AbstractionBase implements INode
 	 */
 	public isCastingShadow():boolean
 	{
-		return this._displayObject.castsShadows;
+		return this._entity.castsShadows;
 	}
 
 	/**
@@ -83,15 +84,15 @@ export class DisplayObjectNode extends AbstractionBase implements INode
 	 */
 	public isMask():boolean
 	{
-		return this._displayObject.maskMode;
+		return this._entity.maskMode;
 	}
 
 	public onClear(event:AssetEvent):void
 	{
 		super.onClear(event);
 
-		this._displayObject.removeEventListener(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this._onInvalidatePartitionBoundsDelegate);
-		this._displayObject = null;
+		this._entity.removeEventListener(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this._onInvalidatePartitionBoundsDelegate);
+		this._entity = null;
 
 		if (this._bounds)
 			this._bounds.dispose();
@@ -103,8 +104,8 @@ export class DisplayObjectNode extends AbstractionBase implements INode
 	{
 		super.onInvalidate(event);
 
-		if (this._boundsType != this._displayObject.boundsType) {
-			this._boundsType = this._displayObject.boundsType;
+		if (this._boundsType != this._entity.boundsType) {
+			this._boundsType = this._entity.boundsType;
 			this._boundsDirty = true;
 		}
 	}
@@ -137,11 +138,17 @@ export class DisplayObjectNode extends AbstractionBase implements INode
 	{
 		return true;
 	}
+	
+	public renderBounds(traverser:TraverserBase):void
+	{
+		traverser.applyEntity(this.bounds.boundsPrimitive);
+	}
+	
 
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:ITraverser):void
+	public acceptTraverser(traverser:TraverserBase):void
 	{
 		// do nothing here
 	}
@@ -157,9 +164,9 @@ export class DisplayObjectNode extends AbstractionBase implements INode
 			this._bounds.dispose();
 
 		if (this._boundsType == BoundsType.AXIS_ALIGNED_BOX)
-			this._bounds = new AxisAlignedBoundingBox(this._displayObject);
+			this._bounds = new AxisAlignedBoundingBox(this._entity);
 		else if (this._boundsType == BoundsType.SPHERE)
-			this._bounds = new BoundingSphere(this._displayObject);
+			this._bounds = new BoundingSphere(this._entity);
 		else if (this._boundsType == BoundsType.NULL)
 			this._bounds = new NullBounds();
 

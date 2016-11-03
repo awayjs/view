@@ -1,36 +1,21 @@
-import * as managers				from "./lib/managers";
-import * as partition				from "./lib/partition";
-import * as pick					from "./lib/pick";
+export {MouseManager}					from "./lib/managers/MouseManager";
+export {TouchManager}					from "./lib/managers/TouchManager";
 
-import {Camera}						from "@awayjs/display/lib/display/Camera";
-import {DirectionalLight}						from "@awayjs/display/lib/display/DirectionalLight";
-import {Sprite}						from "@awayjs/display/lib/display/Sprite";
-import {Shape}						from "@awayjs/display/lib/display/Shape";
-import {LineSegment}						from "@awayjs/display/lib/display/LineSegment";
-import {TextField}						from "@awayjs/display/lib/display/TextField";
-import {LightProbe}						from "@awayjs/display/lib/display/LightProbe";
-import {PointLight}						from "@awayjs/display/lib/display/PointLight";
-import {MovieClip}						from "@awayjs/display/lib/display/MovieClip";
-import {Skybox}						from "@awayjs/display/lib/display/Skybox";
-import {Billboard}					from "@awayjs/display/lib/display/Billboard";
+export {BasicPartition}					from "./lib/partition/BasicPartition";
+export {CameraNode}						from "./lib/partition/CameraNode";
+export {DisplayObjectNode}				from "./lib/partition/DisplayObjectNode";
+export {EntityNode}						from "./lib/partition/EntityNode";
+export {IDisplayObjectNode}				from "./lib/partition/IDisplayObjectNode";
+export {IEntityNodeClass}				from "./lib/partition/IEntityNodeClass";
+export {NodeBase}						from "./lib/partition/NodeBase";
+export {PartitionBase}					from "./lib/partition/PartitionBase";
+export {SceneGraphNode}					from "./lib/partition/SceneGraphNode";
+export {SceneGraphPartition}				from "./lib/partition/SceneGraphPartition";
+export {SkyboxNode}						from "./lib/partition/SkyboxNode";
 
-import {View}							from "./lib/View";
+export {IPicker}						from "./lib/pick/IPicker";
+export {IPickingCollider}				from "./lib/pick/IPickingCollider";
+export {JSPickingCollider}				from "./lib/pick/JSPickingCollider";
+export {RaycastPicker}					from "./lib/pick/RaycastPicker";
 
-partition.PartitionBase.registerAbstraction(partition.CameraNode, Camera);
-partition.PartitionBase.registerAbstraction(partition.DirectionalLightNode, DirectionalLight);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, Sprite);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, Shape);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, MovieClip);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, Billboard);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, LineSegment);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, TextField);
-partition.PartitionBase.registerAbstraction(partition.LightProbeNode, LightProbe);
-partition.PartitionBase.registerAbstraction(partition.PointLightNode, PointLight);
-partition.PartitionBase.registerAbstraction(partition.SkyboxNode, Skybox);
-
-export {
-	managers,
-	partition,
-	pick,
-	View
-}
+export {View}							from "./lib/View";

@@ -2,10 +2,10 @@ import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
 import {DisplayObject}				from "@awayjs/display/lib/display/DisplayObject";
 import {TouchPoint}					from "@awayjs/display/lib/base/TouchPoint";
-import {PickingCollision}				from "@awayjs/display/lib/pick/PickingCollision";
 import {MouseEvent}					from "@awayjs/display/lib/events/MouseEvent";
 import {FrameScriptManager}			from "@awayjs/display/lib/managers/FrameScriptManager";
 
+import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
 import {View}							from "../View";
 
 /**

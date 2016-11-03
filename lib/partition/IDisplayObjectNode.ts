@@ -1,5 +1,6 @@
+import {INode}						from "@awayjs/graphics/lib/base/INode";
+
 import {DisplayObject}				from "@awayjs/display/lib/display/DisplayObject";
-import {INode}						from "@awayjs/display/lib/partition/INode";
 
 /**
  * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
