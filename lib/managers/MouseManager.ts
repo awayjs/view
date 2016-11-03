@@ -167,6 +167,71 @@ export class MouseManager
 		}
 	}
 
+	public fireEventsForViewFromString(touchMessage:String, viewIdx:number=0):void
+	{
+
+		var newTouchEvent:any={};
+		newTouchEvent.clientX = null;// set the x position from the active touch
+		newTouchEvent.clientY = null;// set the y position from the active touch
+		newTouchEvent.preventDefault=function(){};
+		var touchesFromMessage=touchMessage.split(",");
+		// transfer touches to event
+		var i=0;
+		var cnt=0;
+		var numTouches=parseInt(touchesFromMessage[cnt++]);
+		var touchtype=parseInt(touchesFromMessage[cnt++]);
+		var activeTouch=parseInt(touchesFromMessage[cnt++]);
+		newTouchEvent.touches=[];
+		newTouchEvent.changedTouches = [];
+		if((touchtype!=1)&&(touchtype!=6)){
+			for(i=0; i< numTouches;i++){
+				var newTouch:any={};
+				newTouch.identifier=touchesFromMessage[cnt++];
+				newTouch.clientX=touchesFromMessage[cnt++];
+				newTouch.clientY=touchesFromMessage[cnt++];
+				newTouchEvent.touches[i]=newTouch;
+				newTouchEvent.changedTouches[i] = newTouch;
+			};
+			newTouchEvent.changedTouches[i] = newTouchEvent.touches[activeTouch];
+		}
+		else{
+			for(i=0; i< numTouches;i++){
+				if(i!=activeTouch){
+					var newTouch:any={};
+					newTouch.identifier=touchesFromMessage[cnt++];
+					newTouch.clientX=touchesFromMessage[cnt++];
+					newTouch.clientY=touchesFromMessage[cnt++];
+					newTouchEvent.touches[i]=newTouch;
+					newTouchEvent.changedTouches[i] = newTouch;
+				}
+				else{
+					newTouchEvent.clientX =touchesFromMessage[cnt++];
+					newTouchEvent.clientY =touchesFromMessage[cnt++];
+					cnt++;
+				}
+			};
+
+
+		}
+		newTouchEvent.target=this._viewLookup[viewIdx].htmlElement;
+		if(touchtype==0){//mousedown
+			this.onMouseDown(newTouchEvent);
+		}
+		else if(touchtype==1){//mouseup
+			this.onMouseUp(newTouchEvent);
+		}
+		else if(touchtype==2){//mousemove
+			this.onMouseMove(newTouchEvent);
+
+		}
+		else if(touchtype==261){//mousedownPointer
+			this.onMouseDown(newTouchEvent);
+
+		}
+		else if(touchtype==6){//mouseupPointer
+			this.onMouseUp(newTouchEvent);
+		}
+	}
 	// ---------------------------------------------------------------------
 	// Private.
 	// ---------------------------------------------------------------------
