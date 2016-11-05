@@ -9,12 +9,12 @@ import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
 import {INode}						from "@awayjs/graphics/lib/base/INode";
 import {IEntity}				from "@awayjs/graphics/lib/base/IEntity";
 
-import {DisplayObjectEvent}			from "@awayjs/display/lib/events/DisplayObjectEvent";
-import {AxisAlignedBoundingBox}		from "@awayjs/display/lib/bounds/AxisAlignedBoundingBox";
-import {BoundingSphere}				from "@awayjs/display/lib/bounds/BoundingSphere";
-import {BoundingVolumeBase}			from "@awayjs/display/lib/bounds/BoundingVolumeBase";
-import {BoundsType}					from "@awayjs/display/lib/bounds/BoundsType";
-import {NullBounds}					from "@awayjs/display/lib/bounds/NullBounds";
+import {DisplayObjectEvent}			from "@awayjs/scene/lib/events/DisplayObjectEvent";
+import {AxisAlignedBoundingBox}		from "@awayjs/scene/lib/bounds/AxisAlignedBoundingBox";
+import {BoundingSphere}				from "@awayjs/scene/lib/bounds/BoundingSphere";
+import {BoundingVolumeBase}			from "@awayjs/scene/lib/bounds/BoundingVolumeBase";
+import {BoundsType}					from "@awayjs/scene/lib/bounds/BoundsType";
+import {NullBounds}					from "@awayjs/scene/lib/bounds/NullBounds";
 
 import {SceneGraphNode}				from "../partition/SceneGraphNode";
 

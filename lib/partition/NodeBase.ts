@@ -6,8 +6,8 @@ import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
 import {INode}						from "@awayjs/graphics/lib/base/INode";
 import {IContainerNode}				from "@awayjs/graphics/lib/base/IContainerNode";
 
-import {BoundingVolumeBase}			from "@awayjs/display/lib/bounds/BoundingVolumeBase";
-import {NullBounds}					from "@awayjs/display/lib/bounds/NullBounds";
+import {BoundingVolumeBase}			from "@awayjs/scene/lib/bounds/BoundingVolumeBase";
+import {NullBounds}					from "@awayjs/scene/lib/bounds/NullBounds";
 
 /**
  * @class away.partition.NodeBase

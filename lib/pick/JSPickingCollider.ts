@@ -6,7 +6,7 @@ import {TriangleElements}					from "@awayjs/graphics/lib/elements/TriangleElemen
 import {MaterialBase}						from "@awayjs/graphics/lib/materials/MaterialBase";
 import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
 
-import {Billboard}						from "@awayjs/display/lib/display/Billboard";
+import {Billboard}						from "@awayjs/scene/lib/display/Billboard";
 
 
 /**

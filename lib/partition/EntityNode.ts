@@ -6,8 +6,8 @@ import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
 import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
 import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
 
-import {DisplayObject}				from "@awayjs/display/lib/display/DisplayObject";
-import {DisplayObjectEvent}			from "@awayjs/display/lib/events/DisplayObjectEvent";
+import {DisplayObject}				from "@awayjs/scene/lib/display/DisplayObject";
+import {DisplayObjectEvent}			from "@awayjs/scene/lib/events/DisplayObjectEvent";
 
 import {IPickingCollider}				from "../pick/IPickingCollider";
 

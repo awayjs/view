@@ -1,7 +1,7 @@
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
-import {DisplayObject}				from "@awayjs/display/lib/display/DisplayObject";
-import {TouchEvent}					from "@awayjs/display/lib/events/TouchEvent";
+import {DisplayObject}				from "@awayjs/scene/lib/display/DisplayObject";
+import {TouchEvent}					from "@awayjs/scene/lib/events/TouchEvent";
 
 import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
 import {View}							from "../View";

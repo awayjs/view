@@ -5,17 +5,17 @@ import {IEntity}					from "@awayjs/graphics/lib/base/IEntity";
 import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
 import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
 
-import {IRenderer}					from "@awayjs/display/lib/IRenderer";
-import {DisplayObject}				from "@awayjs/display/lib/display/DisplayObject";
-import {TouchPoint}					from "@awayjs/display/lib/base/TouchPoint";
-import {Scene}						from "@awayjs/display/lib/display/Scene";
-import {Camera}						from "@awayjs/display/lib/display/Camera";
-import {CameraEvent}					from "@awayjs/display/lib/events/CameraEvent";
-import {DisplayObjectEvent}			from "@awayjs/display/lib/events/DisplayObjectEvent";
-import {IView}			from "@awayjs/display/lib/IView";
+import {DisplayObject}				from "@awayjs/scene/lib/display/DisplayObject";
+import {TouchPoint}					from "@awayjs/scene/lib/base/TouchPoint";
+import {Camera}						from "@awayjs/scene/lib/display/Camera";
+import {CameraEvent}					from "@awayjs/scene/lib/events/CameraEvent";
+import {DisplayObjectEvent}			from "@awayjs/scene/lib/events/DisplayObjectEvent";
+import {IView}			from "@awayjs/scene/lib/IView";
+import {Scene}						from "@awayjs/scene/lib/Scene";
 
 import {RendererEvent}				from "@awayjs/renderer/lib/events/RendererEvent";
 import {DefaultRenderer}				from "@awayjs/renderer/lib/DefaultRenderer";
+import {RendererBase}				from "@awayjs/renderer/lib/RendererBase";
 
 import {IPicker}						from "./pick/IPicker";
 import {IPickingCollider}				from "./pick/IPickingCollider";
@@ -44,7 +44,7 @@ export class View implements IView
 	// Protected
 	public _pScene:Scene;
 	public _pCamera:Camera;
-	public _pRenderer:IRenderer;
+	public _pRenderer:RendererBase;
 
 	// Private
 	private _aspectRatio:number;
@@ -82,7 +82,7 @@ export class View implements IView
 	 * public _pTouch3DManager:away.managers.Touch3DManager;
 	 *
 	 */
-	constructor(renderer:IRenderer = null, scene:Scene = null, camera:Camera = null)
+	constructor(renderer:RendererBase = null, scene:Scene = null, camera:Camera = null)
 	{
 		this._onProjectionChangedDelegate = (event:CameraEvent) => this._onProjectionChanged(event);
 		this._onViewportUpdatedDelegate = (event:RendererEvent) => this._onViewportUpdated(event);
@@ -198,12 +198,12 @@ export class View implements IView
 	/**
 	 *
 	 */
-	public get renderer():IRenderer
+	public get renderer():RendererBase
 	{
 		return this._pRenderer;
 	}
 
-	public set renderer(value:IRenderer)
+	public set renderer(value:RendererBase)
 	{
 		if (this._pRenderer == value)
 			return;

@@ -3,7 +3,7 @@ import {TriangleElements}				from "@awayjs/graphics/lib/elements/TriangleElement
 import {LineElements}					from "@awayjs/graphics/lib/elements/LineElements";
 import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
 
-import {Billboard}					from "@awayjs/display/lib/display/Billboard";
+import {Billboard}					from "@awayjs/scene/lib/display/Billboard";
 
 /**
  * Provides an interface for picking colliders that can be assigned to individual entities in a scene for specific picking behaviour.

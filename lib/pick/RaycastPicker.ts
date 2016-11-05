@@ -9,7 +9,7 @@ import {LineElements}					from "@awayjs/graphics/lib/elements/LineElements";
 import {Graphic}						from "@awayjs/graphics/lib/Graphic";
 import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
 
-import {Billboard}					from "@awayjs/display/lib/display/Billboard";
+import {Billboard}					from "@awayjs/scene/lib/display/Billboard";
 
 import {IPickingCollider}				from "./IPickingCollider";
 import {IPicker}						from "./IPicker";
