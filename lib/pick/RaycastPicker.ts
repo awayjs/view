@@ -6,7 +6,7 @@ import {INode}						from "@awayjs/graphics/lib/base/INode";
 import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
 import {TriangleElements}				from "@awayjs/graphics/lib/elements/TriangleElements";
 import {LineElements}					from "@awayjs/graphics/lib/elements/LineElements";
-import {Graphic}						from "@awayjs/graphics/lib/Graphic";
+import {Shape}						from "@awayjs/graphics/lib/base/Shape";
 import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
 
 import {Billboard}					from "@awayjs/scene/lib/display/Billboard";
@@ -204,15 +204,15 @@ export class RaycastPicker extends TraverserBase implements IPicker
 			this._bestCollision = this._testCollision;
 	}
 
-	public applyLineGraphic(graphic:Graphic):void
+	public applyLineShape(shape:Shape):void
 	{
-		if (this._testCollider.testLineCollision(<LineElements> graphic.elements, graphic.material, this._testCollision, graphic.count || graphic.elements.numVertices, graphic.offset))
+		if (this._testCollider.testLineCollision(<LineElements> shape.elements, shape.material, this._testCollision, shape.count || shape.elements.numVertices, shape.offset))
 			this._bestCollision = this._testCollision;
 	}
 
-	public applyTriangleGraphic(graphic:Graphic):void
+	public applyTriangleShape(shape:Shape):void
 	{
-		if (this._testCollider.testTriangleCollision(<TriangleElements> graphic.elements, graphic.material, this._testCollision, graphic.count || graphic.elements.numVertices, graphic.offset))
+		if (this._testCollider.testTriangleCollision(<TriangleElements> shape.elements, shape.material, this._testCollision, shape.count || shape.elements.numVertices, shape.offset))
 			this._bestCollision = this._testCollision;
 	}
 	
