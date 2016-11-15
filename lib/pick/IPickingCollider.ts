@@ -1,4 +1,4 @@
-import {MaterialBase}						from "@awayjs/graphics/lib/materials/MaterialBase";
+import {IMaterial}						from "@awayjs/graphics/lib/base/IMaterial";
 import {TriangleElements}				from "@awayjs/graphics/lib/elements/TriangleElements";
 import {LineElements}					from "@awayjs/graphics/lib/elements/LineElements";
 import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
@@ -25,7 +25,7 @@ export interface IPickingCollider
 	 * @param pickingCollision
 	 * @param shortestCollisionDistance
 	 */
-	testBillboardCollision(billboard:Billboard, material:MaterialBase, pickingCollision:PickingCollision):boolean
+	testBillboardCollision(billboard:Billboard, material:IMaterial, pickingCollision:PickingCollision):boolean
 
 	/**
 	 * Tests a <code>TriangleElements</code> object for a collision with the picking ray.
@@ -35,7 +35,7 @@ export interface IPickingCollider
 	 * @param pickingCollision
 	 * @param shortestCollisionDistance
 	 */
-	testTriangleCollision(triangleElements:TriangleElements, material:MaterialBase, pickingCollision:PickingCollision, count:number, offset?:number):boolean
+	testTriangleCollision(triangleElements:TriangleElements, material:IMaterial, pickingCollision:PickingCollision, count:number, offset?:number):boolean
 
 	/**
 	 * Tests a <code>LineElements</code> object for a collision with the picking ray.
@@ -45,6 +45,6 @@ export interface IPickingCollider
 	 * @param pickingCollision
 	 * @param shortestCollisionDistance
 	 */
-	testLineCollision(lineElements:LineElements, material:MaterialBase, pickingCollision:PickingCollision, count:number, offset?:number):boolean
+	testLineCollision(lineElements:LineElements, material:IMaterial, pickingCollision:PickingCollision, count:number, offset?:number):boolean
 
 }

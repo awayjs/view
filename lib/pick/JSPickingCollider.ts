@@ -3,7 +3,7 @@ import {Point}							from "@awayjs/core/lib/geom/Point";
 
 import {LineElements}						from "@awayjs/graphics/lib/elements/LineElements";
 import {TriangleElements}					from "@awayjs/graphics/lib/elements/TriangleElements";
-import {MaterialBase}						from "@awayjs/graphics/lib/materials/MaterialBase";
+import {IMaterial}						from "@awayjs/graphics/lib/base/IMaterial";
 import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
 
 import {Billboard}						from "@awayjs/scene/lib/display/Billboard";
@@ -39,7 +39,7 @@ export class JSPickingCollider
 	 * @param pickingCollision The collision object used to store the collision results
 	 * @param findClosest
 	 */
-	public testBillboardCollision(billboard:Billboard, material:MaterialBase, pickingCollision:PickingCollision):boolean
+	public testBillboardCollision(billboard:Billboard, material:IMaterial, pickingCollision:PickingCollision):boolean
 	{
 		pickingCollision.renderable = null;
 
@@ -62,7 +62,7 @@ export class JSPickingCollider
 	 * @param pickingCollision
 	 * @returns {boolean}
 	 */
-	public testTriangleCollision(triangleElements:TriangleElements, material:MaterialBase, pickingCollision:PickingCollision, count:number, offset:number = 0):boolean
+	public testTriangleCollision(triangleElements:TriangleElements, material:IMaterial, pickingCollision:PickingCollision, count:number, offset:number = 0):boolean
 	{
 		var rayPosition:Vector3D = pickingCollision.rayPosition;
 		var rayDirection:Vector3D = pickingCollision.rayDirection;
@@ -349,7 +349,7 @@ export class JSPickingCollider
 	 * @param pickingCollision
 	 * @returns {boolean}
 	 */
-	public testLineCollision(lineElements:LineElements, material:MaterialBase, pickingCollision:PickingCollision, count:number, offset:number = 0):boolean
+	public testLineCollision(lineElements:LineElements, material:IMaterial, pickingCollision:PickingCollision, count:number, offset:number = 0):boolean
 	{
 		return false;
 	}

@@ -33,6 +33,7 @@ export class RaycastPicker extends TraverserBase implements IPicker
 	private _testCollider:IPickingCollider;
 	private _ignoredEntities:Array<IEntity>;
 
+	private _entity:IEntity;
 	private _entities:Array<IEntity> = new Array<IEntity>();
 
 	/**
@@ -139,17 +140,16 @@ export class RaycastPicker extends TraverserBase implements IPicker
 		// ---------------------------------------------------------------------
 
 		this._bestCollision = null;
-		
-		var entity:IEntity;
+
 		var len:number = this._entities.length;
 		for (var i:number = 0; i < len; i++) {
-			entity = this._entities[i];
-			this._testCollision = entity._iPickingCollision;
+			this._entity = this._entities[i];
+			this._testCollision = this._entity._iPickingCollision;
 			if (this._bestCollision == null || this._testCollision.rayEntryDistance < this._bestCollision.rayEntryDistance) {
-				this._testCollider = view.getPartition(entity).getAbstraction(entity).pickingCollider;
+				this._testCollider = view.getPartition(this._entity).getAbstraction(this._entity).pickingCollider;
 				if (this._testCollider) {
 					this._testCollision.rayEntryDistance = Number.MAX_VALUE;
-					entity._acceptTraverser(this);
+					this._entity._acceptTraverser(this);
 					// If a collision exists, update the collision data and stop all checks.
 					if (this._bestCollision && !this._findClosestCollision)
 						break;
@@ -206,13 +206,13 @@ export class RaycastPicker extends TraverserBase implements IPicker
 
 	public applyLineShape(shape:Shape):void
 	{
-		if (this._testCollider.testLineCollision(<LineElements> shape.elements, shape.material, this._testCollision, shape.count || shape.elements.numVertices, shape.offset))
+		if (this._testCollider.testLineCollision(<LineElements> shape.elements, shape.material || this._entity.material, this._testCollision, shape.count || shape.elements.numVertices, shape.offset))
 			this._bestCollision = this._testCollision;
 	}
 
 	public applyTriangleShape(shape:Shape):void
 	{
-		if (this._testCollider.testTriangleCollision(<TriangleElements> shape.elements, shape.material, this._testCollision, shape.count || shape.elements.numVertices, shape.offset))
+		if (this._testCollider.testTriangleCollision(<TriangleElements> shape.elements, shape.material || this._entity.material, this._testCollision, shape.count || shape.elements.numVertices, shape.offset))
 			this._bestCollision = this._testCollision;
 	}
 	
