@@ -1,12 +1,10 @@
-import {IAssetClass}					from "@awayjs/core/lib/library/IAssetClass";
+import {IAssetClass} from "@awayjs/core";
 
-import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
-import {IContainerNode}				from "@awayjs/graphics/lib/base/IContainerNode";
-import {IEntity}				from "@awayjs/graphics/lib/base/IEntity";
+import {TraverserBase, IContainerNode, IEntity} from "@awayjs/graphics";
 
-import {EntityNode}					from "../partition/EntityNode";
-import {IEntityNodeClass}				from "../partition/IEntityNodeClass";
-import {DisplayObjectNode}			from "../partition/DisplayObjectNode";
+import {EntityNode} from "./EntityNode";
+import {IEntityNodeClass} from "./IEntityNodeClass";
+import {DisplayObjectNode} from "./DisplayObjectNode";
 
 /**
  * @class away.partition.Partition
@@ -150,7 +148,7 @@ export class PartitionBase
 			this.iMarkForUpdate(this.getAbstraction(entity));
 	}
 
-	/**
+	/*
 	 * @internal
 	 */
 	public _iUnregisterEntity(entity:IEntity):void
@@ -159,7 +157,7 @@ export class PartitionBase
 			this.iRemoveEntity(this.getAbstraction(entity));
 	}
 
-	public dispose()
+	public dispose():void
 	{
 		//TODO
 	}

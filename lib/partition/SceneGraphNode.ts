@@ -1,7 +1,6 @@
-import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
-import {IContainerNode}				from "@awayjs/graphics/lib/base/IContainerNode";
+import {TraverserBase, IContainerNode} from "@awayjs/graphics";
 
-import {DisplayObjectNode}			from "../partition/DisplayObjectNode";
+import {DisplayObjectNode} from "./DisplayObjectNode";
 
 /**
  * Maintains scenegraph heirarchy when collecting nodes

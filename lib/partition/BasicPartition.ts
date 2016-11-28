@@ -1,7 +1,7 @@
-import {DisplayObject}				from "@awayjs/scene/lib/display/DisplayObject";
+import {DisplayObject} from "@awayjs/scene";
 
-import {NodeBase}						from "../partition/NodeBase";
-import {PartitionBase}				from "../partition/PartitionBase";
+import {NodeBase} from "./NodeBase";
+import {PartitionBase} from "./PartitionBase";
 
 
 /**

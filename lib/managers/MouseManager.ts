@@ -1,12 +1,10 @@
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {Vector3D} from "@awayjs/core";
 
-import {DisplayObject}				from "@awayjs/scene/lib/display/DisplayObject";
-import {TouchPoint}					from "@awayjs/scene/lib/base/TouchPoint";
-import {MouseEvent}					from "@awayjs/scene/lib/events/MouseEvent";
-import {FrameScriptManager}			from "@awayjs/scene/lib/managers/FrameScriptManager";
+import {PickingCollision} from "@awayjs/graphics";
 
-import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
-import {View}							from "../View";
+import {DisplayObject, TouchPoint, MouseEvent, FrameScriptManager} from "@awayjs/scene";
+
+import {View} from "../View";
 
 /**
  * MouseManager enforces a singleton pattern and is not intended to be instanced.

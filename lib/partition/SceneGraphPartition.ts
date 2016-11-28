@@ -1,12 +1,10 @@
-import {IAbstractionPool}				from "@awayjs/core/lib/library/IAbstractionPool";
+import {IAbstractionPool} from "@awayjs/core";
 
-import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
-import {IContainerNode}				from "@awayjs/graphics/lib/base/IContainerNode";
-import {IEntity}				from "@awayjs/graphics/lib/base/IEntity";
+import {TraverserBase, IContainerNode, IEntity} from "@awayjs/graphics";
 
-import {SceneGraphNode}				from "../partition/SceneGraphNode";
-import {PartitionBase}				from "../partition/PartitionBase";
-import {DisplayObjectNode}			from "../partition/DisplayObjectNode";
+import {SceneGraphNode} from "./SceneGraphNode";
+import {PartitionBase} from "./PartitionBase";
+import {DisplayObjectNode} from "./DisplayObjectNode";
 
 /**
  * @class away.partition.Partition

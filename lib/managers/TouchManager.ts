@@ -1,10 +1,10 @@
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {Vector3D} from "@awayjs/core";
 
-import {DisplayObject}				from "@awayjs/scene/lib/display/DisplayObject";
-import {TouchEvent}					from "@awayjs/scene/lib/events/TouchEvent";
+import {PickingCollision} from "@awayjs/graphics";
 
-import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
-import {View}							from "../View";
+import {DisplayObject, TouchEvent} from "@awayjs/scene";
+
+import {View} from "../View";
 
 export class TouchManager
 {

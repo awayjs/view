@@ -1,22 +1,10 @@
-import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
-import {IAbstractionPool}				from "@awayjs/core/lib/library/IAbstractionPool";
-import {AbstractionBase}				from "@awayjs/core/lib/library/AbstractionBase";
+import {AssetEvent, IAbstractionPool, AbstractionBase, Plane3D, Vector3D} from "@awayjs/core";
 
-import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {TraverserBase, INode, IEntity} from "@awayjs/graphics";
 
-import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
-import {INode}						from "@awayjs/graphics/lib/base/INode";
-import {IEntity}				from "@awayjs/graphics/lib/base/IEntity";
+import {DisplayObjectEvent, AxisAlignedBoundingBox, BoundingSphere, BoundingVolumeBase, BoundsType, NullBounds} from "@awayjs/scene";
 
-import {DisplayObjectEvent}			from "@awayjs/scene/lib/events/DisplayObjectEvent";
-import {AxisAlignedBoundingBox}		from "@awayjs/scene/lib/bounds/AxisAlignedBoundingBox";
-import {BoundingSphere}				from "@awayjs/scene/lib/bounds/BoundingSphere";
-import {BoundingVolumeBase}			from "@awayjs/scene/lib/bounds/BoundingVolumeBase";
-import {BoundsType}					from "@awayjs/scene/lib/bounds/BoundsType";
-import {NullBounds}					from "@awayjs/scene/lib/bounds/NullBounds";
-
-import {SceneGraphNode}				from "../partition/SceneGraphNode";
+import {SceneGraphNode} from "./SceneGraphNode";
 
 /**
  * @class away.partition.EntityNode

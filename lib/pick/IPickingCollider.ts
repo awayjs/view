@@ -1,9 +1,6 @@
-import {IMaterial}						from "@awayjs/graphics/lib/base/IMaterial";
-import {TriangleElements}				from "@awayjs/graphics/lib/elements/TriangleElements";
-import {LineElements}					from "@awayjs/graphics/lib/elements/LineElements";
-import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
+import {IMaterial, TriangleElements, LineElements, PickingCollision} from "@awayjs/graphics";
 
-import {Billboard}					from "@awayjs/scene/lib/display/Billboard";
+import {Billboard} from "@awayjs/scene";
 
 /**
  * Provides an interface for picking colliders that can be assigned to individual entities in a scene for specific picking behaviour.

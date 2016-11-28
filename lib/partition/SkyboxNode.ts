@@ -1,6 +1,6 @@
-import {Plane3D}				from "@awayjs/core/lib/geom/Plane3D";
+import {Plane3D} from "@awayjs/core";
 
-import {EntityNode}					from "../partition/EntityNode";
+import {EntityNode} from "./EntityNode";
 
 /**
  * SkyboxNode is a space partitioning leaf node that contains a Skybox object.

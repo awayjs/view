@@ -1,28 +1,17 @@
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
-import {getTimer}						from "@awayjs/core/lib/utils/getTimer";
+import {Vector3D, getTimer} from "@awayjs/core";
 
-import {IEntity}					from "@awayjs/graphics/lib/base/IEntity";
-import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
-import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
+import {IEntity, TraverserBase, PickingCollision} from "@awayjs/graphics";
 
-import {DisplayObject}				from "@awayjs/scene/lib/display/DisplayObject";
-import {TouchPoint}					from "@awayjs/scene/lib/base/TouchPoint";
-import {Camera}						from "@awayjs/scene/lib/display/Camera";
-import {CameraEvent}					from "@awayjs/scene/lib/events/CameraEvent";
-import {DisplayObjectEvent}			from "@awayjs/scene/lib/events/DisplayObjectEvent";
-import {IView}			from "@awayjs/scene/lib/IView";
-import {Scene}						from "@awayjs/scene/lib/Scene";
+import {DisplayObject, TouchPoint, Camera, CameraEvent, IView, Scene} from "@awayjs/scene";
 
-import {RendererEvent}				from "@awayjs/renderer/lib/events/RendererEvent";
-import {DefaultRenderer}				from "@awayjs/renderer/lib/DefaultRenderer";
-import {RendererBase}				from "@awayjs/renderer/lib/RendererBase";
+import {RendererEvent, DefaultRenderer, RendererBase} from "@awayjs/renderer";
 
-import {IPicker}						from "./pick/IPicker";
-import {IPickingCollider}				from "./pick/IPickingCollider";
-import {RaycastPicker}				from "./pick/RaycastPicker";
-import {MouseManager}					from "./managers/MouseManager";
-import {PartitionBase}					from "./partition/PartitionBase";
-import {BasicPartition}					from "./partition/BasicPartition";
+import {IPicker} from "./pick/IPicker";
+import {IPickingCollider} from "./pick/IPickingCollider";
+import {RaycastPicker} from "./pick/RaycastPicker";
+import {MouseManager} from "./managers/MouseManager";
+import {PartitionBase} from "./partition/PartitionBase";
+import {BasicPartition} from "./partition/BasicPartition";
 
 export class View implements IView
 {
@@ -119,7 +108,7 @@ export class View implements IView
 		return this._partitions[entity.partition.id] || this._partitions[this._pScene.id];
 	}
 
-	public setPartition(entity:IEntity, partition:PartitionBase)
+	public setPartition(entity:IEntity, partition:PartitionBase):void
 	{
 		var oldPartition:PartitionBase = this._partitions[entity.id];
 		if (oldPartition == partition)

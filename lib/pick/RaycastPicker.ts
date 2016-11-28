@@ -1,20 +1,13 @@
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {Vector3D} from "@awayjs/core";
 
+import {TraverserBase, INode, IEntity, TriangleElements, LineElements, Shape, PickingCollision} from "@awayjs/graphics";
 
-import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
-import {INode}						from "@awayjs/graphics/lib/base/INode";
-import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
-import {TriangleElements}				from "@awayjs/graphics/lib/elements/TriangleElements";
-import {LineElements}					from "@awayjs/graphics/lib/elements/LineElements";
-import {Shape}						from "@awayjs/graphics/lib/base/Shape";
-import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
+import {Billboard} from "@awayjs/scene";
 
-import {Billboard}					from "@awayjs/scene/lib/display/Billboard";
+import {View} from "../View";
 
-import {IPickingCollider}				from "./IPickingCollider";
-import {IPicker}						from "./IPicker";
-
-import {View}							from "../View";
+import {IPickingCollider} from "./IPickingCollider";
+import {IPicker} from "./IPicker";
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.

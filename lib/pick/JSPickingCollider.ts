@@ -1,12 +1,8 @@
-import {Vector3D}							from "@awayjs/core/lib/geom/Vector3D";
-import {Point}							from "@awayjs/core/lib/geom/Point";
+import {Vector3D, Point} from "@awayjs/core";
 
-import {LineElements}						from "@awayjs/graphics/lib/elements/LineElements";
-import {TriangleElements}					from "@awayjs/graphics/lib/elements/TriangleElements";
-import {IMaterial}						from "@awayjs/graphics/lib/base/IMaterial";
-import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
+import {LineElements, TriangleElements, IMaterial, PickingCollision} from "@awayjs/graphics";
 
-import {Billboard}						from "@awayjs/scene/lib/display/Billboard";
+import {Billboard} from "@awayjs/scene";
 
 
 /**

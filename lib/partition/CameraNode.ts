@@ -1,6 +1,6 @@
-import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
+import {TraverserBase} from "@awayjs/graphics";
 
-import {EntityNode}					from "../partition/EntityNode";
+import {EntityNode} from "./EntityNode";
 
 /**
  * @class away.partition.CameraNode

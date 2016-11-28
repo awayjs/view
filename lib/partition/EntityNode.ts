@@ -1,18 +1,13 @@
-import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
-import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {AssetEvent, Plane3D, Vector3D} from "@awayjs/core";
 
-import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
-import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
-import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
+import {TraverserBase, IEntity, PickingCollision} from "@awayjs/graphics";
 
-import {DisplayObject}				from "@awayjs/scene/lib/display/DisplayObject";
-import {DisplayObjectEvent}			from "@awayjs/scene/lib/events/DisplayObjectEvent";
+import {DisplayObject, DisplayObjectEvent} from "@awayjs/scene";
 
-import {IPickingCollider}				from "../pick/IPickingCollider";
+import {IPickingCollider} from "../pick/IPickingCollider";
 
-import {DisplayObjectNode}			from "../partition/DisplayObjectNode";
-import {PartitionBase}				from "../partition/PartitionBase";
+import {DisplayObjectNode} from "./DisplayObjectNode";
+import {PartitionBase} from "./PartitionBase";
 
 /**
  * @class away.partition.EntityNode

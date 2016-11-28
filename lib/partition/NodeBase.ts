@@ -1,13 +1,8 @@
-import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {Plane3D, Vector3D} from "@awayjs/core";
 
-import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
-import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
-import {INode}						from "@awayjs/graphics/lib/base/INode";
-import {IContainerNode}				from "@awayjs/graphics/lib/base/IContainerNode";
+import {TraverserBase, IEntity, INode, IContainerNode} from "@awayjs/graphics";
 
-import {BoundingVolumeBase}			from "@awayjs/scene/lib/bounds/BoundingVolumeBase";
-import {NullBounds}					from "@awayjs/scene/lib/bounds/NullBounds";
+import {BoundingVolumeBase, NullBounds} from "@awayjs/scene";
 
 /**
  * @class away.partition.NodeBase
