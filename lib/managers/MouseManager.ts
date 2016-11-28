@@ -165,6 +165,73 @@ export class MouseManager
 		}
 	}
 
+	public addEventsForViewBinary(touchMessage:ArrayBuffer, viewIdx:number=0):void
+	{
+
+		var newTouchEvent:any={};
+		newTouchEvent.clientX = null;// we get the x position from the active touch
+		newTouchEvent.clientY = null;// we get the y position from the active touch
+		newTouchEvent.touches=[];
+		newTouchEvent.changedTouches = [];
+		newTouchEvent.preventDefault=function(){};
+		var messageView:Float32Array=new Float32Array(touchMessage);
+		// transfer touches to event
+		var i=0;
+		var cnt=0;
+		cnt++;//we temporary added 1 float to transfer fps from java to js. skip this
+		var numTouches=messageView[cnt++];
+		var touchtype=messageView[cnt++];
+		var activeTouchID=messageView[cnt++];
+		if((touchtype!=1)&&(touchtype!=6)){
+			// if this is not a UP command, we add all touches
+			for(i=0; i< numTouches;i++){
+				var newTouch:any={};
+				newTouch.identifier=messageView[cnt++];
+				newTouch.clientX=messageView[cnt++];
+				newTouch.clientY=messageView[cnt++];
+				newTouchEvent.touches[i]=newTouch;
+				newTouchEvent.changedTouches[i] = newTouch;
+			};
+			newTouchEvent.changedTouches[i] = newTouchEvent.touches[activeTouchID];
+		}
+		else{
+			// if this is a UP command, we add all touches, except the active one
+			for(i=0; i< numTouches;i++){
+				if(i!=activeTouchID){
+					var newTouch:any={};
+					newTouch.identifier=messageView[cnt++];
+					newTouch.clientX=messageView[cnt++];
+					newTouch.clientY=messageView[cnt++];
+					newTouchEvent.touches[i]=newTouch;
+					newTouchEvent.changedTouches[i] = newTouch;
+				}
+				else{
+					newTouchEvent.clientX =messageView[cnt++];
+					newTouchEvent.clientY =messageView[cnt++];
+					cnt++;
+				}
+			};
+		}
+		// set the target in order to have a collision
+		newTouchEvent.target=this._viewLookup[viewIdx].htmlElement;
+
+		if(touchtype==0){//mousedown
+			this.onMouseDown(newTouchEvent);
+		}
+		else if(touchtype==1){//mouseup
+			this.onMouseUp(newTouchEvent);
+		}
+		else if(touchtype==2){//mousemove
+			this.onMouseMove(newTouchEvent);
+		}
+		else if(touchtype==261){//mousedownPointer
+			this.onMouseDown(newTouchEvent);
+		}
+		else if(touchtype==6){//mouseupPointer
+			this.onMouseUp(newTouchEvent);
+		}
+	}
+	
 	public fireEventsForViewFromString(touchMessage:String, viewIdx:number=0):void
 	{
 
