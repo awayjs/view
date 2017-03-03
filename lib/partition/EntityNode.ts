@@ -64,8 +64,8 @@ export class EntityNode extends DisplayObjectNode
 			return false;
 
 		var pickingCollision:PickingCollision = this._entity._iPickingCollision;
-		pickingCollision.rayPosition = this._entity.inverseSceneTransform.transformVector(globalRayPosition);
-		pickingCollision.rayDirection = this._entity.inverseSceneTransform.deltaTransformVector(globalRayDirection);
+		pickingCollision.rayPosition = this._entity.transform.inverseConcatenatedMatrix3D.transformVector(globalRayPosition);
+		pickingCollision.rayDirection = this._entity.transform.inverseConcatenatedMatrix3D.deltaTransformVector(globalRayDirection);
 
 		if (!pickingCollision.normal)
 			pickingCollision.normal = new Vector3D();

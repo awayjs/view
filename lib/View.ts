@@ -155,12 +155,12 @@ export class View implements IView
 
 	public getLocalMouseX(displayObject:DisplayObject):number
 	{
-		return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).x;
+		return displayObject.transform.inverseConcatenatedMatrix3D.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).x;
 	}
 
 	public getLocalMouseY(displayObject:DisplayObject):number
 	{
-		return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).y;
+		return displayObject.transform.inverseConcatenatedMatrix3D.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).y;
 	}
 
 	public getLocalTouchPoints(displayObject:DisplayObject):Array<TouchPoint>
@@ -170,7 +170,7 @@ export class View implements IView
 
 		var len:number = this._pTouchPoints.length;
 		for (var i:number = 0; i < len; i++) {
-			localPosition = displayObject.inverseSceneTransform.transformVector(this.unproject(this._pTouchPoints[i].x, this._pTouchPoints[i].y, 1000));
+			localPosition = displayObject.transform.inverseConcatenatedMatrix3D.transformVector(this.unproject(this._pTouchPoints[i].x, this._pTouchPoints[i].y, 1000));
 			localTouchPoints.push(new TouchPoint(localPosition.x, localPosition.y, this._pTouchPoints[i].id));
 		}
 
@@ -368,7 +368,7 @@ export class View implements IView
 
 		this._width = value;
 		this._aspectRatio = this._width/this._height;
-		this._pCamera.projection._iAspectRatio = this._aspectRatio;
+		this._pCamera.projection.aspectRatio = this._aspectRatio;
 		this._pRenderer.width = value;
 		if(this._htmlElement) {
 			this._htmlElement.style.width = value + "px";
@@ -390,7 +390,7 @@ export class View implements IView
 
 		this._height = value;
 		this._aspectRatio = this._width/this._height;
-		this._pCamera.projection._iAspectRatio = this._aspectRatio;
+		this._pCamera.projection.aspectRatio = this._aspectRatio;
 		this._pRenderer.height = value;
 		if(this._htmlElement) {
 			this._htmlElement.style.height = value + "px";
@@ -488,16 +488,16 @@ export class View implements IView
 		this.pUpdateTime();
 
 		//update view and size data
-		this._pCamera.projection._iAspectRatio = this._aspectRatio;
+		this._pCamera.projection.aspectRatio = this._aspectRatio;
 
 		if (this._scissorDirty) {
 			this._scissorDirty = false;
-			this._pCamera.projection._iUpdateScissorRect(this._pRenderer.scissorRect.x, this._pRenderer.scissorRect.y, this._pRenderer.scissorRect.width, this._pRenderer.scissorRect.height);
+			this._pCamera.projection.setViewRect(this._pRenderer.scissorRect.x, this._pRenderer.scissorRect.y, this._pRenderer.scissorRect.width, this._pRenderer.scissorRect.height);
 		}
 
 		if (this._viewportDirty) {
 			this._viewportDirty = false;
-			this._pCamera.projection._iUpdateViewport(this._pRenderer.viewPort.x, this._pRenderer.viewPort.y, this._pRenderer.viewPort.width, this._pRenderer.viewPort.height);
+			this._pCamera.projection.setStageRect(this._pRenderer.viewPort.x, this._pRenderer.viewPort.y, this._pRenderer.viewPort.width, this._pRenderer.viewPort.height);
 		}
 
 		// update picking
@@ -583,13 +583,8 @@ export class View implements IView
 
 	public unproject(sX:number, sY:number, sZ:number):Vector3D
 	{
-		return this._pCamera.unproject(2*(sX - this._width*this._pCamera.projection.originX)/this._pRenderer.viewPort.width, 2*(sY - this._height*this._pCamera.projection.originY)/this._pRenderer.viewPort.height, sZ);
+		return this._pCamera.unproject((2*sX - this._width)/this._pRenderer.viewPort.width, (2*sY - this._height)/this._pRenderer.viewPort.height, sZ);
 
-	}
-
-	public getRay(sX:number, sY:number, sZ:number):Vector3D
-	{
-		return this._pCamera.getRay((sX*2 - this._width)/this._width, (sY*2 - this._height)/this._height, sZ);
 	}
 
 	/* TODO: implement Touch3DManager
