@@ -1,8 +1,8 @@
-# Awayjs View
+# AwayJS View
 
 Interface for scene modules, providing user interaction input / output and culling management for display objects sent to the renderer.
 
-## Awayjs Dependencies
+## AwayJS Dependencies
 
 * core
 * graphics
