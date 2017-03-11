@@ -2,6 +2,10 @@
 
 Interface for scene modules, providing user interaction input / output and culling management for display objects sent to the renderer.
 
+## Documentation
+
+[Official AwayJS Documentation](https://awayjs.github.io/docs/view)
+
 ## AwayJS Dependencies
 
 * core
