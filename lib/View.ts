@@ -36,7 +36,6 @@ export class View implements IView
 	public _pRenderer:RendererBase;
 
 	// Private
-	private _aspectRatio:number;
 	private _width:number = 0;
 	private _height:number = 0;
 
@@ -367,8 +366,6 @@ export class View implements IView
 			return;
 
 		this._width = value;
-		this._aspectRatio = this._width/this._height;
-		this._pCamera.projection.aspectRatio = this._aspectRatio;
 		this._pRenderer.width = value;
 		if(this._htmlElement) {
 			this._htmlElement.style.width = value + "px";
@@ -389,8 +386,6 @@ export class View implements IView
 			return;
 
 		this._height = value;
-		this._aspectRatio = this._width/this._height;
-		this._pCamera.projection.aspectRatio = this._aspectRatio;
 		this._pRenderer.height = value;
 		if(this._htmlElement) {
 			this._htmlElement.style.height = value + "px";
@@ -488,7 +483,6 @@ export class View implements IView
 		this.pUpdateTime();
 
 		//update view and size data
-		this._pCamera.projection.aspectRatio = this._aspectRatio;
 
 		if (this._scissorDirty) {
 			this._scissorDirty = false;
