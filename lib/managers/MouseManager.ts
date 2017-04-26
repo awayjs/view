@@ -342,6 +342,7 @@ export class MouseManager
 	{
 		// 2D properties.
 		if (sourceEvent) {
+			event.delta = sourceEvent.wheelDelta;
 			event.ctrlKey = sourceEvent.ctrlKey;
 			event.altKey = sourceEvent.altKey;
 			event.shiftKey = sourceEvent.shiftKey;
