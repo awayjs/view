@@ -365,6 +365,13 @@ export class View implements IView
 		if (this._width == value)
 			return;
 
+		if(this._shareContext) {
+			this._pRenderer.scissorRect.width = value;
+			//this._pRenderer.viewPort.width = value;
+			this._scissorDirty = true;
+			//this._viewportDirty = false;
+			return;
+		}
 		this._width = value;
 		this._pRenderer.width = value;
 		if(this._htmlElement) {
@@ -385,6 +392,13 @@ export class View implements IView
 		if (this._height == value)
 			return;
 
+		if(this._shareContext) {
+			this._pRenderer.scissorRect.height = 100;
+			//this._pRenderer.viewPort.height = 100;
+			this._scissorDirty = true;
+			//this._viewportDirty = false;
+			return;
+		}
 		this._height = value;
 		this._pRenderer.height = value;
 		if(this._htmlElement) {
@@ -425,6 +439,13 @@ export class View implements IView
 			return;
 
 		this._pRenderer.x = value;
+		if(this._shareContext){
+			this._pRenderer.scissorRect.x = value;
+			//this._pRenderer.viewPort.x = value;
+			this._scissorDirty=true;
+			//this._viewportDirty = false;
+			return;
+		}
 		if(this._htmlElement) {
 			this._htmlElement.style.left = value + "px";
 		}
@@ -444,6 +465,13 @@ export class View implements IView
 			return;
 
 		this._pRenderer.y = value;
+		if(this._shareContext){
+			this._pRenderer.scissorRect.y = value;
+			//this._pRenderer.viewPort.y = value;
+			this._scissorDirty=true;
+			//this._viewportDirty = false;
+			return;
+		}
 		if(this._htmlElement) {
 			this._htmlElement.style.top = value + "px";
 		}
