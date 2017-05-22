@@ -48,7 +48,7 @@ export class SceneGraphNode extends DisplayObjectNode implements IContainerNode
 			this._childMasks.push(node);
 			this._numMasks++;
 		} else {
-			var depth:number = node._entity._depthID;
+			var depth:number = node.isSceneGraphNode? node._entity._depthID : -1;
 			var len:number = this._childDepths.length;
 			var index:number = len;
 
