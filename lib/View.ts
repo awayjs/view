@@ -101,6 +101,8 @@ export class View implements IView
 
 	public layeredView:boolean; //TODO: something to enable this correctly
 
+	public disableMouseEvents:boolean; //TODO: hack to ignore mouseevents on certain views
+
 	public getPartition(entity:IEntity):PartitionBase
 	{
 		//use registered partition for the displayobject or fallback for scene
@@ -523,7 +525,7 @@ export class View implements IView
 		}
 
 		// update picking
-		if (!this._shareContext) {
+		if (!this._shareContext && !this.disableMouseEvents) {
 			if (this.forceMouseMove && this._htmlElement == this._mouseManager._iActiveDiv && !this._mouseManager._iUpdateDirty)
 				this._mouseManager._iCollision = this.getViewCollision(this._pMouseX, this._pMouseY, this);
 
@@ -641,14 +643,16 @@ export class View implements IView
 	// TODO: required dependency stageGL
 	public updateCollider():void
 	{
-		if (!this._shareContext) {
-			if (this._htmlElement == this._mouseManager._iActiveDiv)
-				this._mouseManager._iCollision = this.getViewCollision(this._pMouseX, this._pMouseY, this);
-		} else {
-			var collidingObject:PickingCollision = this.getViewCollision(this._pMouseX, this._pMouseY, this);
+		if (!this.disableMouseEvents) {
+			if (!this._shareContext) {
+				if (this._htmlElement == this._mouseManager._iActiveDiv)
+					this._mouseManager._iCollision = this.getViewCollision(this._pMouseX, this._pMouseY, this);
+			} else {
+				var collidingObject:PickingCollision = this.getViewCollision(this._pMouseX, this._pMouseY, this);
 
-			if (this.layeredView || this._mouseManager._iCollision == null || collidingObject.rayEntryDistance < this._mouseManager._iCollision.rayEntryDistance)
-				this._mouseManager._iCollision = collidingObject;
+				if (this.layeredView || this._mouseManager._iCollision == null || collidingObject.rayEntryDistance < this._mouseManager._iCollision.rayEntryDistance)
+					this._mouseManager._iCollision = collidingObject;
+			}
 		}
 	}
 	
