@@ -1,5 +1,4 @@
 export {MouseManager} from "./lib/managers/MouseManager";
-export {TouchManager} from "./lib/managers/TouchManager";
 
 export {BasicPartition} from "./lib/partition/BasicPartition";
 export {CameraNode} from "./lib/partition/CameraNode";
