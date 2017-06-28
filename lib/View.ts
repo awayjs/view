@@ -35,10 +35,6 @@ export class View implements IView
 	public _pCamera:Camera;
 	public _pRenderer:RendererBase;
 
-	// Private
-	private _width:number = 0;
-	private _height:number = 0;
-
 	private _time:number = 0;
 	private _deltaTime:number = 0;
 	private _backgroundColor:number = 0x000000;
@@ -54,8 +50,6 @@ export class View implements IView
 	private _mousePicker:IPicker = new RaycastPicker();
 	private _partitions:Object = new Object();
 
-	private _htmlElement:HTMLDivElement;
-	private _shareContext:boolean;
 	public _pMouseX:number;
 	public _pMouseY:number;
 	public _pTouchPoints:Array<TouchPoint> = new Array<TouchPoint>();
@@ -79,18 +73,6 @@ export class View implements IView
 		this.scene = scene || new Scene();
 		this.camera = camera || new Camera();
 		this.renderer = renderer || new DefaultRenderer();
-
-		//make sure document border is zero
-		if(typeof document !== "undefined") {
-			document.body.style.margin = "0px";
-
-			this._htmlElement = document.createElement("div");
-			this._htmlElement.style.position = "absolute";
-			this._htmlElement.style.left = "0px";
-			this._htmlElement.style.top = "0px";
-
-			document.body.appendChild(this._htmlElement);
-		}
 
 		this._mouseManager = MouseManager.getInstance();
 		this._mouseManager.registerView(this);
@@ -181,13 +163,6 @@ export class View implements IView
 	/**
 	 *
 	 */
-	public get htmlElement():HTMLDivElement
-	{
-		return this._htmlElement;
-	}
-	/**
-	 *
-	 */
 	public get renderer():RendererBase
 	{
 		return this._pRenderer;
@@ -199,6 +174,9 @@ export class View implements IView
 			return;
 
 		if (this._pRenderer) {
+			//swap the old renderer width and height to the new renderer
+			value.width = this._pRenderer.width;
+			value.height = this._pRenderer.height;
 			this._pRenderer.dispose();
 			this._pRenderer.removeEventListener(RendererEvent.VIEWPORT_UPDATED, this._onViewportUpdatedDelegate);
 			this._pRenderer.removeEventListener(RendererEvent.SCISSOR_UPDATED, this._onScissorUpdatedDelegate);
@@ -214,28 +192,6 @@ export class View implements IView
 		this._pRenderer._iBackgroundG = ((this._backgroundColor >> 8) & 0xff)/0xff;
 		this._pRenderer._iBackgroundB = (this._backgroundColor & 0xff)/0xff;
 		this._pRenderer._iBackgroundAlpha = this._backgroundAlpha;
-		this._pRenderer.width = this._width;
-		this._pRenderer.height = this._height;
-		this._pRenderer.shareContext = this._shareContext;
-	}
-
-	/**
-	 *
-	 */
-	public get shareContext():boolean
-	{
-		return this._shareContext;
-	}
-
-	public set shareContext(value:boolean)
-	{
-		if (this._shareContext == value)
-			return;
-
-		this._shareContext = value;
-
-		if (this._pRenderer)
-			this._pRenderer.shareContext = this._shareContext;
 	}
 
 	/**
@@ -359,26 +315,12 @@ export class View implements IView
 	 */
 	public get width():number
 	{
-		return this._width;
+		return this._pRenderer.width;
 	}
 
 	public set width(value:number)
 	{
-		if (this._width == value)
-			return;
-
-		if(this._shareContext) {
-			this._pRenderer.scissorRect.width = value;
-			//this._pRenderer.viewPort.width = value;
-			this._scissorDirty = true;
-			//this._viewportDirty = false;
-			return;
-		}
-		this._width = value;
 		this._pRenderer.width = value;
-		if(this._htmlElement) {
-			this._htmlElement.style.width = value + "px";
-		}
 	}
 
 	/**
@@ -386,26 +328,12 @@ export class View implements IView
 	 */
 	public get height():number
 	{
-		return this._height;
+		return this._pRenderer.height;
 	}
 
 	public set height(value:number)
 	{
-		if (this._height == value)
-			return;
-
-		if(this._shareContext) {
-			this._pRenderer.scissorRect.height = 100;
-			//this._pRenderer.viewPort.height = 100;
-			this._scissorDirty = true;
-			//this._viewportDirty = false;
-			return;
-		}
-		this._height = value;
 		this._pRenderer.height = value;
-		if(this._htmlElement) {
-			this._htmlElement.style.height = value + "px";
-		}
 	}
 
 	/**
@@ -437,20 +365,7 @@ export class View implements IView
 
 	public set x(value:number)
 	{
-		if (this._pRenderer.x == value)
-			return;
-
 		this._pRenderer.x = value;
-		if(this._shareContext){
-			this._pRenderer.scissorRect.x = value;
-			//this._pRenderer.viewPort.x = value;
-			this._scissorDirty=true;
-			//this._viewportDirty = false;
-			return;
-		}
-		if(this._htmlElement) {
-			this._htmlElement.style.left = value + "px";
-		}
 	}
 
 	/**
@@ -463,36 +378,7 @@ export class View implements IView
 
 	public set y(value:number)
 	{
-		if (this._pRenderer.y == value)
-			return;
-
 		this._pRenderer.y = value;
-		if(this._shareContext){
-			this._pRenderer.scissorRect.y = value;
-			//this._pRenderer.viewPort.y = value;
-			this._scissorDirty=true;
-			//this._viewportDirty = false;
-			return;
-		}
-		if(this._htmlElement) {
-			this._htmlElement.style.top = value + "px";
-		}
-	}
-
-	/**
-	 *
-	 */
-	public get visible():boolean
-	{
-		return (this._htmlElement && this._htmlElement.style.visibility == "visible");
-	}
-
-	public set visible(value:boolean)
-	{
-		if(this._htmlElement) {
-			this._htmlElement.style.visibility = value? "visible" : "hidden";
-		}
-		//TODO transfer visible property to associated context (if one exists)
 	}
 
 	/**
@@ -525,8 +411,8 @@ export class View implements IView
 		}
 
 		// update picking
-		if (!this._shareContext && !this.disableMouseEvents) {
-			if (this.forceMouseMove && this._htmlElement == this._mouseManager._iActiveDiv && !this._mouseManager._iUpdateDirty)
+		if (!this.disableMouseEvents) {
+			if (this.forceMouseMove && !this._mouseManager._iUpdateDirty)
 				this._mouseManager._iCollision = this.getViewCollision(this._pMouseX, this._pMouseY, this);
 
 			this._mouseManager.fireMouseEvents(this.forceMouseMove);
@@ -599,16 +485,15 @@ export class View implements IView
 	public project(point3d:Vector3D):Vector3D
 	{
 		var v:Vector3D = this._pCamera.project(point3d);
-		v.x = v.x*this._pRenderer.viewPort.width/2 + this._width*this._pCamera.projection.originX;
-		v.y = v.y*this._pRenderer.viewPort.height/2 + this._height*this._pCamera.projection.originY;
+		v.x = v.x*this._pRenderer.viewPort.width/2 + this._pRenderer.width*this._pCamera.projection.originX;
+		v.y = v.y*this._pRenderer.viewPort.height/2 + this._pRenderer.height*this._pCamera.projection.originY;
 
 		return v;
 	}
 
 	public unproject(sX:number, sY:number, sZ:number):Vector3D
 	{
-		return this._pCamera.unproject((2*sX - this._width)/this._pRenderer.viewPort.width, (2*sY - this._height)/this._pRenderer.viewPort.height, sZ);
-
+		return this._pCamera.unproject((2*sX - this._pRenderer.width)/this._pRenderer.viewPort.width, (2*sY - this._pRenderer.height)/this._pRenderer.viewPort.height, sZ);
 	}
 
 	/* TODO: implement Touch3DManager
@@ -644,15 +529,14 @@ export class View implements IView
 	public updateCollider():void
 	{
 		if (!this.disableMouseEvents) {
-			if (!this._shareContext) {
-				if (this._htmlElement == this._mouseManager._iActiveDiv)
-					this._mouseManager._iCollision = this.getViewCollision(this._pMouseX, this._pMouseY, this);
-			} else {
-				var collidingObject:PickingCollision = this.getViewCollision(this._pMouseX, this._pMouseY, this);
-
-				if (this.layeredView || this._mouseManager._iCollision == null || collidingObject.rayEntryDistance < this._mouseManager._iCollision.rayEntryDistance)
-					this._mouseManager._iCollision = collidingObject;
-			}
+			// if (!this._pRenderer.shareContext) {
+				this._mouseManager._iCollision = this.getViewCollision(this._pMouseX, this._pMouseY, this);
+			// } else {
+			// 	var collidingObject:PickingCollision = this.getViewCollision(this._pMouseX, this._pMouseY, this);
+			//
+			// 	if (this.layeredView || this._mouseManager._iCollision == null || collidingObject.rayEntryDistance < this._mouseManager._iCollision.rayEntryDistance)
+			// 		this._mouseManager._iCollision = collidingObject;
+			// }
 		}
 	}
 	

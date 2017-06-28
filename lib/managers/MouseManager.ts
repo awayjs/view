@@ -16,7 +16,7 @@ export class MouseManager
 
 	private _viewLookup:Array<View> = new Array<View>();
 
-	public _iActiveDiv:HTMLDivElement;
+	public _iActiveView:View;
 	public _iUpdateDirty:boolean;
 	public _iCollision:PickingCollision;
 	
@@ -57,6 +57,20 @@ export class MouseManager
 		this.onMouseWheelDelegate = (event) => this.onMouseWheel(event);
 		this.onMouseOverDelegate = (event) => this.onMouseOver(event);
 		this.onMouseOutDelegate = (event) => this.onMouseOut(event);
+
+		if (document) {
+			document.addEventListener("click", this.onClickDelegate);
+			document.addEventListener("dblclick", this.onDoubleClickDelegate);
+			document.addEventListener("touchstart", this.onMouseDownDelegate);
+			document.addEventListener("mousedown", this.onMouseDownDelegate);
+			document.addEventListener("touchmove", this.onMouseMoveDelegate);
+			document.addEventListener("mousemove", this.onMouseMoveDelegate);
+			document.addEventListener("mouseup", this.onMouseUpDelegate);
+			document.addEventListener("touchend", this.onMouseUpDelegate);
+			document.addEventListener("mousewheel", this.onMouseWheelDelegate);
+			document.addEventListener("mouseover", this.onMouseOverDelegate);
+			document.addEventListener("mouseout", this.onMouseOutDelegate);
+		}
 	}
 
 	public static getInstance():MouseManager
@@ -130,39 +144,14 @@ export class MouseManager
 
 	public registerView(view:View):void
 	{
-		if(view && view.htmlElement) {
-			view.htmlElement.addEventListener("click", this.onClickDelegate);
-			view.htmlElement.addEventListener("dblclick", this.onDoubleClickDelegate);
-			view.htmlElement.addEventListener("touchstart", this.onMouseDownDelegate);
-			view.htmlElement.addEventListener("mousedown", this.onMouseDownDelegate);
-			view.htmlElement.addEventListener("touchmove", this.onMouseMoveDelegate);
-			view.htmlElement.addEventListener("mousemove", this.onMouseMoveDelegate);
-			view.htmlElement.addEventListener("mouseup", this.onMouseUpDelegate);
-			view.htmlElement.addEventListener("touchend", this.onMouseUpDelegate);
-			view.htmlElement.addEventListener("mousewheel", this.onMouseWheelDelegate);
-			view.htmlElement.addEventListener("mouseover", this.onMouseOverDelegate);
-			view.htmlElement.addEventListener("mouseout", this.onMouseOutDelegate);
+		if(view)
 			this._viewLookup.push(view);
-		}
 	}
 
 	public unregisterView(view:View):void
 	{
-		if(view && view.htmlElement) {
-			view.htmlElement.removeEventListener("click", this.onClickDelegate);
-			view.htmlElement.removeEventListener("dblclick", this.onDoubleClickDelegate);
-			view.htmlElement.removeEventListener("touchstart", this.onMouseDownDelegate);
-			view.htmlElement.removeEventListener("mousedown", this.onMouseDownDelegate);
-			view.htmlElement.removeEventListener("touchmove", this.onMouseMoveDelegate);
-			view.htmlElement.removeEventListener("mousemove", this.onMouseMoveDelegate);
-			view.htmlElement.removeEventListener("touchend", this.onMouseUpDelegate);
-			view.htmlElement.removeEventListener("mouseup", this.onMouseUpDelegate);
-			view.htmlElement.removeEventListener("mousewheel", this.onMouseWheelDelegate);
-			view.htmlElement.removeEventListener("mouseover", this.onMouseOverDelegate);
-			view.htmlElement.removeEventListener("mouseout", this.onMouseOutDelegate);
-
+		if(view)
 			this._viewLookup.slice(this._viewLookup.indexOf(view), 1);
-		}
 	}
 
 	public addEventsForViewBinary(touchMessage:ArrayBuffer, viewIdx:number=0):void
@@ -231,8 +220,6 @@ export class MouseManager
 				}
 			}
 		}
-		// set the target in order to have a collision
-		newTouchEvent.target = this._viewLookup[viewIdx].htmlElement;
 
 		//console.log("Touch ID:"+touchtype+" activeTouchID "+activeTouchID+" numTouches "+numTouches+" x"+x+" y"+y);
 		/*
@@ -315,7 +302,6 @@ export class MouseManager
 
 
 		}
-		newTouchEvent.target=this._viewLookup[viewIdx].htmlElement;
 		if(touchtype==0){//mousedown
 			this.onMouseDown(newTouchEvent);
 		}
@@ -395,8 +381,6 @@ export class MouseManager
 
 	private onMouseOut(event):void
 	{
-		this._iActiveDiv = null;
-
 		this.updateColliders(event);
 
 		if (this._iCollision)
@@ -405,8 +389,6 @@ export class MouseManager
 
 	private onMouseOver(event):void
 	{
-		this._iActiveDiv = <HTMLDivElement> event.target;
-
 		this.updateColliders(event);
 
 		if (this._iCollision)
@@ -432,8 +414,6 @@ export class MouseManager
 	private onMouseDown(event):void
 	{
 		event.preventDefault();
-
-		this._iActiveDiv = <HTMLDivElement> event.target;
 
 		this.updateColliders(event);
 
@@ -463,33 +443,31 @@ export class MouseManager
 	private updateColliders(event):void
 	{
 		var view:View;
-		var bounds:ClientRect;
 		var mouseX:number = (event.clientX != null)? event.clientX : event.changedTouches[0].clientX;
 		var mouseY:number = (event.clientY != null)? event.clientY : event.changedTouches[0].clientY;
 		var len:number = this._viewLookup.length;
 		for (var i:number = 0; i < len; i++) {
 			view = this._viewLookup[i];
 			view._pTouchPoints.length = 0;
-			bounds = view.htmlElement.getBoundingClientRect();
 
 			if (event.touches) {
 				var touch;
 				var len:number = event.touches.length;
 				for (var i:number = 0; i < len; i++) {
 					touch = event.touches[i];
-					view._pTouchPoints.push(new TouchPoint(touch.clientX + bounds.left, touch.clientY + bounds.top, touch.identifier));
+					view._pTouchPoints.push(new TouchPoint(touch.clientX + view.x, touch.clientY + view.y, touch.identifier));
 				}
 			}
 
 			if (this._iUpdateDirty)
 				continue;
 
-			if (mouseX < bounds.left || mouseX > bounds.right || mouseY < bounds.top || mouseY > bounds.bottom) {
+			if (mouseX < view.x || mouseX > view.x + view.width || mouseY < view.y || mouseY > view.y + view.height) {
 				view._pMouseX = null;
 				view._pMouseY = null;
 			} else {
-				view._pMouseX = mouseX + bounds.left;
-				view._pMouseY = mouseY + bounds.top;
+				view._pMouseX = mouseX + view.x;
+				view._pMouseY = mouseY + view.y;
 
 				view.updateCollider();
 
