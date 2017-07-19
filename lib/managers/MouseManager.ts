@@ -15,6 +15,7 @@ export class MouseManager
 	private static _instance:MouseManager;
 
 	private _viewLookup:Array<View> = new Array<View>();
+	private _containerLookup:Array<HTMLElement> = new Array<HTMLElement>();
 
 	public _iActiveView:View;
 	public _iUpdateDirty:boolean;
@@ -57,19 +58,42 @@ export class MouseManager
 		this.onMouseWheelDelegate = (event) => this.onMouseWheel(event);
 		this.onMouseOverDelegate = (event) => this.onMouseOver(event);
 		this.onMouseOutDelegate = (event) => this.onMouseOut(event);
+	}
 
-		if (document) {
-			document.addEventListener("click", this.onClickDelegate);
-			document.addEventListener("dblclick", this.onDoubleClickDelegate);
-			document.addEventListener("touchstart", this.onMouseDownDelegate);
-			document.addEventListener("mousedown", this.onMouseDownDelegate);
-			document.addEventListener("touchmove", this.onMouseMoveDelegate);
-			document.addEventListener("mousemove", this.onMouseMoveDelegate);
-			document.addEventListener("mouseup", this.onMouseUpDelegate);
-			document.addEventListener("touchend", this.onMouseUpDelegate);
-			document.addEventListener("mousewheel", this.onMouseWheelDelegate);
-			document.addEventListener("mouseover", this.onMouseOverDelegate);
-			document.addEventListener("mouseout", this.onMouseOutDelegate);
+	public registerContainer(container:HTMLElement):void
+	{
+		if(container && this._containerLookup.indexOf(container) == -1) {
+			container.addEventListener("click", this.onClickDelegate);
+			container.addEventListener("dblclick", this.onDoubleClickDelegate);
+			container.addEventListener("touchstart", this.onMouseDownDelegate);
+			container.addEventListener("mousedown", this.onMouseDownDelegate);
+			container.addEventListener("touchmove", this.onMouseMoveDelegate);
+			container.addEventListener("mousemove", this.onMouseMoveDelegate);
+			container.addEventListener("mouseup", this.onMouseUpDelegate);
+			container.addEventListener("touchend", this.onMouseUpDelegate);
+			container.addEventListener("mousewheel", this.onMouseWheelDelegate);
+			container.addEventListener("mouseover", this.onMouseOverDelegate);
+			container.addEventListener("mouseout", this.onMouseOutDelegate);
+			this._containerLookup.push(container);
+		}
+	}
+
+	public unregisterContainer(container:HTMLElement):void
+	{
+		if(container && this._containerLookup.indexOf(container) != -1) {
+			container.removeEventListener("click", this.onClickDelegate);
+			container.removeEventListener("dblclick", this.onDoubleClickDelegate);
+			container.removeEventListener("touchstart", this.onMouseDownDelegate);
+			container.removeEventListener("mousedown", this.onMouseDownDelegate);
+			container.removeEventListener("touchmove", this.onMouseMoveDelegate);
+			container.removeEventListener("mousemove", this.onMouseMoveDelegate);
+			container.removeEventListener("touchend", this.onMouseUpDelegate);
+			container.removeEventListener("mouseup", this.onMouseUpDelegate);
+			container.removeEventListener("mousewheel", this.onMouseWheelDelegate);
+			container.removeEventListener("mouseover", this.onMouseOverDelegate);
+			container.removeEventListener("mouseout", this.onMouseOutDelegate);
+
+			this._containerLookup.slice(this._containerLookup.indexOf(container), 1);
 		}
 	}
 

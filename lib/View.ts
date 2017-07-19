@@ -69,13 +69,12 @@ export class View implements IView
 		this._onProjectionChangedDelegate = (event:CameraEvent) => this._onProjectionChanged(event);
 		this._onViewportUpdatedDelegate = (event:RendererEvent) => this._onViewportUpdated(event);
 		this._onScissorUpdatedDelegate = (event:RendererEvent) => this._onScissorUpdated(event);
+		this._mouseManager = MouseManager.getInstance();
+		this._mouseManager.registerView(this);
 
 		this.scene = scene || new Scene();
 		this.camera = camera || new Camera();
 		this.renderer = renderer || new DefaultRenderer();
-
-		this._mouseManager = MouseManager.getInstance();
-		this._mouseManager.registerView(this);
 
 //			if (this._shareContext)
 //				this._mouse3DManager.addViewLayer(this);
@@ -180,12 +179,14 @@ export class View implements IView
 			this._pRenderer.dispose();
 			this._pRenderer.removeEventListener(RendererEvent.VIEWPORT_UPDATED, this._onViewportUpdatedDelegate);
 			this._pRenderer.removeEventListener(RendererEvent.SCISSOR_UPDATED, this._onScissorUpdatedDelegate);
+			this._mouseManager.unregisterContainer(this._pRenderer.stage.container);
 		}
 
 		this._pRenderer = value;
 
 		this._pRenderer.addEventListener(RendererEvent.VIEWPORT_UPDATED, this._onViewportUpdatedDelegate);
 		this._pRenderer.addEventListener(RendererEvent.SCISSOR_UPDATED, this._onScissorUpdatedDelegate);
+		this._mouseManager.registerContainer(this._pRenderer.stage.container);
 
 		//reset back buffer
 		this._pRenderer._iBackgroundR = ((this._backgroundColor >> 16) & 0xff)/0xff;
