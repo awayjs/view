@@ -494,7 +494,7 @@ export class View implements IView
 
 	public unproject(sX:number, sY:number, sZ:number, target:Vector3D = null):Vector3D
 	{
-		return this._pCamera.unproject((2*sX - this._pRenderer.width)/this._pRenderer.viewPort.width, (2*sY - this._pRenderer.height)/this._pRenderer.viewPort.height, sZ, target);
+		return this._pCamera.unproject((2*sX - this._pRenderer.viewPort.width)/this._pRenderer.viewPort.width, (2*sY - this._pRenderer.viewPort.height)/this._pRenderer.viewPort.height, sZ, target);
 	}
 
 	/* TODO: implement Touch3DManager
