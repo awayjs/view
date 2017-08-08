@@ -193,12 +193,17 @@ export class ViewImage2D extends Image2D
 	 *                       restriction does not apply to AIR content in the
 	 *                       application security sandbox.
 	 */
-	public draw(source:DisplayObject, matrix?:Matrix, colorTransform?:ColorTransform)
+	public draw(source:DisplayObject, matrix:Matrix = null, colorTransform:ColorTransform = null)
 	{
 		var root:DisplayObjectContainer = new DisplayObjectContainer();
 		root.addChild(source);
-		root.transform.scaleTo(matrix.a, -matrix.d, 1);
-		root.transform.moveTo(matrix.tx, matrix.ty, 0);
+
+		if (matrix) {
+			root.transform.scaleTo(matrix.a, -matrix.d, 1);
+			root.transform.moveTo(matrix.tx, matrix.ty, 0);
+		}
+		root.transform.colorTransform = colorTransform;
+
 		this._view.scene.addChild(root);
 		this._view.setPartition(root, new SceneGraphPartition(root));
 		//clone.transform.
