@@ -4,9 +4,9 @@ import {Stage} from "@awayjs/stage";
 
 import {DefaultRenderer} from "@awayjs/renderer";
 
-import {Image2D} from "@awayjs/graphics";
+import {BitmapImage2D, BlendMode} from "@awayjs/graphics";
 
-import {DisplayObject, DisplayObjectContainer, Camera, HoverController} from "@awayjs/scene";
+import {Scene, DisplayObject, DisplayObjectContainer, Camera, HoverController} from "@awayjs/scene";
 
 import {SceneGraphPartition} from "../partition/SceneGraphPartition";
 
@@ -15,14 +15,14 @@ import {View} from "../View";
 /**
  * 
  */
-export class ViewImage2D extends Image2D
+export class ViewImage2D extends BitmapImage2D
 {
 	public static assetType:string = "[image ViewImage2D]";
 
 	private _view:View;
 
-	private _transparent:boolean;
 	private _fillColor:number;
+	private _stage:Stage;
 
 	/**
 	 *
@@ -33,40 +33,6 @@ export class ViewImage2D extends Image2D
 		return ViewImage2D.assetType;
 	}
 
-
-	/**
-	 * Defines whether the bitmap image supports per-pixel transparency. You can
-	 * set this value only when you construct a BitmapImage2D object by passing in
-	 * <code>true</code> for the <code>transparent</code> parameter of the
-	 * constructor. Then, after you create a BitmapImage2D object, you can check
-	 * whether it supports per-pixel transparency by determining if the value of
-	 * the <code>transparent</code> property is <code>true</code>.
-	 */
-	public get transparent():boolean
-	{
-		return this._transparent;
-	}
-
-	public set transparent(value:boolean)
-	{
-		this._transparent = value;
-	}
-
-	/**
-	 *
-	 */
-	public get fillColor():number
-	{
-		return this._fillColor;
-	}
-
-	public set fillColor(value:number)
-	{
-		this._fillColor = value;
-
-		this._view.backgroundAlpha = this._transparent? ( value & 0xff000000 ) >>> 24 : 1;
-		this._view.backgroundColor = value & 0xffffff;
-	}
 	/**
 	 * Creates a BitmapImage2D object with a specified width and height. If you
 	 * specify a value for the <code>fillColor</code> parameter, every pixel in
@@ -95,19 +61,24 @@ export class ViewImage2D extends Image2D
 	 *                    bitmap image area. The default value is
 	 *                    0xFFFFFFFF(solid white).
 	 */
-	constructor(width:number, height:number, transparent:boolean=true, fillColor:number=0xffffffff, stage:Stage = null)
+	constructor(width:number, height:number, transparent:boolean=true, fillColor:number=0xffffffff, powerOfTwo:boolean = true, stage:Stage = null)
 	{
-		super(width, height, false);
+		super(width, height, transparent, fillColor, powerOfTwo);
 
+		this._fillColor = fillColor;
+		this._stage = stage;
+	}
+
+	private createView()
+	{
 		//create the view
-		this._view = new View(new DefaultRenderer(stage));
+		this._view = new View(new DefaultRenderer(this._stage));
 		this._view.disableMouseEvents = true;
 		this._view.width = this._rect.width;
 		this._view.height = this._rect.height;
-		this._transparent = transparent;
-		this._fillColor = fillColor;
-		this._view.backgroundAlpha = transparent? ( fillColor & 0xff000000 ) >>> 24 : 1;
-		this._view.backgroundColor = fillColor & 0xffffff;
+		this._fillColor = this._fillColor;
+		this._view.backgroundAlpha = this._transparent? ( this._fillColor & 0xff000000 ) >>> 24 : 1;
+		this._view.backgroundColor = this._fillColor & 0xffffff;
 
 		this._view.renderer.renderableSorter = null;//new RenderableSort2D();
 
@@ -121,19 +92,6 @@ export class ViewImage2D extends Image2D
 		projection.setStageRect(0, 0, this._rect.width, this._rect.height);
 
 		this._view.camera.projection = projection;
-	}
-
-	/**
-	 * Returns a new BitmapImage2D object that is a clone of the original instance
-	 * with an exact copy of the contained bitmap.
-	 *
-	 * @return A new BitmapImage2D object that is identical to the original.
-	 */
-	public clone():ViewImage2D
-	{
-		var t:ViewImage2D = new ViewImage2D(this.width, this.height);
-		t.draw(this._view.scene);
-		return t;
 	}
 
 	/**
@@ -234,22 +192,42 @@ export class ViewImage2D extends Image2D
 	 *                       restriction does not apply to AIR content in the
 	 *                       application security sandbox.
 	 */
-	public draw(source:DisplayObject, matrix:Matrix = null, colorTransform:ColorTransform = null)
+	public draw(source:DisplayObject, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean);
+	public draw(source:BitmapImage2D, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean);
+	public draw(source:HTMLElement, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean);
+	public draw(source:Uint8Array, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean);
+	public draw(source:any, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean):void
 	{
-		var root:DisplayObjectContainer = new DisplayObjectContainer();
-		root.addChild(source);
+		if (source instanceof DisplayObject) {
+			var root:DisplayObjectContainer = new DisplayObjectContainer();
+			root.addChild(source);
 
-		if (matrix) {
-			root.transform.scaleTo(matrix.a, -matrix.d, 1);
-			root.transform.moveTo(matrix.tx, matrix.ty, 0);
+			if (matrix) {
+				root.transform.scaleTo(matrix.a, -matrix.d, 1);
+				root.transform.moveTo(matrix.tx, matrix.ty, 0);
+			}
+			root.transform.colorTransform = colorTransform;
+
+			if (!this._view)
+				this.createView();
+
+			this._view.scene = new Scene();
+			this._view.scene.addChild(root);
+			this._view.setPartition(root, new SceneGraphPartition(root));
+
+			//save snapshot if unlocked
+			if (!this._locked)
+				this._view.renderer.queueSnapshot(this);
+
+			this._view.renderer.disableClear = !this._locked;
+
+			//render
+			this._view.renderer._iRender(this._view.camera.projection, this._view, this);
+
+			return;
 		}
-		root.transform.colorTransform = colorTransform;
 
-		this._view.scene.addChild(root);
-		this._view.setPartition(root, new SceneGraphPartition(root));
-
-		//render
-		this._view.renderer._iRender(this._view.camera.projection, this._view, this);
+		super.draw(source, matrix, colorTransform, blendMode, clipRect, smoothing);
 	}
 
 	/**
@@ -262,9 +240,11 @@ export class ViewImage2D extends Image2D
 	{
 		super._setSize(width, height);
 
-		this._view.width = this._rect.width;
-		this._view.height = this._rect.height;
-		this._view.camera.projection.setViewRect(0, 0, this._rect.width, this._rect.height);
-		this._view.camera.projection.setStageRect(0, 0, this._rect.width, this._rect.height);
+		if (this._view) {
+			this._view.width = this._rect.width;
+			this._view.height = this._rect.height;
+			this._view.camera.projection.setViewRect(0, 0, this._rect.width, this._rect.height);
+			this._view.camera.projection.setStageRect(0, 0, this._rect.width, this._rect.height);
+		}
 	}
 }
