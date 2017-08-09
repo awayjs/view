@@ -21,6 +21,9 @@ export class ViewImage2D extends Image2D
 
 	private _view:View;
 
+	private _transparent:boolean;
+	private _fillColor:number;
+
 	/**
 	 *
 	 * @returns {string}
@@ -30,6 +33,40 @@ export class ViewImage2D extends Image2D
 		return ViewImage2D.assetType;
 	}
 
+
+	/**
+	 * Defines whether the bitmap image supports per-pixel transparency. You can
+	 * set this value only when you construct a BitmapImage2D object by passing in
+	 * <code>true</code> for the <code>transparent</code> parameter of the
+	 * constructor. Then, after you create a BitmapImage2D object, you can check
+	 * whether it supports per-pixel transparency by determining if the value of
+	 * the <code>transparent</code> property is <code>true</code>.
+	 */
+	public get transparent():boolean
+	{
+		return this._transparent;
+	}
+
+	public set transparent(value:boolean)
+	{
+		this._transparent = value;
+	}
+
+	/**
+	 *
+	 */
+	public get fillColor():number
+	{
+		return this._fillColor;
+	}
+
+	public set fillColor(value:number)
+	{
+		this._fillColor = value;
+
+		this._view.backgroundAlpha = this._transparent? ( value & 0xff000000 ) >>> 24 : 1;
+		this._view.backgroundColor = value & 0xffffff;
+	}
 	/**
 	 * Creates a BitmapImage2D object with a specified width and height. If you
 	 * specify a value for the <code>fillColor</code> parameter, every pixel in
@@ -58,7 +95,7 @@ export class ViewImage2D extends Image2D
 	 *                    bitmap image area. The default value is
 	 *                    0xFFFFFFFF(solid white).
 	 */
-	constructor(width:number, height:number, stage:Stage = null)
+	constructor(width:number, height:number, transparent:boolean=true, fillColor:number=0xffffffff, stage:Stage = null)
 	{
 		super(width, height, false);
 
@@ -67,6 +104,10 @@ export class ViewImage2D extends Image2D
 		this._view.disableMouseEvents = true;
 		this._view.width = this._rect.width;
 		this._view.height = this._rect.height;
+		this._transparent = transparent;
+		this._fillColor = fillColor;
+		this._view.backgroundAlpha = transparent? ( fillColor & 0xff000000 ) >>> 24 : 1;
+		this._view.backgroundColor = fillColor & 0xffffff;
 
 		this._view.renderer.renderableSorter = null;//new RenderableSort2D();
 
@@ -206,9 +247,6 @@ export class ViewImage2D extends Image2D
 
 		this._view.scene.addChild(root);
 		this._view.setPartition(root, new SceneGraphPartition(root));
-		//clone.transform.
-
-		this._view.backgroundAlpha = 0;
 
 		//render
 		this._view.renderer._iRender(this._view.camera.projection, this._view, this);
