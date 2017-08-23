@@ -44,26 +44,21 @@ export class SceneGraphPartition extends PartitionBase
 		return this._sceneGraphNodePool.getAbstraction(node._entity.parent);
 	}
 
-	/**
-	 * @internal
-	 */
-	public _iRegisterEntity(entity:IEntity):void
-	{
-		super._iRegisterEntity(entity);
 
-		if (entity.isContainer)
-			this.iMarkForUpdate(this._sceneGraphNodePool.getAbstraction(entity));
+	public updateEntity(entity:IEntity):void
+	{
+		super.updateEntity(entity);
+
+		if(entity.isContainer)
+			this.updateNode(this._sceneGraphNodePool.getAbstraction(entity));
 	}
 
-	/**
-	 * @internal
-	 */
-	public _iUnregisterEntity(entity:IEntity):void
+	public clearEntity(entity:IEntity):void
 	{
-		super._iUnregisterEntity(entity);
+		super.clearEntity(entity);
 
-		if (entity.isContainer)
-			this.iRemoveEntity(this._sceneGraphNodePool.getAbstraction(entity));
+		if(entity.isContainer)
+			this.clearNode(this._sceneGraphNodePool.getAbstraction(entity));
 	}
 }
 

@@ -264,7 +264,7 @@ export class View implements IView
 		this._pCamera = value;
 
 		if (this._pScene)
-			(<PartitionBase> this._partitions[this._pScene.id])._iRegisterEntity(this._pCamera);
+			(<PartitionBase> this._partitions[this._pScene.id]).invalidateEntity(this._pCamera);
 
 		this._pCamera.addEventListener(CameraEvent.PROJECTION_CHANGED, this._onProjectionChangedDelegate);
 		this._scissorDirty = true;
@@ -299,7 +299,7 @@ export class View implements IView
 		this._pScene._iRegisterView(this);
 
 		if (this._pCamera)
-			(<PartitionBase> this._partitions[this._pScene.id])._iRegisterEntity(this._pCamera);
+			(<PartitionBase> this._partitions[this._pScene.id]).invalidateEntity(this._pCamera);
 	}
 
 	/**
@@ -559,11 +559,11 @@ export class View implements IView
 
 	public registerObject(displayObject:DisplayObject)
 	{
-		this.getPartition(displayObject)._iRegisterEntity(displayObject);
+		this.getPartition(displayObject).invalidateEntity(displayObject);
 	}
 
 	public unRegisterObject(displayObject:DisplayObject)
 	{
-		this.getPartition(displayObject)._iUnregisterEntity(displayObject);
+		this.getPartition(displayObject).clearEntity(displayObject);
 	}
 }

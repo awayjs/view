@@ -18,8 +18,7 @@ export class PartitionBase
 	public _root:IEntity;
 	public _rootNode:IContainerNode;
 
-	private _updatesMade:Boolean = false;
-	private _updateQueue:DisplayObjectNode;
+	private _updateQueue:Object = {};
 
 	public get root():IEntity
 	{
@@ -47,55 +46,50 @@ export class PartitionBase
 
 	public traverse(traverser:TraverserBase):void
 	{
-		if (this._updatesMade)
-			this.updateEntities();
+		this.updateEntities();
 
 		if (this._rootNode)
 			this._rootNode.acceptTraverser(traverser);
 	}
 
-	public iMarkForUpdate(node:DisplayObjectNode):void
+	public invalidateEntity(entity:IEntity):void
 	{
-		var t:DisplayObjectNode = this._updateQueue;
-
-		while (t) {
-			if (node == t)
-				return;
-
-			t = t._iUpdateQueueNext;
-		}
-
-		node._iUpdateQueueNext = this._updateQueue;
-
-		this._updateQueue = node;
-		this._updatesMade = true;
+		this._updateQueue[entity.id] = entity;
 	}
 
-	public iRemoveEntity(node:DisplayObjectNode):void
+	public updateEntity(entity:IEntity):void
 	{
-		var t:DisplayObjectNode;
+		entity._iInternalUpdate();
 
+		if (entity.isEntity)
+			this.updateNode(this.getAbstraction(entity));
+	}
+
+	public updateNode(node:DisplayObjectNode):void
+	{
+		var targetNode:IContainerNode = this.findParentForNode(node);
+
+		if (node.parent != targetNode) {
+			if (node.parent)
+				node.parent.iRemoveNode(node);
+			targetNode.iAddNode(node);
+		}
+	}
+
+	public clearEntity(entity:IEntity):void
+	{
+		delete this._updateQueue[entity.id];
+
+		if(entity.isEntity)
+			this.clearNode(this.getAbstraction(entity));
+	}
+
+	public clearNode(node:DisplayObjectNode)
+	{
 		if (node.parent) {
 			node.parent.iRemoveNode(node);
 			node.parent = null;
 		}
-
-
-		if (node == this._updateQueue) {
-			this._updateQueue = node._iUpdateQueueNext;
-		} else {
-			t = this._updateQueue;
-			while (t && t._iUpdateQueueNext != node)
-				t = t._iUpdateQueueNext;
-
-			if (t)
-				t._iUpdateQueueNext = node._iUpdateQueueNext;
-		}
-
-		node._iUpdateQueueNext = null;
-
-		if (!this._updateQueue)
-			this._updatesMade = false;
 	}
 
 	/**
@@ -110,51 +104,14 @@ export class PartitionBase
 
 	private updateEntities():void
 	{
-		var node:DisplayObjectNode = this._updateQueue;
-		while (node) {
-			//required for controllers with autoUpdate set to true and queued events
-			node._entity._iInternalUpdate();
-			node = node._iUpdateQueueNext;
-		}
+		var entity:IEntity;
 
-		//reset head
-		node = this._updateQueue;
-		var targetNode:IContainerNode;
-		var t:DisplayObjectNode;
-		this._updateQueue = null;
-		this._updatesMade = false;
+		//required for controllers with autoUpdate set to true and queued events
+		for (var key in this._updateQueue)
+			this.updateEntity(this._updateQueue[key]);
 
-		do {
-			targetNode = this.findParentForNode(node);
-
-			if (node.parent != targetNode) {
-				if (node.parent)
-					node.parent.iRemoveNode(node);
-				targetNode.iAddNode(node);
-			}
-
-			t = node._iUpdateQueueNext;
-			node._iUpdateQueueNext = null;
-
-		} while ((node = t) != null);
-	}
-
-	/**
-	 * @internal
-	 */
-	public _iRegisterEntity(entity:IEntity):void
-	{
-		if (entity.isEntity)
-			this.iMarkForUpdate(this.getAbstraction(entity));
-	}
-
-	/*
-	 * @internal
-	 */
-	public _iUnregisterEntity(entity:IEntity):void
-	{
-		if (entity.isEntity)
-			this.iRemoveEntity(this.getAbstraction(entity));
+		//clear updateQueue
+		this._updateQueue = {};
 	}
 
 	public dispose():void

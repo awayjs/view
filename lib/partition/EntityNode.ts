@@ -105,7 +105,7 @@ export class EntityNode extends DisplayObjectNode
 	{
 		this.bounds.invalidate();
 
-		this._partition.iMarkForUpdate(this);
+		this._partition.invalidateEntity(this._entity);
 	}
 
 	private isIntersectingMasks(globalRayPosition:Vector3D, globalRayDirection:Vector3D, masks:Array<Array<IEntity>>):boolean
