@@ -486,8 +486,8 @@ export class View implements IView
 	public project(point3d:Vector3D):Vector3D
 	{
 		var v:Vector3D = this._pCamera.project(point3d);
-		v.x = v.x*this._pRenderer.viewPort.width/2 + this._pRenderer.width*this._pCamera.projection.originX;
-		v.y = v.y*this._pRenderer.viewPort.height/2 + this._pRenderer.height*this._pCamera.projection.originY;
+		v.x = (v.x*this._pRenderer.viewPort.width + this._pRenderer.viewPort.width)/2;
+		v.y = (v.y*this._pRenderer.viewPort.height + this._pRenderer.viewPort.height)/2;
 
 		return v;
 	}
