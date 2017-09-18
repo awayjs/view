@@ -26,8 +26,6 @@ export class RaycastPicker extends TraverserBase implements IPicker
 	private _testCollider:IPickingCollider;
 	private _ignoredEntities:Array<IEntity>;
 
-	private static isIE:boolean=!!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
-
 	private _entity:IEntity;
 	private _entities:Array<IEntity> = new Array<IEntity>();
 
@@ -124,7 +122,7 @@ export class RaycastPicker extends TraverserBase implements IPicker
 
 	private sortOnNearT(entity1:IEntity, entity2:IEntity):number
 	{
-		return entity1._iPickingCollision.rayEntryDistance > entity2._iPickingCollision.rayEntryDistance? 1 : -1;
+		return entity1._iPickingCollision.rayEntryDistance > entity2._iPickingCollision.rayEntryDistance? 1 : entity1._iPickingCollision.rayEntryDistance < entity2._iPickingCollision.rayEntryDistance?-1:0;
 	}
 
 	private getPickingCollision(view:View):PickingCollision
@@ -138,55 +136,27 @@ export class RaycastPicker extends TraverserBase implements IPicker
 		// ---------------------------------------------------------------------
 
 		this._bestCollision = null;
-		if (RaycastPicker.isIE)
-		{
-			var len:number = this._entities.length-1;
-			for (var i:number = len; i >=0; i--) {
-				this._entity = this._entities[i];
-				this._testCollision = this._entity._iPickingCollision;
-				if (this._bestCollision == null || this._testCollision.rayEntryDistance < this._bestCollision.rayEntryDistance) {
-					this._testCollider = view.getPartition(this._entity).getAbstraction(this._entity).pickingCollider;
-					if (this._testCollider) {
-						this._testCollision.rayEntryDistance = Number.MAX_VALUE;
-						this._entity._acceptTraverser(this);
-						// If a collision exists, update the collision data and stop all checks.
-						if (this._bestCollision && !this._findClosestCollision)
-							break;
-					} else if (!this._testCollision.rayOriginIsInsideBounds) {
-						// A bounds collision with no picking collider stops all checks.
-						// Note: a bounds collision with a ray origin inside its bounds is ONLY ever used
-						// to enable the detection of a corresponsding triangle collision.
-						// Therefore, bounds collisions with a ray origin inside its bounds can be ignored
-						// if it has been established that there is NO triangle collider to test
-						this._bestCollision = this._testCollision;
-						break;
-					}
-				}
-			}
-		}
-		else{
 
-			var len:number = this._entities.length;
-			for (var i:number = 0; i < len; i++) {
-				this._entity = this._entities[i];
-				this._testCollision = this._entity._iPickingCollision;
-				if (this._bestCollision == null || this._testCollision.rayEntryDistance < this._bestCollision.rayEntryDistance) {
-					this._testCollider = view.getPartition(this._entity).getAbstraction(this._entity).pickingCollider;
-					if (this._testCollider) {
-						this._testCollision.rayEntryDistance = Number.MAX_VALUE;
-						this._entity._acceptTraverser(this);
-						// If a collision exists, update the collision data and stop all checks.
-						if (this._bestCollision && !this._findClosestCollision)
-							break;
-					} else if (!this._testCollision.rayOriginIsInsideBounds) {
-						// A bounds collision with no picking collider stops all checks.
-						// Note: a bounds collision with a ray origin inside its bounds is ONLY ever used
-						// to enable the detection of a corresponsding triangle collision.
-						// Therefore, bounds collisions with a ray origin inside its bounds can be ignored
-						// if it has been established that there is NO triangle collider to test
-						this._bestCollision = this._testCollision;
+		var len:number = this._entities.length;
+		for (var i:number = 0; i < len; i++) {
+			this._entity = this._entities[i];
+			this._testCollision = this._entity._iPickingCollision;
+			if (this._bestCollision == null || this._testCollision.rayEntryDistance < this._bestCollision.rayEntryDistance) {
+				this._testCollider = view.getPartition(this._entity).getAbstraction(this._entity).pickingCollider;
+				if (this._testCollider) {
+					this._testCollision.rayEntryDistance = Number.MAX_VALUE;
+					this._entity._acceptTraverser(this);
+					// If a collision exists, update the collision data and stop all checks.
+					if (this._bestCollision && !this._findClosestCollision)
 						break;
-					}
+				} else if (!this._testCollision.rayOriginIsInsideBounds) {
+					// A bounds collision with no picking collider stops all checks.
+					// Note: a bounds collision with a ray origin inside its bounds is ONLY ever used
+					// to enable the detection of a corresponsding triangle collision.
+					// Therefore, bounds collisions with a ray origin inside its bounds can be ignored
+					// if it has been established that there is NO triangle collider to test
+					this._bestCollision = this._testCollision;
+					break;
 				}
 			}
 		}
