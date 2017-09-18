@@ -131,8 +131,11 @@ export class MouseManager
 
 			// bubble event up the heirarchy until the top level parent is reached
 			while (dispatcher) {
-				if (dispatcher._iIsMouseEnabled())
+				//console.log("dispatcher", dispatcher, dispatcher.adapter.constructor.name);
+				if (dispatcher._iIsMouseEnabled()){
 					dispatcher.dispatchEvent(event);
+
+				}
 
 				dispatcher = dispatcher.parent;
 			}
