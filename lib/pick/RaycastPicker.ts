@@ -122,6 +122,7 @@ export class RaycastPicker extends TraverserBase implements IPicker
 
 	private sortOnNearT(entity1:IEntity, entity2:IEntity):number
 	{
+		//return entity1._iPickingCollision.rayEntryDistance > entity2._iPickingCollision.rayEntryDistance? 1 : -1;// use this for Icycle;
 		return entity1._iPickingCollision.rayEntryDistance > entity2._iPickingCollision.rayEntryDistance? 1 : entity1._iPickingCollision.rayEntryDistance < entity2._iPickingCollision.rayEntryDistance?-1:0;
 	}
 
