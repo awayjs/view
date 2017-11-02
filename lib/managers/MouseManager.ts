@@ -1,8 +1,8 @@
 import {Vector3D} from "@awayjs/core";
 
-import {PickingCollision} from "@awayjs/graphics";
+import {PickingCollision, TouchPoint} from "@awayjs/graphics";
 
-import {DisplayObject, TouchPoint, MouseEvent, FrameScriptManager} from "@awayjs/scene";
+import {DisplayObject, MouseEvent, FrameScriptManager} from "@awayjs/scene";
 
 import {View} from "../View";
 

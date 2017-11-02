@@ -1,8 +1,8 @@
 import {Vector3D, getTimer} from "@awayjs/core";
 
-import {IEntity, TraverserBase, PickingCollision} from "@awayjs/graphics";
+import {IEntity, TouchPoint, IView, TraverserBase, PickingCollision} from "@awayjs/graphics";
 
-import {DisplayObject, TouchPoint, Camera, CameraEvent, IView, Scene} from "@awayjs/scene";
+import {Camera, CameraEvent, Scene} from "@awayjs/scene";
 
 import {RendererEvent, DefaultRenderer, RendererBase} from "@awayjs/renderer";
 
@@ -110,12 +110,12 @@ export class View implements IView
 		}
 	}
 
-	public getCollider(entity:DisplayObject):IPickingCollider
+	public getCollider(entity:IEntity):IPickingCollider
 	{
 		return this.getPartition(entity).getAbstraction(entity).pickingCollider;
 	}
 
-	public setCollider(entity:DisplayObject, collider:IPickingCollider)
+	public setCollider(entity:IEntity, collider:IPickingCollider)
 	{
 		this.getPartition(entity).getAbstraction(entity).pickingCollider = collider;
 	}
@@ -135,24 +135,24 @@ export class View implements IView
 		return this._pTouchPoints;
 	}
 
-	public getLocalMouseX(displayObject:DisplayObject):number
+	public getLocalMouseX(entity:IEntity):number
 	{
-		return displayObject.transform.inverseConcatenatedMatrix3D.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).x;
+		return entity.transform.inverseConcatenatedMatrix3D.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).x;
 	}
 
-	public getLocalMouseY(displayObject:DisplayObject):number
+	public getLocalMouseY(entity:IEntity):number
 	{
-		return displayObject.transform.inverseConcatenatedMatrix3D.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).y;
+		return entity.transform.inverseConcatenatedMatrix3D.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).y;
 	}
 
-	public getLocalTouchPoints(displayObject:DisplayObject):Array<TouchPoint>
+	public getLocalTouchPoints(entity:IEntity):Array<TouchPoint>
 	{
 		var localPosition:Vector3D;
 		var localTouchPoints:Array<TouchPoint> = new Array<TouchPoint>();
 
 		var len:number = this._pTouchPoints.length;
 		for (var i:number = 0; i < len; i++) {
-			localPosition = displayObject.transform.inverseConcatenatedMatrix3D.transformVector(this.unproject(this._pTouchPoints[i].x, this._pTouchPoints[i].y, 1000));
+			localPosition = entity.transform.inverseConcatenatedMatrix3D.transformVector(this.unproject(this._pTouchPoints[i].x, this._pTouchPoints[i].y, 1000));
 			localTouchPoints.push(new TouchPoint(localPosition.x, localPosition.y, this._pTouchPoints[i].id));
 		}
 
@@ -289,14 +289,14 @@ export class View implements IView
 			return;
 
 		if (this._pScene) {
-			this._pScene._iUnregisterView(this);
+			this._pScene._removeView(this);
 			(<PartitionBase> this._partitions[this._pScene.id]).dispose();
 		}
 
 		this._pScene = value;
 
 		this._partitions[this._pScene.id] = new BasicPartition(this._pScene);
-		this._pScene._iRegisterView(this);
+		this._pScene._addView(this);
 
 		if (this._pCamera)
 			(<PartitionBase> this._partitions[this._pScene.id]).invalidateEntity(this._pCamera);
@@ -422,7 +422,7 @@ export class View implements IView
 		//_touch3DManager.updateCollider();
 
 		//render the contents of the scene
-		this._pRenderer.render(this);
+		this._pRenderer.render(this._pCamera.projection, this);
 	}
 
 	/**
@@ -557,13 +557,13 @@ export class View implements IView
 			this._partitions[key].traverse(traverser);
 	}
 
-	public registerObject(displayObject:DisplayObject)
+	public invalidateEntity(entity:IEntity)
 	{
-		this.getPartition(displayObject).invalidateEntity(displayObject);
+		this.getPartition(entity).invalidateEntity(entity);
 	}
 
-	public unRegisterObject(displayObject:DisplayObject)
+	public clearEntity(entity:IEntity)
 	{
-		this.getPartition(displayObject).clearEntity(displayObject);
+		this.getPartition(entity).clearEntity(entity);
 	}
 }
