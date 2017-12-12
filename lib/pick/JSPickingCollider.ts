@@ -1,6 +1,8 @@
 import {Vector3D, Point} from "@awayjs/core";
 
-import {LineElements, TriangleElements, IMaterial, PickingCollision} from "@awayjs/graphics";
+import {IMaterial, PickingCollision} from "@awayjs/renderer";
+
+import {LineElements, TriangleElements} from "@awayjs/graphics";
 
 import {Billboard} from "@awayjs/scene";
 

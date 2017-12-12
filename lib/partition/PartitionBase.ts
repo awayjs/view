@@ -1,6 +1,6 @@
 import {IAssetClass} from "@awayjs/core";
 
-import {TraverserBase, IContainerNode, IEntity} from "@awayjs/graphics";
+import {TraverserBase, IContainerNode, IEntity} from "@awayjs/renderer";
 
 import {EntityNode} from "./EntityNode";
 import {IEntityNodeClass} from "./IEntityNodeClass";

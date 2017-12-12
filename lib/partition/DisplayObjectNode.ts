@@ -1,6 +1,6 @@
 import {AssetEvent, IAbstractionPool, AbstractionBase, Plane3D, Vector3D} from "@awayjs/core";
 
-import {TraverserBase, INode, IEntity} from "@awayjs/graphics";
+import {TraverserBase, INode, IEntity} from "@awayjs/renderer";
 
 import {DisplayObjectEvent, AxisAlignedBoundingBox, BoundingSphere, BoundingVolumeBase, BoundsType, NullBounds} from "@awayjs/scene";
 

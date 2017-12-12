@@ -1,4 +1,4 @@
-import {IEntity} from "@awayjs/graphics";
+import {IEntity} from "@awayjs/renderer";
 
 import {EntityNode} from "./EntityNode";
 import {PartitionBase} from "./PartitionBase";

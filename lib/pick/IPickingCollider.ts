@@ -1,4 +1,6 @@
-import {IMaterial, TriangleElements, LineElements, PickingCollision} from "@awayjs/graphics";
+import {IMaterial, PickingCollision} from "@awayjs/renderer";
+
+import {TriangleElements, LineElements} from "@awayjs/graphics";
 
 import {Billboard} from "@awayjs/scene";
 

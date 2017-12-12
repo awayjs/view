@@ -1,4 +1,4 @@
-import {INode} from "@awayjs/graphics";
+import {INode} from "@awayjs/renderer";
 
 import {DisplayObject} from "@awayjs/scene";
 

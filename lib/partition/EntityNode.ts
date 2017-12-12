@@ -1,6 +1,6 @@
 import {AssetEvent, Plane3D, Vector3D} from "@awayjs/core";
 
-import {TraverserBase, IEntity, PickingCollision} from "@awayjs/graphics";
+import {TraverserBase, IEntity, PickingCollision} from "@awayjs/renderer";
 
 import {DisplayObject, DisplayObjectEvent} from "@awayjs/scene";
 

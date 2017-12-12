@@ -1,6 +1,8 @@
 import {Vector3D} from "@awayjs/core";
 
-import {TraverserBase, INode, IEntity, TriangleElements, LineElements, Shape, PickingCollision} from "@awayjs/graphics";
+import {TraverserBase, INode, IEntity, PickingCollision} from "@awayjs/renderer";
+
+import {TriangleElements, LineElements, Shape} from "@awayjs/graphics";
 
 import {Billboard} from "@awayjs/scene";
 

@@ -1,10 +1,8 @@
 import {Vector3D, getTimer} from "@awayjs/core";
 
-import {IEntity, TouchPoint, IView, TraverserBase, PickingCollision} from "@awayjs/graphics";
-
 import {Camera, CameraEvent, Scene} from "@awayjs/scene";
 
-import {RendererEvent, DefaultRenderer, RendererBase} from "@awayjs/renderer";
+import {RendererEvent, DefaultRenderer, RendererBase, IEntity, TouchPoint, IView, TraverserBase, PickingCollision} from "@awayjs/renderer";
 
 import {IPicker} from "./pick/IPicker";
 import {IPickingCollider} from "./pick/IPickingCollider";

@@ -1,4 +1,4 @@
-import {TraverserBase} from "@awayjs/graphics";
+import {TraverserBase} from "@awayjs/renderer";
 
 import {EntityNode} from "./EntityNode";
 

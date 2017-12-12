@@ -1,10 +1,8 @@
 import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem} from "@awayjs/core";
 
-import {Stage} from "@awayjs/stage";
+import {Stage, BitmapImage2D, BlendMode} from "@awayjs/stage";
 
 import {DefaultRenderer} from "@awayjs/renderer";
-
-import {BitmapImage2D, BlendMode} from "@awayjs/graphics";
 
 import {Scene, DisplayObject, DisplayObjectContainer, Camera, HoverController} from "@awayjs/scene";
 

@@ -1,4 +1,4 @@
-import {TraverserBase, IContainerNode} from "@awayjs/graphics";
+import {TraverserBase, IContainerNode} from "@awayjs/renderer";
 
 import {DisplayObjectNode} from "./DisplayObjectNode";
 

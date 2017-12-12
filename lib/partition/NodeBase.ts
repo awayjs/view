@@ -1,6 +1,6 @@
 import {Plane3D, Vector3D} from "@awayjs/core";
 
-import {TraverserBase, IEntity, INode, IContainerNode} from "@awayjs/graphics";
+import {TraverserBase, IEntity, INode, IContainerNode} from "@awayjs/renderer";
 
 import {BoundingVolumeBase, NullBounds} from "@awayjs/scene";
 

@@ -1,6 +1,6 @@
 import {Vector3D} from "@awayjs/core";
 
-import {PickingCollision, TouchPoint} from "@awayjs/graphics";
+import {PickingCollision, TouchPoint} from "@awayjs/renderer";
 
 import {DisplayObject, MouseEvent, FrameScriptManager} from "@awayjs/scene";
 

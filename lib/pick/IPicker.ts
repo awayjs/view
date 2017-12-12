@@ -1,6 +1,6 @@
 import {Vector3D} from "@awayjs/core";
 
-import {PickingCollision} from "@awayjs/graphics";
+import {PickingCollision} from "@awayjs/renderer";
 
 import {View} from "../View";
 
