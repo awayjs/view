@@ -493,8 +493,8 @@ export class MouseManager
 				view._pMouseX = null;
 				view._pMouseY = null;
 			} else {
-				view._pMouseX = mouseX + view.x;
-				view._pMouseY = mouseY + view.y;
+				view._pMouseX = mouseX - view.x;
+				view._pMouseY = mouseY - view.y;
 
 				view.updateCollider();
 
