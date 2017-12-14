@@ -1,6 +1,6 @@
 import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem} from "@awayjs/core";
 
-import {Stage, BitmapImage2D, BlendMode} from "@awayjs/stage";
+import {Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode} from "@awayjs/stage";
 
 import {DefaultRenderer} from "@awayjs/renderer";
 
@@ -246,3 +246,5 @@ export class ViewImage2D extends BitmapImage2D
 		}
 	}
 }
+
+Stage.registerAbstraction(_Stage_BitmapImage2D, ViewImage2D);
