@@ -396,7 +396,7 @@ export class MouseManager
 	// Listeners.
 	// ---------------------------------------------------------------------
 
-	private onMouseMove(event):void
+	public onMouseMove(event):void
 	{
 		event.preventDefault();
 
@@ -438,7 +438,7 @@ export class MouseManager
 			this.queueDispatch(this._mouseDoubleClick, event);
 	}
 
-	private onMouseDown(event):void
+	public onMouseDown(event):void
 	{
 		event.preventDefault();
 
@@ -448,7 +448,7 @@ export class MouseManager
 			this.queueDispatch(this._mouseDown, event);
 	}
 
-	private onMouseUp(event):void
+	public onMouseUp(event):void
 	{
 		event.preventDefault();
 
