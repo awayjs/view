@@ -2,9 +2,10 @@ import {Vector3D} from "@awayjs/core";
 
 import {PickingCollision, TouchPoint} from "@awayjs/renderer";
 
-import {DisplayObject, MouseEvent, FrameScriptManager} from "@awayjs/scene";
+import {DisplayObject, KeyboardEvent, MouseEvent, FrameScriptManager} from "@awayjs/scene";
 
 import {View} from "../View";
+
 
 /**
  * MouseManager enforces a singleton pattern and is not intended to be instanced.
@@ -44,6 +45,9 @@ export class MouseManager
 	private onMouseWheelDelegate:(event) => void;
 	private onMouseOverDelegate:(event) => void;
 	private onMouseOutDelegate:(event) => void;
+	private onKeyDownDelegate:(event) => void;
+
+	private objectInFocus:DisplayObject;
 
 	/**
 	 * Creates a new <code>MouseManager</code> object.
@@ -58,6 +62,7 @@ export class MouseManager
 		this.onMouseWheelDelegate = (event) => this.onMouseWheel(event);
 		this.onMouseOverDelegate = (event) => this.onMouseOver(event);
 		this.onMouseOutDelegate = (event) => this.onMouseOut(event);
+		this.onKeyDownDelegate = (event) => this.onKeyDown(event);
 	}
 
 	public registerContainer(container:HTMLElement):void
@@ -74,6 +79,7 @@ export class MouseManager
 			container.addEventListener("mousewheel", this.onMouseWheelDelegate);
 			container.addEventListener("mouseover", this.onMouseOverDelegate);
 			container.addEventListener("mouseout", this.onMouseOutDelegate);
+			window.addEventListener("keydown", this.onKeyDownDelegate);
 			this._containerLookup.push(container);
 		}
 	}
@@ -92,6 +98,7 @@ export class MouseManager
 			container.removeEventListener("mousewheel", this.onMouseWheelDelegate);
 			container.removeEventListener("mouseover", this.onMouseOverDelegate);
 			container.removeEventListener("mouseout", this.onMouseOutDelegate);
+			window.removeEventListener("keydown", this.onKeyDownDelegate);
 
 			this._containerLookup.slice(this._containerLookup.indexOf(container), 1);
 		}
@@ -128,11 +135,19 @@ export class MouseManager
 		for (var i:number = 0; i < len; ++i) {
 			event = this._queuedEvents[i];
 			dispatcher = <DisplayObject> event.entity;
+			if((event.type==MouseEvent.CLICK)||(event.type==MouseEvent.DOUBLE_CLICK)||(event.type==MouseEvent.MOUSE_DOWN)){
+				this.objectInFocus=dispatcher;
+			}
+			/*if(this.objectInFocus && event.type==MouseEvent.MOUSE_MOVE){
+				this.objectInFocus.dispatchEvent(event);
+			}*/
 
+			//if(dispatcher && dispatcher._iIsMouseEnabled())
+			//	console.log("mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
 			// bubble event up the heirarchy until the top level parent is reached
 			while (dispatcher) {
-				//console.log("dispatcher", dispatcher, dispatcher.adapter.constructor.name);
 				if (dispatcher._iIsMouseEnabled()){
+					//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
 					dispatcher.dispatchEvent(event);
 
 				}
@@ -395,6 +410,18 @@ export class MouseManager
 	// ---------------------------------------------------------------------
 	// Listeners.
 	// ---------------------------------------------------------------------
+
+	public onKeyDown(event):void
+	{
+		event.preventDefault();
+
+		if(this.objectInFocus){
+			console.log("dispatch keydown on ", this.objectInFocus);
+			var newEvent:KeyboardEvent=new KeyboardEvent(KeyboardEvent.KEYDOWN, event.key);
+			this.objectInFocus.dispatchEvent(newEvent);
+		}
+
+	}
 
 	public onMouseMove(event):void
 	{

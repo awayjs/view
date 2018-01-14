@@ -2,7 +2,7 @@ import {AssetEvent, Plane3D, Vector3D} from "@awayjs/core";
 
 import {TraverserBase, IEntity, PickingCollision} from "@awayjs/renderer";
 
-import {DisplayObject, DisplayObjectEvent} from "@awayjs/scene";
+import {Sprite, MovieClip, DisplayObject, DisplayObjectEvent} from "@awayjs/scene";
 
 import {IPickingCollider} from "../pick/IPickingCollider";
 
@@ -28,7 +28,6 @@ export class EntityNode extends DisplayObjectNode
 	constructor(displayObject:DisplayObject, partition:PartitionBase)
 	{
 		super(displayObject, partition);
-
 		this._partition = partition;
 	}
 

@@ -145,6 +145,10 @@ export class RaycastPicker extends TraverserBase implements IPicker
 			this._entity = this._entities[i];
 			this._testCollision = this._entity._iPickingCollision;
 			if (this._bestCollision == null || this._testCollision.rayEntryDistance < this._bestCollision.rayEntryDistance) {
+
+				//var partition=view.getPartition(this._entity);
+				//var abstraction=partition.getAbstraction(this._entity);
+
 				this._testCollider = view.getPartition(this._entity).getAbstraction(this._entity).pickingCollider;
 				if (this._testCollider) {
 					this._testCollision.rayEntryDistance = Number.MAX_VALUE;
