@@ -119,8 +119,14 @@ export class MouseManager
 			if (this._previousCollidingObject)
 				this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._previousCollidingObject);
 
-			if (this._iCollision)
+			if (this._iCollision){
+				document.body.style.cursor = this._iCollision.entity.getMouseCursor();
 				this.queueDispatch(this._mouseOver, this._mouseMoveEvent);
+			}
+			else{
+				document.body.style.cursor = "initial";
+
+			}
 		}
 
 		 // Fire mouse move events here if forceMouseMove is on.
@@ -130,13 +136,53 @@ export class MouseManager
 		var event:MouseEvent;
 		var dispatcher:DisplayObject;
 
+
 		// Dispatch all queued events.
 		var len:number = this._queuedEvents.length;
 		for (var i:number = 0; i < len; ++i) {
 			event = this._queuedEvents[i];
 			dispatcher = <DisplayObject> event.entity;
+
+
+			// if the event was a click/mousedown, we set the dispatcher as objectInFocus
+			var tmpDispatcher=dispatcher;
 			if((event.type==MouseEvent.CLICK)||(event.type==MouseEvent.DOUBLE_CLICK)||(event.type==MouseEvent.MOUSE_DOWN)){
-				this.objectInFocus=dispatcher;
+				this.objectInFocus=null;
+				/*if(dispatcher){
+					console.log("mouseEvent.dispatch", dispatcher, dispatcher.name, event.type, event);
+				}*/
+				var found:boolean=false;
+				while (tmpDispatcher && !found) {
+					if (tmpDispatcher._iIsMouseEnabled()){
+						this.objectInFocus=tmpDispatcher;
+						found=true;
+					}
+					if(!found)
+						tmpDispatcher = tmpDispatcher.parent;
+				}
+			}
+			if(event.type==MouseEvent.MOUSE_UP){
+				// if this is MOUSE_UP event, and not the objectInFocuse,
+				// dispatch a MOUSE_UP_OUTSIDE
+				if(this.objectInFocus && this.objectInFocus!=tmpDispatcher){
+
+					if (this.objectInFocus._iIsMouseEnabled()){
+						//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
+						var newEvent:MouseEvent=event.clone();
+						newEvent.type=MouseEvent.MOUSE_UP_OUTSIDE;
+						//this.objectInFocus.dispatchEvent(newEvent);
+						tmpDispatcher=this.objectInFocus;
+						while (tmpDispatcher) {
+							if (tmpDispatcher._iIsMouseEnabled()) {
+								//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
+								tmpDispatcher.dispatchEvent(newEvent);
+
+							}
+							tmpDispatcher = tmpDispatcher.parent;
+
+						}
+					}
+				}
 			}
 			/*if(this.objectInFocus && event.type==MouseEvent.MOUSE_MOVE){
 				this.objectInFocus.dispatchEvent(event);
