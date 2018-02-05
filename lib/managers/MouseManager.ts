@@ -48,6 +48,7 @@ export class MouseManager
 	private onKeyDownDelegate:(event) => void;
 
 	private objectInFocus:DisplayObject;
+	private objectMouseDown:DisplayObject;
 
 	/**
 	 * Creates a new <code>MouseManager</code> object.
@@ -112,6 +113,21 @@ export class MouseManager
 		return (this._instance = new MouseManager());
 	}
 
+	public setFocus(obj:DisplayObject){
+		if(this.objectInFocus == obj){
+			return;
+		}
+		if(this.objectInFocus){
+			this.objectInFocus.isInFocus=false;
+		}
+		this.objectInFocus=obj;
+
+		if(this.objectInFocus){
+			this.objectInFocus.isInFocus=true;
+		}
+
+	}
+
 	public fireMouseEvents(forceMouseMove:boolean):void
 	{
 		 // If colliding object has changed, queue over/out events.
@@ -147,31 +163,54 @@ export class MouseManager
 			// if the event was a click/mousedown, we set the dispatcher as objectInFocus
 			var tmpDispatcher=dispatcher;
 			if((event.type==MouseEvent.CLICK)||(event.type==MouseEvent.DOUBLE_CLICK)||(event.type==MouseEvent.MOUSE_DOWN)){
-				this.objectInFocus=null;
+				//var prevFocusedObject:DisplayObject=this.objectInFocus;
+				this.objectMouseDown=null;
 				/*if(dispatcher){
 					console.log("mouseEvent.dispatch", dispatcher, dispatcher.name, event.type, event);
 				}*/
 				var found:boolean=false;
 				while (tmpDispatcher && !found) {
 					if (tmpDispatcher._iIsMouseEnabled()){
-						this.objectInFocus=tmpDispatcher;
+
+						this.objectMouseDown=tmpDispatcher;
+						if(this.objectInFocus)
+							this.objectInFocus.isInFocus=false;
+						if(tmpDispatcher.isTabEnabled){
+							this.objectInFocus=this.objectMouseDown;
+							this.objectMouseDown.isInFocus=true;
+						}
 						found=true;
 					}
 					if(!found)
 						tmpDispatcher = tmpDispatcher.parent;
 				}
+				/*if(this.objectInFocus)
+					console.log("this.objectInFocus", this.objectInFocus.id, this.objectInFocus.name, this.objectInFocus);
+				if(this.objectMouseDown)
+					console.log("this.objectMouseDown", this.objectMouseDown.id, this.objectMouseDown.name, this.objectMouseDown);*/
+				/*if(!this.objectInFocus){
+					this.objectInFocus=prevFocusedObject;
+				}
+				if(prevFocusedObject!=this.objectInFocus){
+					if(prevFocusedObject){
+						prevFocusedObject.isInFocus=false;
+					}
+					if(this.objectInFocus){
+						this.objectInFocus.isInFocus=true;
+					}
+				}*/
 			}
 			if(event.type==MouseEvent.MOUSE_UP){
 				// if this is MOUSE_UP event, and not the objectInFocuse,
 				// dispatch a MOUSE_UP_OUTSIDE
-				if(this.objectInFocus && this.objectInFocus!=tmpDispatcher){
+				if(this.objectMouseDown && this.objectMouseDown!=tmpDispatcher){
 
-					if (this.objectInFocus._iIsMouseEnabled()){
+					if (this.objectMouseDown._iIsMouseEnabled()){
 						//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
 						var newEvent:MouseEvent=event.clone();
 						newEvent.type=MouseEvent.MOUSE_UP_OUTSIDE;
 						//this.objectInFocus.dispatchEvent(newEvent);
-						tmpDispatcher=this.objectInFocus;
+						tmpDispatcher=this.objectMouseDown;
 						while (tmpDispatcher) {
 							if (tmpDispatcher._iIsMouseEnabled()) {
 								//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
@@ -182,7 +221,11 @@ export class MouseManager
 
 						}
 					}
+					this.objectMouseDown=null;
 				}
+
+				if(this.objectInFocus)
+					this.objectInFocus.isInFocus=true;
 			}
 			/*if(this.objectInFocus && event.type==MouseEvent.MOUSE_MOVE){
 				this.objectInFocus.dispatchEvent(event);
@@ -463,7 +506,7 @@ export class MouseManager
 
 		if(this.objectInFocus){
 			console.log("dispatch keydown on ", this.objectInFocus);
-			var newEvent:KeyboardEvent=new KeyboardEvent(KeyboardEvent.KEYDOWN, event.key);
+			var newEvent:KeyboardEvent=new KeyboardEvent(KeyboardEvent.KEYDOWN, event.key, event.code);
 			this.objectInFocus.dispatchEvent(newEvent);
 		}
 
