@@ -80,7 +80,7 @@ export class MouseManager
 			container.addEventListener("mousewheel", this.onMouseWheelDelegate);
 			container.addEventListener("mouseover", this.onMouseOverDelegate);
 			container.addEventListener("mouseout", this.onMouseOutDelegate);
-			window.addEventListener("keydown", this.onKeyDownDelegate);
+			//AVM1 window.addEventListener("keydown", this.onKeyDownDelegate);
 			this._containerLookup.push(container);
 		}
 	}
@@ -99,7 +99,7 @@ export class MouseManager
 			container.removeEventListener("mousewheel", this.onMouseWheelDelegate);
 			container.removeEventListener("mouseover", this.onMouseOverDelegate);
 			container.removeEventListener("mouseout", this.onMouseOutDelegate);
-			window.removeEventListener("keydown", this.onKeyDownDelegate);
+			//AVM1 window.removeEventListener("keydown", this.onKeyDownDelegate);
 
 			this._containerLookup.slice(this._containerLookup.indexOf(container), 1);
 		}
@@ -128,10 +128,12 @@ export class MouseManager
 
 	}
 
+	private _isDragging:boolean=false;
+
 	public fireMouseEvents(forceMouseMove:boolean):void
 	{
 		 // If colliding object has changed, queue over/out events.
-		if (this._iCollision != this._previousCollidingObject) {
+		if (!this._isDragging && this._iCollision != this._previousCollidingObject) {
 			if (this._previousCollidingObject)
 				this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._previousCollidingObject);
 
@@ -162,7 +164,10 @@ export class MouseManager
 
 			// if the event was a click/mousedown, we set the dispatcher as objectInFocus
 			var tmpDispatcher=dispatcher;
-			if((event.type==MouseEvent.CLICK)||(event.type==MouseEvent.DOUBLE_CLICK)||(event.type==MouseEvent.MOUSE_DOWN)){
+			//if((event.type==MouseEvent.CLICK)||(event.type==MouseEvent.DOUBLE_CLICK)||(event.type==MouseEvent.MOUSE_DOWN)){
+			if(event.type==MouseEvent.MOUSE_DOWN){
+				this._isDragging=true;
+				console.log("mouseDown", this._queuedEvents);
 				//var prevFocusedObject:DisplayObject=this.objectInFocus;
 				this.objectMouseDown=null;
 				/*if(dispatcher){
@@ -201,6 +206,8 @@ export class MouseManager
 				}*/
 			}
 			if(event.type==MouseEvent.MOUSE_UP){
+				this._isDragging=false;
+				console.log("mouseUP", this._queuedEvents);
 				// if this is MOUSE_UP event, and not the objectInFocuse,
 				// dispatch a MOUSE_UP_OUTSIDE
 				if(this.objectMouseDown && this.objectMouseDown!=tmpDispatcher){
