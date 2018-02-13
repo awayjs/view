@@ -1,4 +1,4 @@
-import {Vector3D} from "@awayjs/core";
+import {BuildMode, Vector3D} from "@awayjs/core";
 
 import {PickingCollision, TouchPoint} from "@awayjs/renderer";
 
@@ -80,7 +80,9 @@ export class MouseManager
 			container.addEventListener("mousewheel", this.onMouseWheelDelegate);
 			container.addEventListener("mouseover", this.onMouseOverDelegate);
 			container.addEventListener("mouseout", this.onMouseOutDelegate);
-			//AVM1 window.addEventListener("keydown", this.onKeyDownDelegate);
+			if(BuildMode.mode==BuildMode.AVM1){
+				window.addEventListener("keydown", this.onKeyDownDelegate);
+			}
 			this._containerLookup.push(container);
 		}
 	}
@@ -99,7 +101,9 @@ export class MouseManager
 			container.removeEventListener("mousewheel", this.onMouseWheelDelegate);
 			container.removeEventListener("mouseover", this.onMouseOverDelegate);
 			container.removeEventListener("mouseout", this.onMouseOutDelegate);
-			//AVM1 window.removeEventListener("keydown", this.onKeyDownDelegate);
+			if(BuildMode.mode==BuildMode.AVM1){
+				window.removeEventListener("keydown", this.onKeyDownDelegate);
+			}
 
 			this._containerLookup.slice(this._containerLookup.indexOf(container), 1);
 		}
