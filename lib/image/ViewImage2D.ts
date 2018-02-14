@@ -201,7 +201,7 @@ export class ViewImage2D extends BitmapImage2D
 			root.addChild(source);
 
 			if (matrix) {
-				root.transform.scaleTo(matrix.a, -matrix.d, 1);
+				root.transform.scaleTo(matrix.a, matrix.d, 1);
 				root.transform.moveTo(matrix.tx, matrix.ty, 0);
 			}
 			root.transform.colorTransform = colorTransform;
