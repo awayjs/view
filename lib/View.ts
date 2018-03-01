@@ -11,6 +11,7 @@ import {MouseManager} from "./managers/MouseManager";
 import {PartitionBase} from "./partition/PartitionBase";
 import {BasicPartition} from "./partition/BasicPartition";
 
+
 export class View implements IView
 {
 
@@ -69,6 +70,7 @@ export class View implements IView
 		this._onScissorUpdatedDelegate = (event:RendererEvent) => this._onScissorUpdated(event);
 		this._mouseManager = MouseManager.getInstance();
 		this._mouseManager.registerView(this);
+
 
 		this.scene = scene || new Scene();
 		this.camera = camera || new Camera();
