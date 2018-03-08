@@ -516,7 +516,7 @@ export class MouseManager
 		event.preventDefault();
 
 		if(this.objectInFocus){
-			console.log("dispatch keydown on ", this.objectInFocus);
+			//console.log("dispatch keydown on ", this.objectInFocus);
 			var newEvent:KeyboardEvent=new KeyboardEvent(KeyboardEvent.KEYDOWN, event.key, event.code);
 			this.objectInFocus.dispatchEvent(newEvent);
 		}
