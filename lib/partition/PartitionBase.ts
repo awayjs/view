@@ -41,7 +41,7 @@ export class PartitionBase
 	 */
 	public clearAbstraction(entity:IEntity):void
 	{
-		this._abstractionPool[entity.id] = null;
+		delete this._abstractionPool[entity.id];
 	}
 
 	public traverse(traverser:TraverserBase):void
