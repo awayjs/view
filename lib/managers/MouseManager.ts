@@ -149,6 +149,7 @@ export class MouseManager
 				document.body.style.cursor = "initial";
 
 			}
+			this._previousCollidingObject = this._iCollision;
 		}
 
 		 // Fire mouse move events here if forceMouseMove is on.
@@ -214,6 +215,10 @@ export class MouseManager
 				//console.log("MOUSE_UP", event.entity);
 				// if this is MOUSE_UP event, and not the objectInFocuse,
 				// dispatch a MOUSE_UP_OUTSIDE
+
+				if (this._previousCollidingObject && this._iCollision != this._previousCollidingObject)
+					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._previousCollidingObject);
+
 				if(this.objectMouseDown && this.objectMouseDown!=tmpDispatcher){
 
 					if (this.objectMouseDown._iIsMouseEnabled()){
@@ -238,9 +243,18 @@ export class MouseManager
 				if(this.objectInFocus)
 					this.objectInFocus.isInFocus=true;
 			}
-			/*if(this.objectInFocus && event.type==MouseEvent.MOUSE_MOVE){
-				this.objectInFocus.dispatchEvent(event);
-			}*/
+			if(this.objectMouseDown && event.type==MouseEvent.MOUSE_MOVE){
+				var mouseDownDispatcher=this.objectMouseDown;
+				while (mouseDownDispatcher) {
+					if (mouseDownDispatcher._iIsMouseEnabled()){
+						//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
+						mouseDownDispatcher.dispatchEvent(event);
+
+					}
+
+					mouseDownDispatcher = mouseDownDispatcher.parent;
+				}
+			}
 
 			//if(dispatcher && dispatcher._iIsMouseEnabled())
 			//	console.log("mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
@@ -263,7 +277,6 @@ export class MouseManager
 
 		this._queuedEvents.length = 0;
 
-		this._previousCollidingObject = this._iCollision;
 
 		this._iUpdateDirty = false;
 	}
