@@ -3,6 +3,7 @@
   "version": "0.3.17",
   "description": "View for AwayJS",
   "main": "bundle/awayjs-view.umd.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "url": "http://www.away3d.com",
   "author": "Rob Bateman",
