@@ -210,6 +210,7 @@ export class MouseManager
 					}
 				}*/
 			}
+			var dispatchedMouseOutsideUPEvent:boolean=false;
 			if(event.type==MouseEvent.MOUSE_UP){
 				this._isDragging=false;
 				//console.log("MOUSE_UP", event.entity);
@@ -229,6 +230,7 @@ export class MouseManager
 						tmpDispatcher=this.objectMouseDown;
 						while (tmpDispatcher) {
 							if (tmpDispatcher._iIsMouseEnabled()) {
+								dispatchedMouseOutsideUPEvent=true;
 								//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
 								tmpDispatcher.dispatchEvent(newEvent);
 
@@ -256,17 +258,18 @@ export class MouseManager
 				}
 			}
 
-			//if(dispatcher && dispatcher._iIsMouseEnabled())
-			//	console.log("mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
-			// bubble event up the heirarchy until the top level parent is reached
-			while (dispatcher) {
-				if (dispatcher._iIsMouseEnabled()){
-					//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
-					dispatcher.dispatchEvent(event);
+			if(!(dispatchedMouseOutsideUPEvent && event.type == MouseEvent.MOUSE_UP)){
+				//	console.log("mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
+				// bubble event up the heirarchy until the top level parent is reached
+				while (dispatcher) {
+					if (dispatcher._iIsMouseEnabled()){
+						//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
+						dispatcher.dispatchEvent(event);
 
+					}
+
+					dispatcher = dispatcher.parent;
 				}
-
-				dispatcher = dispatcher.parent;
 			}
 			// not totally sure, but i think just calling it is easier and cheaper than any options for that
 			// if nothing is queued, the function will return directly anyway
