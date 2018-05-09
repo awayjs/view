@@ -47,6 +47,8 @@ export class MouseManager
 	private onMouseOutDelegate:(event) => void;
 	private onKeyDownDelegate:(event) => void;
 
+	private _useSoftkeyboard:boolean=false;
+
 	private objectInFocus:DisplayObject;
 	private objectMouseDown:DisplayObject;
 
@@ -65,7 +67,16 @@ export class MouseManager
 		this.onMouseOutDelegate = (event) => this.onMouseOut(event);
 		this.onKeyDownDelegate = (event) => this.onKeyDown(event);
 	}
+	public set useSoftkeyboard(value:boolean){
 
+		this._useSoftkeyboard=value;
+		if(!value && BuildMode.mode==BuildMode.AVM1){
+			window.addEventListener("keydown", this.onKeyDownDelegate);
+		}
+		else if(value){
+			window.removeEventListener("keydown", this.onKeyDownDelegate);
+		}
+	}
 	public registerContainer(container:HTMLElement):void
 	{
 		if(container && this._containerLookup.indexOf(container) == -1) {
