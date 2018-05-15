@@ -51,7 +51,8 @@ export class MouseManager
 
 	private objectInFocus:DisplayObject;
 	private objectMouseDown:DisplayObject;
-
+	public  buttonEnabledDirty:boolean;
+	
 	/**
 	 * Creates a new <code>MouseManager</code> object.
 	 */
@@ -66,6 +67,7 @@ export class MouseManager
 		this.onMouseOverDelegate = (event) => this.onMouseOver(event);
 		this.onMouseOutDelegate = (event) => this.onMouseOut(event);
 		this.onKeyDownDelegate = (event) => this.onKeyDown(event);
+		this.buttonEnabledDirty=false;
 	}
 	public set useSoftkeyboard(value:boolean){
 
@@ -148,11 +150,18 @@ export class MouseManager
 	public fireMouseEvents(forceMouseMove:boolean):void
 	{
 		 // If colliding object has changed, queue over/out events.
-		if (!this._isDragging && this._iCollision != this._previousCollidingObject) {
-			if (this._previousCollidingObject)
+		if (!this._isDragging && (this.buttonEnabledDirty || (this._iCollision != this._previousCollidingObject))) {
+			if (this._previousCollidingObject){
+
+				//todo: do this without any typing hacks (makes sure that a newly-disabled button still gets resetet on mouseout):
+				if((<any>this._previousCollidingObject.entity).buttonReset){
+					(<any>this._previousCollidingObject.entity).buttonReset();
+				}
 				this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._previousCollidingObject);
+			}
 
 			if (this._iCollision){
+				//console.log("_iCollision", this._iCollision.entity.name);
 				document.body.style.cursor = this._iCollision.entity.getMouseCursor();
 				this.queueDispatch(this._mouseOver, this._mouseMoveEvent);
 			}
@@ -162,6 +171,7 @@ export class MouseManager
 			}
 			this._previousCollidingObject = this._iCollision;
 		}
+		this.buttonEnabledDirty=false;
 
 		 // Fire mouse move events here if forceMouseMove is on.
 		 if (forceMouseMove && this._iCollision)
@@ -176,6 +186,7 @@ export class MouseManager
 		for (var i:number = 0; i < len; ++i) {
 			event = this._queuedEvents[i];
 			dispatcher = <DisplayObject> event.entity;
+			//console.log("this._queuedEvents", i, this._queuedEvents[i], dispatcher);
 
 
 			// if the event was a click/mousedown, we set the dispatcher as objectInFocus
