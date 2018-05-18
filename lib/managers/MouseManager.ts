@@ -46,12 +46,14 @@ export class MouseManager
 	private onMouseOverDelegate:(event) => void;
 	private onMouseOutDelegate:(event) => void;
 	private onKeyDownDelegate:(event) => void;
+	private onFirstTouchDelegate:(event) => void;
 
 	private _useSoftkeyboard:boolean=false;
 
 	private objectInFocus:DisplayObject;
 	private objectMouseDown:DisplayObject;
 	public  buttonEnabledDirty:boolean;
+	private _isTouch:Boolean;
 	
 	/**
 	 * Creates a new <code>MouseManager</code> object.
@@ -67,8 +69,17 @@ export class MouseManager
 		this.onMouseOverDelegate = (event) => this.onMouseOver(event);
 		this.onMouseOutDelegate = (event) => this.onMouseOut(event);
 		this.onKeyDownDelegate = (event) => this.onKeyDown(event);
+		this.onFirstTouchDelegate = (event) => this.onFirstTouch(event);
 		this.buttonEnabledDirty=false;
+		this._isTouch=false;
+		window.addEventListener('touchstart', this.onFirstTouchDelegate, false);
 	}
+	public onFirstTouch(event):void{
+		this._isTouch=true;
+		// we only need to know once that a human touched the screen, so we can stop listening now
+		window.removeEventListener('touchstart', this.onFirstTouchDelegate, false);
+	}
+	
 	public set useSoftkeyboard(value:boolean){
 
 		this._useSoftkeyboard=value;
@@ -146,11 +157,16 @@ export class MouseManager
 	}
 
 	private _isDragging:boolean=false;
+	private _fireMouseOver:boolean=false;
+	private _prevActiveButtonCollision:DisplayObject=null;
 
 	public fireMouseEvents(forceMouseMove:boolean):void
 	{
+
+
+		this._fireMouseOver=false;
 		 // If colliding object has changed, queue over/out events.
-		if (!this._isDragging && (this.buttonEnabledDirty || (this._iCollision != this._previousCollidingObject))) {
+		if (!this._isDragging && this._iCollision != this._previousCollidingObject) {
 			if (this._previousCollidingObject){
 
 				//todo: do this without any typing hacks (makes sure that a newly-disabled button still gets resetet on mouseout):
@@ -160,18 +176,55 @@ export class MouseManager
 				this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._previousCollidingObject);
 			}
 
+			this._prevActiveButtonCollision=null;
 			if (this._iCollision){
+				//console.log("new collision");
 				//console.log("_iCollision", this._iCollision.entity.name);
 				document.body.style.cursor = this._iCollision.entity.getMouseCursor();
 				this.queueDispatch(this._mouseOver, this._mouseMoveEvent);
+				if((<any>this._iCollision.entity).buttonMode && (<any>this._iCollision.entity).buttonEnabled){
+					this._prevActiveButtonCollision=<DisplayObject>this._iCollision.entity;
+					//console.log("new collision with active button", this._iCollision.entity.name);
+				}
+				else if((<any>this._iCollision.entity).buttonMode){
+					//console.log("new collision with inActive button", this._iCollision.entity.name);
+
+				}
 			}
 			else{
 				document.body.style.cursor = "initial";
+				//console.log("no collision");
 
 			}
 			this._previousCollidingObject = this._iCollision;
 		}
-		this.buttonEnabledDirty=false;
+		else{
+			if(this._iCollision){
+				//console.log("same collision", this._iCollision.entity.name, this._iCollision.entity._iIsVisible());
+
+				if((<any>this._iCollision.entity).buttonMode && (<any>this._iCollision.entity).buttonEnabled){
+					if(this._prevActiveButtonCollision!=this._iCollision.entity){
+						//console.log("state has changed to active", this._iCollision.entity.name);
+						this._prevActiveButtonCollision=<DisplayObject>this._iCollision.entity;
+						this._fireMouseOver=true;	
+					}
+				}
+				else{
+					if((<any>this._iCollision.entity).buttonMode && this._prevActiveButtonCollision){
+						//console.log("state has changed to inactive", this._iCollision.entity.name);
+
+					}
+					this._prevActiveButtonCollision=null;
+
+				}
+			}
+			else{
+				//console.log("still no collision");
+				this._prevActiveButtonCollision=null;
+
+			}
+		
+		}
 
 		 // Fire mouse move events here if forceMouseMove is on.
 		 if (forceMouseMove && this._iCollision)
@@ -182,8 +235,8 @@ export class MouseManager
 
 
 		// Dispatch all queued events.
-		var len:number = this._queuedEvents.length;
-		for (var i:number = 0; i < len; ++i) {
+		// queuedEvents.length might be changed during the loop, so we cant get the length before
+		for (var i:number = 0; i < this._queuedEvents.length; ++i) {
 			event = this._queuedEvents[i];
 			dispatcher = <DisplayObject> event.entity;
 			//console.log("this._queuedEvents", i, this._queuedEvents[i], dispatcher);
@@ -193,9 +246,12 @@ export class MouseManager
 			var tmpDispatcher=dispatcher;
 			//if((event.type==MouseEvent.CLICK)||(event.type==MouseEvent.DOUBLE_CLICK)||(event.type==MouseEvent.MOUSE_DOWN)){
 			if(event.type==MouseEvent.MOUSE_DOWN){
+				
+				this._fireMouseOver=false;
 				this._isDragging=true;
 				//console.log("MOUSE_DOWN", event.entity);
 				//var prevFocusedObject:DisplayObject=this.objectInFocus;
+				
 				this.objectMouseDown=null;
 				/*if(dispatcher){
 					console.log("mouseEvent.dispatch", dispatcher, dispatcher.name, event.type, event);
@@ -235,12 +291,18 @@ export class MouseManager
 			var dispatchedMouseOutsideUPEvent:boolean=false;
 			if(event.type==MouseEvent.MOUSE_UP){
 				this._isDragging=false;
+				this._fireMouseOver=false;
 				//console.log("MOUSE_UP", event.entity);
+				this._fireMouseOver
 				// if this is MOUSE_UP event, and not the objectInFocuse,
 				// dispatch a MOUSE_UP_OUTSIDE
+				if(this._isTouch){
+					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._iCollision);
 
-				if (this._previousCollidingObject && this._iCollision != this._previousCollidingObject)
-					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._previousCollidingObject);
+				}
+
+				//if (this._previousCollidingObject && this._iCollision != this._previousCollidingObject)
+				//	this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._previousCollidingObject);
 
 				if(this.objectMouseDown && this.objectMouseDown!=tmpDispatcher){
 
@@ -273,9 +335,7 @@ export class MouseManager
 					if (mouseDownDispatcher._iIsMouseEnabled()){
 						//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
 						mouseDownDispatcher.dispatchEvent(event);
-
 					}
-
 					mouseDownDispatcher = mouseDownDispatcher.parent;
 				}
 			}
@@ -301,6 +361,22 @@ export class MouseManager
 
 
 		this._queuedEvents.length = 0;
+		if(this._fireMouseOver){
+			document.body.style.cursor = this._iCollision.entity.getMouseCursor();
+			this.queueDispatch(this._mouseOver, this._mouseMoveEvent);
+			event = this._queuedEvents[0];
+			dispatcher = <DisplayObject> event.entity;
+			while (dispatcher) {
+				if (dispatcher._iIsMouseEnabled()){
+					//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
+					dispatcher.dispatchEvent(event);
+
+				}
+
+				dispatcher = dispatcher.parent;
+			}
+			this._queuedEvents.length = 0;
+		}
 
 
 		this._iUpdateDirty = false;
