@@ -146,14 +146,17 @@ export class MouseManager
 			return;
 		}
 		if(this.objectInFocus){
-			this.objectInFocus.isInFocus=false;
+			this.objectInFocus.setFocus(false, false);
 		}
 		this.objectInFocus=obj;
 
 		if(this.objectInFocus){
-			this.objectInFocus.isInFocus=true;
+			this.objectInFocus.setFocus(true, false);
 		}
 
+	}
+	public getFocus(){
+		return this.objectInFocus;
 	}
 
 	private _isDragging:boolean=false;
@@ -262,10 +265,10 @@ export class MouseManager
 
 						this.objectMouseDown=tmpDispatcher;
 						if(this.objectInFocus)
-							this.objectInFocus.isInFocus=false;
+							this.objectInFocus.setFocus(false, true);
 						if(tmpDispatcher.isTabEnabled){
 							this.objectInFocus=this.objectMouseDown;
-							this.objectMouseDown.isInFocus=true;
+							this.objectMouseDown.setFocus(true, true);
 						}
 						found=true;
 					}
@@ -293,7 +296,7 @@ export class MouseManager
 				this._isDragging=false;
 				this._fireMouseOver=false;
 				//console.log("MOUSE_UP", event.entity);
-				this._fireMouseOver
+				//this._fireMouseOver
 				// if this is MOUSE_UP event, and not the objectInFocuse,
 				// dispatch a MOUSE_UP_OUTSIDE
 				if(this._isTouch){
@@ -327,7 +330,7 @@ export class MouseManager
 				}
 
 				if(this.objectInFocus)
-					this.objectInFocus.isInFocus=true;
+					this.objectInFocus.setFocus(true, true);
 			}
 			if(this.objectMouseDown && event.type==MouseEvent.MOUSE_MOVE){
 				var mouseDownDispatcher=this.objectMouseDown;
