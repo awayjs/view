@@ -236,6 +236,7 @@ export class MouseManager
 		var event:MouseEvent;
 		var dispatcher:DisplayObject;
 
+		//console.log("\n");
 
 		// Dispatch all queued events.
 		// queuedEvents.length might be changed during the loop, so we cant get the length before
@@ -682,8 +683,15 @@ export class MouseManager
 			this.queueDispatch(this._mouseDoubleClick, event);
 	}
 
+
+	private _isDown:boolean=false;
+
 	public onMouseDown(event):void
 	{
+		if(this._isDown){
+			return;
+		}
+		this._isDown=true;
 		event.preventDefault();
 
 		this.updateColliders(event);
@@ -694,6 +702,10 @@ export class MouseManager
 
 	public onMouseUp(event):void
 	{
+		if(!this._isDown){
+			return;
+		}
+		this._isDown=false;
 		event.preventDefault();
 
 		this.updateColliders(event);
