@@ -176,7 +176,8 @@ export class MouseManager
 				if((<any>this._previousCollidingObject.entity).buttonReset){
 					(<any>this._previousCollidingObject.entity).buttonReset();
 				}
-				this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._previousCollidingObject);
+				if(!this._isTouch)
+					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._previousCollidingObject);
 			}
 
 			this._prevActiveButtonCollision=null;
@@ -184,7 +185,8 @@ export class MouseManager
 				//console.log("new collision");
 				//console.log("_iCollision", this._iCollision.entity.name);
 				document.body.style.cursor = this._iCollision.entity.getMouseCursor();
-				this.queueDispatch(this._mouseOver, this._mouseMoveEvent);
+				if(!this._isTouch)
+					this.queueDispatch(this._mouseOver, this._mouseMoveEvent);
 				if((<any>this._iCollision.entity).buttonMode && (<any>this._iCollision.entity).buttonEnabled){
 					this._prevActiveButtonCollision=<DisplayObject>this._iCollision.entity;
 					//console.log("new collision with active button", this._iCollision.entity.name);
@@ -230,8 +232,8 @@ export class MouseManager
 		}
 
 		 // Fire mouse move events here if forceMouseMove is on.
-		 if (forceMouseMove && this._iCollision)
-			this.queueDispatch( this._mouseMove, this._mouseMoveEvent);
+		 //if (forceMouseMove && this._iCollision)
+		//	this.queueDispatch( this._mouseMove, this._mouseMoveEvent);
 
 		var event:MouseEvent;
 		var dispatcher:DisplayObject;
@@ -365,7 +367,7 @@ export class MouseManager
 
 
 		this._queuedEvents.length = 0;
-		if(this._fireMouseOver){
+		if(!this._isTouch && this._fireMouseOver){
 			document.body.style.cursor = this._iCollision.entity.getMouseCursor();
 			this.queueDispatch(this._mouseOver, this._mouseMoveEvent);
 			event = this._queuedEvents[0];
@@ -745,18 +747,33 @@ export class MouseManager
 			if (this._iUpdateDirty)
 				continue;
 
-			if (mouseX < view.x || mouseX > view.x + view.width || mouseY < view.y || mouseY > view.y + view.height) {
-				view._pMouseX = null;
-				view._pMouseY = null;
-			} else {
-				view._pMouseX = mouseX - view.x;
-				view._pMouseY = mouseY - view.y;
-
-				view.updateCollider();
-
-				if (view.layeredView && this._iCollision)
-					break;
+			if (mouseX < view.x){
+				view._pMouseX = view.x;
 			}
+			else if (mouseX > view.x + view.width){
+				view._pMouseX = view.x+ view.width;
+
+			}
+			else{
+				view._pMouseX = mouseX - view.x;
+
+			}
+			if(mouseY < view.y){
+				view._pMouseY = view.y;
+
+			} 
+			else if(mouseY > view.y + view.height) {
+				view._pMouseY = view.y+ view.height;
+			}
+			else {
+				view._pMouseY = mouseY - view.y;
+			}
+
+			view.updateCollider();
+
+			if (view.layeredView && this._iCollision)
+				break;
+			
 		}
 
 		this._iUpdateDirty = true;
