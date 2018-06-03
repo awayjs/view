@@ -2,7 +2,7 @@ import {BuildMode, Vector3D} from "@awayjs/core";
 
 import {PickingCollision, TouchPoint} from "@awayjs/renderer";
 
-import {DisplayObject, KeyboardEvent, MouseEvent, FrameScriptManager} from "@awayjs/scene";
+import {DisplayObject, KeyboardEvent, MouseEvent, FrameScriptManager, TextField} from "@awayjs/scene";
 
 import {View} from "../View";
 
@@ -273,6 +273,9 @@ export class MouseManager
 							this.objectInFocus=this.objectMouseDown;
 							this.objectMouseDown.setFocus(true, true);
 						}
+						if(tmpDispatcher.isAsset(TextField)){
+							(<TextField>tmpDispatcher).startSelectionByMouse(event);
+						}
 						found=true;
 					}
 					if(!found)
@@ -294,6 +297,7 @@ export class MouseManager
 					}
 				}*/
 			}
+			tmpDispatcher=dispatcher;
 			var dispatchedMouseOutsideUPEvent:boolean=false;
 			if(event.type==MouseEvent.MOUSE_UP){
 				this._isDragging=false;
@@ -329,8 +333,14 @@ export class MouseManager
 
 						}
 					}
-					this.objectMouseDown=null;
 				}
+				if(this.objectMouseDown){
+
+					if(this.objectMouseDown.isAsset(TextField)){
+						(<TextField>this.objectMouseDown).stopSelectionByMouse(event);
+					}
+				}
+				this.objectMouseDown=null;
 
 				if(this.objectInFocus)
 					this.objectInFocus.setFocus(true, true);
@@ -341,6 +351,9 @@ export class MouseManager
 					if (mouseDownDispatcher._iIsMouseEnabled()){
 						//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
 						mouseDownDispatcher.dispatchEvent(event);
+						if(mouseDownDispatcher.isAsset(TextField)){
+							(<TextField>mouseDownDispatcher).updateSelectionByMouse(event);
+						}
 					}
 					mouseDownDispatcher = mouseDownDispatcher.parent;
 				}
@@ -638,6 +651,9 @@ export class MouseManager
 		if(this.objectInFocus){
 			//console.log("dispatch keydown on ", this.objectInFocus);
 			var newEvent:KeyboardEvent=new KeyboardEvent(KeyboardEvent.KEYDOWN, event.key, event.code);
+			newEvent.isShift=event.shiftKey;
+			newEvent.isCTRL=event.ctrlKey;
+			newEvent.isAlt=event.altKey;
 			this.objectInFocus.dispatchEvent(newEvent);
 		}
 
