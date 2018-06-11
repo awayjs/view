@@ -1,6 +1,10 @@
 {
   "name": "@awayjs/view",
+<<<<<<< HEAD
   "version": "0.3.30",
+=======
+  "version": "0.3.29",
+>>>>>>> 0.3.29
   "description": "View for AwayJS",
   "main": "bundle/awayjs-view.umd.js",
   "module": "dist/index.js",
@@ -24,7 +28,6 @@
     "version": "npm run build",
     "postversion": "npm run copyVersionToIndex && git push && git push --tags",
     "copyVersionToIndex": "node ./copyVersionToIndex && git add . && git commit -m 'addVersionToIndex'"
-  
   },
   "keywords": [
     "AwayJS",
