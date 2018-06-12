@@ -9,7 +9,6 @@ import {BoundingVolumeBase, NullBounds} from "@awayjs/scene";
  */
 export class NodeBase implements IContainerNode
 {
-	private _bounds:BoundingVolumeBase = new NullBounds();
 	public _pChildNodes:Array<INode> = new Array<INode>();
 	public _pNumChildNodes:number = 0;
 
@@ -24,14 +23,6 @@ export class NodeBase implements IContainerNode
 	public get debugVisible():boolean
 	{
 		return false;
-	}
-
-	/**
-	 * @internal
-	 */
-	public get bounds():BoundingVolumeBase
-	{
-		return this._bounds; //TODO
 	}
 
 

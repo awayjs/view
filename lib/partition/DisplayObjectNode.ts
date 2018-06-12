@@ -1,8 +1,8 @@
 import {AssetEvent, IAbstractionPool, AbstractionBase, Plane3D, Vector3D} from "@awayjs/core";
 
-import {TraverserBase, INode, IEntity} from "@awayjs/renderer";
+import {TraverserBase, INode} from "@awayjs/renderer";
 
-import {DisplayObjectEvent, AxisAlignedBoundingBox, BoundingSphere, BoundingVolumeBase, BoundsType, NullBounds} from "@awayjs/scene";
+import {DisplayObjectEvent, DisplayObject} from "@awayjs/scene";
 
 import {SceneGraphNode} from "./SceneGraphNode";
 
@@ -19,9 +19,7 @@ export class DisplayObjectNode extends AbstractionBase implements INode
 
 	private _onInvalidatePartitionBoundsDelegate:(event:DisplayObjectEvent) => void;
 	
-	public _entity:IEntity;
-	private _boundsDirty:boolean = true;
-	private _bounds:BoundingVolumeBase;
+	public _entity:DisplayObject;
 
 	public _iCollectionMark:number;// = 0;
 
@@ -34,18 +32,7 @@ export class DisplayObjectNode extends AbstractionBase implements INode
 		return this._entity.debugVisible;
 	}
 
-	/**
-	 * @internal
-	 */
-	public get bounds():BoundingVolumeBase
-	{
-		if (this._boundsDirty)
-			this._updateBounds();
-
-		return this._bounds;
-	}
-
-	constructor(entity:IEntity, pool:IAbstractionPool)
+	constructor(entity:DisplayObject, pool:IAbstractionPool)
 	{
 		super(entity, pool);
 
@@ -53,8 +40,6 @@ export class DisplayObjectNode extends AbstractionBase implements INode
 
 		this._entity = entity;
 		this._entity.addEventListener(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this._onInvalidatePartitionBoundsDelegate);
-
-		this._boundsType = this._entity.boundsType;
 	}
 
 	/**
@@ -81,21 +66,6 @@ export class DisplayObjectNode extends AbstractionBase implements INode
 
 		this._entity.removeEventListener(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this._onInvalidatePartitionBoundsDelegate);
 		this._entity = null;
-
-		if (this._bounds)
-			this._bounds.dispose();
-
-		this._bounds = null;
-	}
-
-	public onInvalidate(event:AssetEvent):void
-	{
-		super.onInvalidate(event);
-
-		if (this._boundsType != this._entity.boundsType) {
-			this._boundsType = this._entity.boundsType;
-			this._boundsDirty = true;
-		}
 	}
 
 	/**
@@ -129,7 +99,7 @@ export class DisplayObjectNode extends AbstractionBase implements INode
 	
 	public renderBounds(traverser:TraverserBase):void
 	{
-		traverser.applyEntity(this.bounds.boundsPrimitive);
+		traverser.applyEntity(this._entity.getBoundingVolume().boundsPrimitive);
 	}
 	
 
@@ -144,20 +114,5 @@ export class DisplayObjectNode extends AbstractionBase implements INode
 	public _onInvalidatePartitionBounds(event:DisplayObjectEvent):void
 	{
 		// do nothing here
-	}
-
-	private _updateBounds():void
-	{
-		if (this._bounds)
-			this._bounds.dispose();
-
-		if (this._boundsType == BoundsType.AXIS_ALIGNED_BOX)
-			this._bounds = new AxisAlignedBoundingBox(this._entity);
-		else if (this._boundsType == BoundsType.SPHERE)
-			this._bounds = new BoundingSphere(this._entity);
-		else if (this._boundsType == BoundsType.NULL)
-			this._bounds = new NullBounds();
-
-		this._boundsDirty = false;
 	}
 }

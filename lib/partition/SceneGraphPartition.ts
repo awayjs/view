@@ -2,6 +2,8 @@ import {IAbstractionPool} from "@awayjs/core";
 
 import {TraverserBase, IContainerNode, IEntity} from "@awayjs/renderer";
 
+import {DisplayObject} from "@awayjs/scene";
+
 import {SceneGraphNode} from "./SceneGraphNode";
 import {PartitionBase} from "./PartitionBase";
 import {DisplayObjectNode} from "./DisplayObjectNode";
@@ -45,7 +47,7 @@ export class SceneGraphPartition extends PartitionBase
 	}
 
 
-	public updateEntity(entity:IEntity):void
+	public updateEntity(entity:DisplayObject):void
 	{
 		super.updateEntity(entity);
 
@@ -53,7 +55,7 @@ export class SceneGraphPartition extends PartitionBase
 			this.updateNode(this._sceneGraphNodePool.getAbstraction(entity));
 	}
 
-	public clearEntity(entity:IEntity):void
+	public clearEntity(entity:DisplayObject):void
 	{
 		super.clearEntity(entity);
 
@@ -76,7 +78,7 @@ export class SceneGraphNodePool implements IAbstractionPool
 	 * @param entity
 	 * @returns EntityNode
 	 */
-	public getAbstraction(entity:IEntity):SceneGraphNode
+	public getAbstraction(entity:DisplayObject):SceneGraphNode
 	{
 		return (this._abstractionPool[entity.id] || (this._abstractionPool[entity.id] = new SceneGraphNode(entity, this)));
 	}
@@ -86,7 +88,7 @@ export class SceneGraphNodePool implements IAbstractionPool
 	 *
 	 * @param entity
 	 */
-	public clearAbstraction(entity:IEntity):void
+	public clearAbstraction(entity:DisplayObject):void
 	{
 		delete this._abstractionPool[entity.id];
 	}

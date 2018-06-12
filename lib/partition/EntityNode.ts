@@ -69,7 +69,7 @@ export class EntityNode extends DisplayObjectNode
 		if (!pickingCollision.normal)
 			pickingCollision.normal = new Vector3D();
 
-		var rayEntryDistance:number = this.bounds.rayIntersection(pickingCollision.rayPosition, pickingCollision.rayDirection, pickingCollision.normal);
+		var rayEntryDistance:number = this._entity.getBoundingVolume().rayIntersection(pickingCollision.rayPosition, pickingCollision.rayDirection, pickingCollision.normal);
 
 		if (rayEntryDistance < 0)
 			return false;
@@ -102,8 +102,6 @@ export class EntityNode extends DisplayObjectNode
 
 	public _onInvalidatePartitionBounds(event:DisplayObjectEvent):void
 	{
-		this.bounds.invalidate();
-
 		this._partition.invalidateEntity(this._entity);
 	}
 
