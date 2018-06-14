@@ -7,6 +7,7 @@ import {DisplayObject} from "@awayjs/scene";
 import {SceneGraphNode} from "./SceneGraphNode";
 import {PartitionBase} from "./PartitionBase";
 import {DisplayObjectNode} from "./DisplayObjectNode";
+import { View } from '../View';
 
 /**
  * @class away.partition.Partition
@@ -15,9 +16,9 @@ export class SceneGraphPartition extends PartitionBase
 {
 	private _sceneGraphNodePool:SceneGraphNodePool;
 
-	constructor(root:IEntity)
+	constructor(root:IEntity, view:View)
 	{
-		super(root);
+		super(root, view);
 
 		this._sceneGraphNodePool = new SceneGraphNodePool();
 	}

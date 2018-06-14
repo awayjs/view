@@ -1,21 +1,25 @@
-import {IAssetClass} from "@awayjs/core";
+import {IAssetClass, IAbstractionPool, ProjectionEvent} from "@awayjs/core";
 
 import {TraverserBase, IContainerNode, IEntity} from "@awayjs/renderer";
 
 import {EntityNode} from "./EntityNode";
 import {IEntityNodeClass} from "./IEntityNodeClass";
 import {DisplayObjectNode} from "./DisplayObjectNode";
+import { View } from '../View';
 
 /**
  * @class away.partition.Partition
  */
-export class PartitionBase
+export class PartitionBase implements IAbstractionPool
 {
+	private _onProjectionMatrixChangedDelegate:(event:ProjectionEvent) => void;
+	
 	private static _abstractionClassPool:Object = new Object();
 
 	private _abstractionPool:Object = new Object();
 	
 	public _root:IEntity;
+	public _view:View;
 	public _rootNode:IContainerNode;
 
 	private _updateQueue:Object = {};
@@ -24,10 +28,19 @@ export class PartitionBase
 	{
 		return this._root;
 	}
+
+	public get view():View
+	{
+		return this._view;
+	}
 	
-	constructor(root:IEntity)
+	constructor(root:IEntity, view:View)
 	{
 		this._root = root;
+		this._view = view;
+
+		this._onProjectionMatrixChangedDelegate = (event:ProjectionEvent) => this._onProjectionMatrixChanged(event);
+		this._view.camera.projection.addEventListener(ProjectionEvent.MATRIX_CHANGED, this._onProjectionMatrixChangedDelegate);
 	}
 
 	public getAbstraction(entity:IEntity):EntityNode
@@ -59,7 +72,8 @@ export class PartitionBase
 
 	public updateEntity(entity:IEntity):void
 	{
-		entity._iInternalUpdate();
+		//required for controllers with autoUpdate set to true and queued events
+		entity._iInternalUpdate(this._view.camera.projection);
 
 		if (entity.isEntity)
 			this.updateNode(this.getAbstraction(entity));
@@ -104,9 +118,6 @@ export class PartitionBase
 
 	private updateEntities():void
 	{
-		var entity:IEntity;
-
-		//required for controllers with autoUpdate set to true and queued events
 		for (var key in this._updateQueue)
 			this.updateEntity(this._updateQueue[key]);
 
@@ -126,5 +137,16 @@ export class PartitionBase
 	public static registerAbstraction(entityNodeClass:IEntityNodeClass, assetClass:IAssetClass):void
 	{
 		PartitionBase._abstractionClassPool[assetClass.assetType] = entityNodeClass;
+	}
+
+	private _onProjectionMatrixChanged(event:ProjectionEvent):void
+	{
+		var entity:IEntity;
+
+		//add all existing entities to the updateQueue
+		for (var key in this._abstractionPool) {
+			entity = this._abstractionPool[key]._entity;
+			this._updateQueue[entity.id] = entity;
+		}
 	}
 }

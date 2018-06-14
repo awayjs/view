@@ -71,9 +71,8 @@ export class View implements IView
 		this._mouseManager = MouseManager.getInstance();
 		this._mouseManager.registerView(this);
 
-
-		this.scene = scene || new Scene();
 		this.camera = camera || new Camera();
+		this.scene = scene || new Scene();
 		this.renderer = renderer || new DefaultRenderer();
 
 //			if (this._shareContext)
@@ -295,7 +294,7 @@ export class View implements IView
 
 		this._pScene = value;
 
-		this._partitions[this._pScene.id] = new BasicPartition(this._pScene);
+		this._partitions[this._pScene.id] = new BasicPartition(this._pScene, this);
 		this._pScene._addView(this);
 
 		if (this._pCamera)

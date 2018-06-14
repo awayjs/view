@@ -211,7 +211,7 @@ export class ViewImage2D extends BitmapImage2D
 
 			this._view.scene = new Scene();
 			this._view.scene.addChild(root);
-			this._view.setPartition(root, new SceneGraphPartition(root));
+			this._view.setPartition(root, new SceneGraphPartition(root, this._view));
 
 			//save snapshot if unlocked
 			if (!this._locked)
