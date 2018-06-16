@@ -2,7 +2,7 @@ import {AssetEvent, IAbstractionPool, AbstractionBase, Plane3D, Vector3D} from "
 
 import {TraverserBase, INode} from "@awayjs/renderer";
 
-import {DisplayObjectEvent, DisplayObject} from "@awayjs/scene";
+import {DisplayObjectEvent, DisplayObject, BoundingVolumeType} from "@awayjs/scene";
 
 import {SceneGraphNode} from "./SceneGraphNode";
 
@@ -99,7 +99,7 @@ export class DisplayObjectNode extends AbstractionBase implements INode
 	
 	public renderBounds(traverser:TraverserBase):void
 	{
-		traverser.applyEntity(this._entity.getBoundingVolume().boundsPrimitive);
+		traverser.applyEntity(this._entity.getBoundingVolume(null, BoundingVolumeType.BOX_FAST).boundsPrimitive);
 	}
 	
 

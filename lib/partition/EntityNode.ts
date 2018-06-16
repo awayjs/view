@@ -2,7 +2,7 @@ import {AssetEvent, Plane3D, Vector3D} from "@awayjs/core";
 
 import {TraverserBase, IEntity, PickingCollision} from "@awayjs/renderer";
 
-import {Sprite, MovieClip, DisplayObject, DisplayObjectEvent} from "@awayjs/scene";
+import {Sprite, MovieClip, DisplayObject, DisplayObjectEvent, BoundingVolumeType} from "@awayjs/scene";
 
 import {IPickingCollider} from "../pick/IPickingCollider";
 
@@ -69,7 +69,7 @@ export class EntityNode extends DisplayObjectNode
 		if (!pickingCollision.normal)
 			pickingCollision.normal = new Vector3D();
 
-		var rayEntryDistance:number = this._entity.getBoundingVolume().rayIntersection(pickingCollision.rayPosition, pickingCollision.rayDirection, pickingCollision.normal);
+		var rayEntryDistance:number = this._entity.getBoundingVolume(null, BoundingVolumeType.BOX_FAST).rayIntersection(pickingCollision.rayPosition, pickingCollision.rayDirection, pickingCollision.normal);
 
 		if (rayEntryDistance < 0)
 			return false;
