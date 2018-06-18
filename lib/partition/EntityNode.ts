@@ -69,7 +69,7 @@ export class EntityNode extends DisplayObjectNode
 		if (!pickingCollision.normal)
 			pickingCollision.normal = new Vector3D();
 
-		var rayEntryDistance:number = this._entity.getBoundingVolume(null, BoundingVolumeType.BOX_FAST).rayIntersection(pickingCollision.rayPosition, pickingCollision.rayDirection, pickingCollision.normal);
+		var rayEntryDistance:number = this._entity.getBoundingVolume(null, BoundingVolumeType.BOX_BOUNDS_FAST).rayIntersection(pickingCollision.rayPosition, pickingCollision.rayDirection, pickingCollision.normal);
 
 		if (rayEntryDistance < 0)
 			return false;
