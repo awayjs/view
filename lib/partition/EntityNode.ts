@@ -100,7 +100,7 @@ export class EntityNode extends DisplayObjectNode
 			traverser[this._entity.traverseName](this._entity);
 	}
 
-	public _onInvalidatePartitionBounds(event:DisplayObjectEvent):void
+	public _onInvalidateBounds(event:DisplayObjectEvent):void
 	{
 		this._partition.invalidateEntity(this._entity);
 	}
