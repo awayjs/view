@@ -22,6 +22,8 @@ export class MouseManager
 	public _iUpdateDirty:boolean;
 	public _iCollision:PickingCollision;
 	
+	public _stage:DisplayObject;
+	
 	private _nullVector:Vector3D = new Vector3D();
 	private _previousCollidingObject:PickingCollision;
 	private _queuedEvents:Array<MouseEvent> = new Array<MouseEvent>();
@@ -161,11 +163,15 @@ export class MouseManager
 
 	private _isDragging:boolean=false;
 	private _fireMouseOver:boolean=false;
+	private _finalDispatchQueueObjects:DisplayObject[]=[];
+	private _finalDispatchQueueEvents:any[]=[];
 	private _prevActiveButtonCollision:DisplayObject=null;
 
 	public fireMouseEvents(forceMouseMove:boolean):void
 	{
 
+		this._finalDispatchQueueObjects.length=0;
+		this._finalDispatchQueueEvents.length=0;
 
 		this._fireMouseOver=false;
 		 // If colliding object has changed, queue over/out events.
@@ -231,6 +237,7 @@ export class MouseManager
 		
 		}
 
+
 		 // Fire mouse move events here if forceMouseMove is on.
 		 //if (forceMouseMove && this._iCollision)
 		//	this.queueDispatch( this._mouseMove, this._mouseMoveEvent);
@@ -244,7 +251,7 @@ export class MouseManager
 		// queuedEvents.length might be changed during the loop, so we cant get the length before
 		for (var i:number = 0; i < this._queuedEvents.length; ++i) {
 			event = this._queuedEvents[i];
-			dispatcher = <DisplayObject> event.entity;
+			dispatcher = <DisplayObject>event.entity;
 			//console.log("this._queuedEvents", i, this._queuedEvents[i], dispatcher);
 
 
@@ -262,10 +269,16 @@ export class MouseManager
 				/*if(dispatcher){
 					console.log("mouseEvent.dispatch", dispatcher, dispatcher.name, event.type, event);
 				}*/
+
+				// MOUSE_DOWN: check if this or any parent is mouse-enabled
+				// if we found one, we update this.objectMouseDown to be that object
+				// if a mouse-enabled object is found, the this.objectInFocus will be set to unFocused if it exists
+				// if this.objectMouseDown is tab-enabled, we update this.objectInFocus to be that object
+				
+
 				var found:boolean=false;
 				while (tmpDispatcher && !found) {
 					if (tmpDispatcher._iIsMouseEnabled()){
-
 						this.objectMouseDown=tmpDispatcher;
 						if(this.objectInFocus)
 							this.objectInFocus.setFocus(false, true);
@@ -315,6 +328,8 @@ export class MouseManager
 				//	this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._previousCollidingObject);
 
 				if(this.objectMouseDown && this.objectMouseDown!=tmpDispatcher){
+					// MOUSE_UP but objectMouseDown has changed. 
+					// we need to dispatch a MOUSE_UP_OUTSIDE on the old objectMouseDown
 
 					if (this.objectMouseDown._iIsMouseEnabled()){
 						//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
@@ -326,7 +341,9 @@ export class MouseManager
 							if (tmpDispatcher._iIsMouseEnabled()) {
 								dispatchedMouseOutsideUPEvent=true;
 								//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
-								tmpDispatcher.dispatchEvent(newEvent);
+								//tmpDispatcher.dispatchEvent(newEvent);
+								this._finalDispatchQueueObjects[this._finalDispatchQueueObjects.length]=tmpDispatcher;
+								this._finalDispatchQueueEvents[this._finalDispatchQueueEvents.length]=newEvent;
 
 							}
 							tmpDispatcher = tmpDispatcher.parent;
@@ -335,8 +352,8 @@ export class MouseManager
 					}
 				}
 				if(this.objectMouseDown){
-
 					if(this.objectMouseDown.isAsset(TextField)){
+						// MOUSE_UP on a TextField. stop any textfield selection.
 						(<TextField>this.objectMouseDown).stopSelectionByMouse(event);
 					}
 				}
@@ -350,7 +367,9 @@ export class MouseManager
 				while (mouseDownDispatcher) {
 					if (mouseDownDispatcher._iIsMouseEnabled()){
 						//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
-						mouseDownDispatcher.dispatchEvent(event);
+						//mouseDownDispatcher.dispatchEvent(event);
+						this._finalDispatchQueueObjects[this._finalDispatchQueueObjects.length]=mouseDownDispatcher;
+						this._finalDispatchQueueEvents[this._finalDispatchQueueEvents.length]=event;
 						if(mouseDownDispatcher.isAsset(TextField)){
 							(<TextField>mouseDownDispatcher).updateSelectionByMouse(event);
 						}
@@ -359,13 +378,17 @@ export class MouseManager
 				}
 			}
 
+			
 			if(!(dispatchedMouseOutsideUPEvent && event.type == MouseEvent.MOUSE_UP)){
 				//	console.log("mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
 				// bubble event up the heirarchy until the top level parent is reached
+
 				while (dispatcher) {
 					if (dispatcher._iIsMouseEnabled()){
 						//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
-						dispatcher.dispatchEvent(event);
+						//dispatcher.dispatchEvent(event);
+						this._finalDispatchQueueObjects[this._finalDispatchQueueObjects.length]=dispatcher;
+						this._finalDispatchQueueEvents[this._finalDispatchQueueEvents.length]=event;
 
 					}
 
@@ -378,6 +401,12 @@ export class MouseManager
 
 		}
 
+		var finalEventsLen:number=this._finalDispatchQueueObjects.length;
+		while(finalEventsLen>0){
+			finalEventsLen--;
+			this._finalDispatchQueueObjects[finalEventsLen].dispatchEvent(this._finalDispatchQueueEvents[finalEventsLen]);
+
+		}
 
 		this._queuedEvents.length = 0;
 		if(!this._isTouch && this._fireMouseOver){
