@@ -2,7 +2,7 @@ import {BuildMode, Vector3D} from "@awayjs/core";
 
 import {PickingCollision, TouchPoint} from "@awayjs/renderer";
 
-import {DisplayObject, KeyboardEvent, MouseEvent, FrameScriptManager, TextField} from "@awayjs/scene";
+import {DisplayObject, KeyboardEvent, MouseEvent, FrameScriptManager, TextField, MovieClip} from "@awayjs/scene";
 
 import {View} from "../View";
 
@@ -21,11 +21,13 @@ export class MouseManager
 	public _iActiveView:View;
 	public _iUpdateDirty:boolean;
 	public _iCollision:PickingCollision;
+	private _prevICollision:PickingCollision;
 	
 	public _stage:DisplayObject;
 	
+	private _showCursor:boolean;
+	
 	private _nullVector:Vector3D = new Vector3D();
-	private _previousCollidingObject:PickingCollision;
 	private _queuedEvents:Array<MouseEvent> = new Array<MouseEvent>();
 
 	private _mouseMoveEvent;
@@ -52,11 +54,18 @@ export class MouseManager
 
 	private _useSoftkeyboard:boolean=false;
 
-	private objectInFocus:DisplayObject;
-	private objectMouseDown:DisplayObject;
+	private _objectInFocus:DisplayObject;
+	private _mouseDownObject:DisplayObject;
 	public  buttonEnabledDirty:boolean;
 	private _isTouch:Boolean;
 	
+	public get showCursor():boolean{
+		return this._showCursor;
+	}
+	public set showCursor(value:boolean){
+		this._showCursor=value;
+	}
+
 	/**
 	 * Creates a new <code>MouseManager</code> object.
 	 */
@@ -74,6 +83,7 @@ export class MouseManager
 		this.onFirstTouchDelegate = (event) => this.onFirstTouch(event);
 		this.buttonEnabledDirty=false;
 		this._isTouch=false;
+		this._showCursor=true;
 		window.addEventListener('touchstart', this.onFirstTouchDelegate, false);
 	}
 	public onFirstTouch(event):void{
@@ -144,28 +154,28 @@ export class MouseManager
 	}
 
 	public setFocus(obj:DisplayObject){
-		if(this.objectInFocus == obj){
+		if(this._objectInFocus == obj){
 			return;
 		}
-		if(this.objectInFocus){
-			this.objectInFocus.setFocus(false, false);
+		if(this._objectInFocus){
+			this._objectInFocus.setFocus(false, false);
 		}
-		this.objectInFocus=obj;
+		this._objectInFocus=obj;
 
-		if(this.objectInFocus){
-			this.objectInFocus.setFocus(true, false);
+		if(this._objectInFocus){
+			this._objectInFocus.setFocus(true, false);
 		}
 
 	}
 	public getFocus(){
-		return this.objectInFocus;
+		return this._objectInFocus;
 	}
 
 	private _isDragging:boolean=false;
 	private _fireMouseOver:boolean=false;
 	private _finalDispatchQueueObjects:DisplayObject[]=[];
 	private _finalDispatchQueueEvents:any[]=[];
-	private _prevActiveButtonCollision:DisplayObject=null;
+	private _prevActiveButton:DisplayObject=null;
 
 	public fireMouseEvents(forceMouseMove:boolean):void
 	{
@@ -175,63 +185,63 @@ export class MouseManager
 
 		this._fireMouseOver=false;
 		 // If colliding object has changed, queue over/out events.
-		if (!this._isDragging && this._iCollision != this._previousCollidingObject) {
-			if (this._previousCollidingObject){
+		if (!this._isDragging && this._iCollision != this._prevICollision) {
+			if (this._prevICollision){
 
 				//todo: do this without any typing hacks (makes sure that a newly-disabled button still gets resetet on mouseout):
-				if((<any>this._previousCollidingObject.entity).buttonReset){
-					(<any>this._previousCollidingObject.entity).buttonReset();
+				if((<any>this._prevICollision.entity).buttonReset){
+					(<any>this._prevICollision.entity).buttonReset();
 				}
 				if(!this._isTouch)
-					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._previousCollidingObject);
+					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._prevICollision);
 			}
 
-			this._prevActiveButtonCollision=null;
+			this._prevActiveButton=null;
 			if (this._iCollision){
 				//console.log("new collision");
 				//console.log("_iCollision", this._iCollision.entity.name);
-				document.body.style.cursor = this._iCollision.entity.getMouseCursor();
+				document.body.style.cursor = this._showCursor ? this._iCollision.entity.getMouseCursor() : "none";
 				if(!this._isTouch)
 					this.queueDispatch(this._mouseOver, this._mouseMoveEvent);
-				if((<any>this._iCollision.entity).buttonMode && (<any>this._iCollision.entity).buttonEnabled){
-					this._prevActiveButtonCollision=<DisplayObject>this._iCollision.entity;
+				if((<any>this._iCollision.entity).isButton && (<any>this._iCollision.entity).buttonEnabled){
+					this._prevActiveButton=<DisplayObject>this._iCollision.entity;
 					//console.log("new collision with active button", this._iCollision.entity.name);
 				}
-				else if((<any>this._iCollision.entity).buttonMode){
+				else if((<any>this._iCollision.entity).isButton){
 					//console.log("new collision with inActive button", this._iCollision.entity.name);
 
 				}
 			}
 			else{
-				document.body.style.cursor = "initial";
+				document.body.style.cursor = this._showCursor ? "initial" : "none";
 				//console.log("no collision");
 
 			}
-			this._previousCollidingObject = this._iCollision;
+			this._prevICollision = this._iCollision;
 		}
 		else{
 			if(this._iCollision){
 				//console.log("same collision", this._iCollision.entity.name, this._iCollision.entity._iIsVisible());
 
-				if((<any>this._iCollision.entity).buttonMode && (<any>this._iCollision.entity).buttonEnabled){
-					if(this._prevActiveButtonCollision!=this._iCollision.entity){
+				if((<MovieClip>this._iCollision.entity).isButton && (<any>this._iCollision.entity).buttonEnabled){
+					if(this._prevActiveButton!=this._iCollision.entity){
 						//console.log("state has changed to active", this._iCollision.entity.name);
-						this._prevActiveButtonCollision=<DisplayObject>this._iCollision.entity;
+						this._prevActiveButton=<DisplayObject>this._iCollision.entity;
 						this._fireMouseOver=true;	
 					}
 				}
 				else{
-					if((<any>this._iCollision.entity).buttonMode && this._prevActiveButtonCollision){
+					if((<any>this._iCollision.entity).isButton && this._prevActiveButton){
 						//console.log("state has changed to inactive", this._iCollision.entity.name);
 
 					}
-					this._prevActiveButtonCollision=null;
+					this._prevActiveButton=null;
 
 				}
 			}
 			else{
 				//console.log("still no collision");
-				this._prevActiveButtonCollision=null;
+				this._prevActiveButton=null;
 
 			}
 		
@@ -255,7 +265,7 @@ export class MouseManager
 			//console.log("this._queuedEvents", i, this._queuedEvents[i], dispatcher);
 
 
-			// if the event was a click/mousedown, we set the dispatcher as objectInFocus
+			// if the event was a click/mousedown, we set the dispatcher as _objectInFocus
 			var tmpDispatcher=dispatcher;
 			//if((event.type==MouseEvent.CLICK)||(event.type==MouseEvent.DOUBLE_CLICK)||(event.type==MouseEvent.MOUSE_DOWN)){
 			if(event.type==MouseEvent.MOUSE_DOWN){
@@ -263,28 +273,28 @@ export class MouseManager
 				this._fireMouseOver=false;
 				this._isDragging=true;
 				//console.log("MOUSE_DOWN", event.entity);
-				//var prevFocusedObject:DisplayObject=this.objectInFocus;
+				//var prevFocusedObject:DisplayObject=this._objectInFocus;
 				
-				this.objectMouseDown=null;
+				this._mouseDownObject=null;
 				/*if(dispatcher){
 					console.log("mouseEvent.dispatch", dispatcher, dispatcher.name, event.type, event);
 				}*/
 
 				// MOUSE_DOWN: check if this or any parent is mouse-enabled
-				// if we found one, we update this.objectMouseDown to be that object
-				// if a mouse-enabled object is found, the this.objectInFocus will be set to unFocused if it exists
-				// if this.objectMouseDown is tab-enabled, we update this.objectInFocus to be that object
+				// if we found one, we update this._mouseDownObject to be that object
+				// if a mouse-enabled object is found, the this._objectInFocus will be set to unFocused if it exists
+				// if this._mouseDownObject is tab-enabled, we update this._objectInFocus to be that object
 				
 
 				var found:boolean=false;
 				while (tmpDispatcher && !found) {
 					if (tmpDispatcher._iIsMouseEnabled()){
-						this.objectMouseDown=tmpDispatcher;
-						if(this.objectInFocus)
-							this.objectInFocus.setFocus(false, true);
+						this._mouseDownObject=tmpDispatcher;
+						if(this._objectInFocus)
+							this._objectInFocus.setFocus(false, true);
 						if(tmpDispatcher.isTabEnabled){
-							this.objectInFocus=this.objectMouseDown;
-							this.objectMouseDown.setFocus(true, true);
+							this._objectInFocus=this._mouseDownObject;
+							this._mouseDownObject.setFocus(true, true);
 						}
 						if(tmpDispatcher.isAsset(TextField)){
 							(<TextField>tmpDispatcher).startSelectionByMouse(event);
@@ -294,19 +304,19 @@ export class MouseManager
 					if(!found)
 						tmpDispatcher = tmpDispatcher.parent;
 				}
-				/*if(this.objectInFocus)
-					console.log("this.objectInFocus", this.objectInFocus.id, this.objectInFocus.name, this.objectInFocus);
-				if(this.objectMouseDown)
-					console.log("this.objectMouseDown", this.objectMouseDown.id, this.objectMouseDown.name, this.objectMouseDown);*/
-				/*if(!this.objectInFocus){
-					this.objectInFocus=prevFocusedObject;
+				/*if(this._objectInFocus)
+					console.log("this._objectInFocus", this._objectInFocus.id, this._objectInFocus.name, this._objectInFocus);
+				if(this._mouseDownObject)
+					console.log("this._mouseDownObject", this._mouseDownObject.id, this._mouseDownObject.name, this._mouseDownObject);*/
+				/*if(!this._objectInFocus){
+					this._objectInFocus=prevFocusedObject;
 				}
-				if(prevFocusedObject!=this.objectInFocus){
+				if(prevFocusedObject!=this._objectInFocus){
 					if(prevFocusedObject){
 						prevFocusedObject.isInFocus=false;
 					}
-					if(this.objectInFocus){
-						this.objectInFocus.isInFocus=true;
+					if(this._objectInFocus){
+						this._objectInFocus.isInFocus=true;
 					}
 				}*/
 			}
@@ -317,26 +327,26 @@ export class MouseManager
 				this._fireMouseOver=false;
 				//console.log("MOUSE_UP", event.entity);
 				//this._fireMouseOver
-				// if this is MOUSE_UP event, and not the objectInFocuse,
+				// if this is MOUSE_UP event, and not the _objectInFocuse,
 				// dispatch a MOUSE_UP_OUTSIDE
 				if(this._isTouch){
 					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._iCollision);
 
 				}
 
-				//if (this._previousCollidingObject && this._iCollision != this._previousCollidingObject)
-				//	this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._previousCollidingObject);
+				//if (this._prevICollision && this._iCollision != this._prevICollision)
+				//	this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._prevICollision);
 
-				if(this.objectMouseDown && this.objectMouseDown!=tmpDispatcher){
-					// MOUSE_UP but objectMouseDown has changed. 
-					// we need to dispatch a MOUSE_UP_OUTSIDE on the old objectMouseDown
+				if(this._mouseDownObject && this._mouseDownObject!=tmpDispatcher){
+					// MOUSE_UP but _mouseDownObject has changed. 
+					// we need to dispatch a MOUSE_UP_OUTSIDE on the old _mouseDownObject
 
-					if (this.objectMouseDown._iIsMouseEnabled()){
+					if (this._mouseDownObject._iIsMouseEnabled()){
 						//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
 						var newEvent:MouseEvent=event.clone();
 						newEvent.type=MouseEvent.MOUSE_UP_OUTSIDE;
-						//this.objectInFocus.dispatchEvent(newEvent);
-						tmpDispatcher=this.objectMouseDown;
+						//this._objectInFocus.dispatchEvent(newEvent);
+						tmpDispatcher=this._mouseDownObject;
 						while (tmpDispatcher) {
 							if (tmpDispatcher._iIsMouseEnabled()) {
 								dispatchedMouseOutsideUPEvent=true;
@@ -351,19 +361,19 @@ export class MouseManager
 						}
 					}
 				}
-				if(this.objectMouseDown){
-					if(this.objectMouseDown.isAsset(TextField)){
+				if(this._mouseDownObject){
+					if(this._mouseDownObject.isAsset(TextField)){
 						// MOUSE_UP on a TextField. stop any textfield selection.
-						(<TextField>this.objectMouseDown).stopSelectionByMouse(event);
+						(<TextField>this._mouseDownObject).stopSelectionByMouse(event);
 					}
 				}
-				this.objectMouseDown=null;
+				this._mouseDownObject=null;
 
-				if(this.objectInFocus)
-					this.objectInFocus.setFocus(true, true);
+				if(this._objectInFocus)
+					this._objectInFocus.setFocus(true, true);
 			}
-			if(this.objectMouseDown && event.type==MouseEvent.MOUSE_MOVE){
-				var mouseDownDispatcher=this.objectMouseDown;
+			if(this._mouseDownObject && event.type==MouseEvent.MOUSE_MOVE){
+				var mouseDownDispatcher=this._mouseDownObject;
 				while (mouseDownDispatcher) {
 					if (mouseDownDispatcher._iIsMouseEnabled()){
 						//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
@@ -410,7 +420,7 @@ export class MouseManager
 
 		this._queuedEvents.length = 0;
 		if(!this._isTouch && this._fireMouseOver){
-			document.body.style.cursor = this._iCollision.entity.getMouseCursor();
+			document.body.style.cursor = this._showCursor ? this._iCollision.entity.getMouseCursor() : "none";
 			this.queueDispatch(this._mouseOver, this._mouseMoveEvent);
 			event = this._queuedEvents[0];
 			dispatcher = <DisplayObject> event.entity;
@@ -677,13 +687,13 @@ export class MouseManager
 	{
 		event.preventDefault();
 
-		if(this.objectInFocus){
-			//console.log("dispatch keydown on ", this.objectInFocus);
+		if(this._objectInFocus){
+			//console.log("dispatch keydown on ", this._objectInFocus);
 			var newEvent:KeyboardEvent=new KeyboardEvent(KeyboardEvent.KEYDOWN, event.key, event.code);
 			newEvent.isShift=event.shiftKey;
 			newEvent.isCTRL=event.ctrlKey;
 			newEvent.isAlt=event.altKey;
-			this.objectInFocus.dispatchEvent(newEvent);
+			this._objectInFocus.dispatchEvent(newEvent);
 		}
 
 	}
