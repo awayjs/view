@@ -1,6 +1,6 @@
 import {Vector3D} from "@awayjs/core";
 
-import {PickingCollision} from "@awayjs/renderer";
+import {PickingCollision, IEntity} from "@awayjs/renderer";
 
 import {View} from "../View";
 
@@ -29,4 +29,8 @@ export interface IPicker
 	 * Disposes memory used by the IPicker object
 	 */
 	dispose();
+
+	/**
+	 */
+	getNextTabEntity(IEntity):IEntity;
 }

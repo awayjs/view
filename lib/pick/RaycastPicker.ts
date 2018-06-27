@@ -48,7 +48,10 @@ export class RaycastPicker extends TraverserBase implements IPicker
 		
 		this._findClosestCollision = findClosestCollision;
 	}
-
+	
+	public getNextTabEntity(currentFocus:IEntity):IEntity{
+		return currentFocus;
+	}
 	/**
 	 * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
 	 *

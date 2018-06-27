@@ -170,6 +170,17 @@ export class MouseManager
 	public getFocus(){
 		return this._objectInFocus;
 	}
+	public focusNextTab(){
+		if(this._viewLookup.length==0)
+			return;
+		var newFocus:DisplayObject=<DisplayObject>this._viewLookup[0].mousePicker.getNextTabEntity(this._objectInFocus);
+		if(newFocus==this._objectInFocus)
+			return;
+		this._objectInFocus.setFocus(false, false);
+		newFocus.setFocus(true, false);
+		this._objectInFocus=newFocus;
+	}
+	
 
 	private _isDragging:boolean=false;
 	private _fireMouseOver:boolean=false;
