@@ -105,7 +105,7 @@ export class MouseManager
 	public get useSoftkeyboard():boolean{
 		return this._useSoftkeyboard;
 	}
-	
+
 	public registerContainer(container:HTMLElement):void
 	{
 		if(container && this._containerLookup.indexOf(container) == -1) {
@@ -200,7 +200,7 @@ export class MouseManager
 
 		this._fireMouseOver=false;
 		 // If colliding object has changed, queue over/out events.
-		if (!this._isDragging && this._iCollision != this._prevICollision) {
+		if (this._iCollision != this._prevICollision) {
 			if (this._prevICollision){
 
 				//todo: do this without any typing hacks (makes sure that a newly-disabled button still gets resetet on mouseout):
