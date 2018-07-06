@@ -102,6 +102,10 @@ export class MouseManager
 			window.removeEventListener("keydown", this.onKeyDownDelegate);
 		}
 	}
+	public get useSoftkeyboard():boolean{
+		return this._useSoftkeyboard;
+	}
+	
 	public registerContainer(container:HTMLElement):void
 	{
 		if(container && this._containerLookup.indexOf(container) == -1) {
