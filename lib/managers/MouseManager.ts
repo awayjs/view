@@ -50,6 +50,7 @@ export class MouseManager
 	private onMouseOverDelegate:(event) => void;
 	private onMouseOutDelegate:(event) => void;
 	private onKeyDownDelegate:(event) => void;
+	private onKeyUpDelegate:(event) => void;
 	private onFirstTouchDelegate:(event) => void;
 
 	private _useSoftkeyboard:boolean=false;
@@ -58,6 +59,7 @@ export class MouseManager
 	private _mouseDownObject:DisplayObject;
 	public  buttonEnabledDirty:boolean;
 	private _isTouch:Boolean;
+	public isAVM1Dragging:Boolean=false;
 	
 	public get showCursor():boolean{
 		return this._showCursor;
@@ -80,6 +82,7 @@ export class MouseManager
 		this.onMouseOverDelegate = (event) => this.onMouseOver(event);
 		this.onMouseOutDelegate = (event) => this.onMouseOut(event);
 		this.onKeyDownDelegate = (event) => this.onKeyDown(event);
+		this.onKeyUpDelegate = (event) => this.onKeyUp(event);
 		this.onFirstTouchDelegate = (event) => this.onFirstTouch(event);
 		this.buttonEnabledDirty=false;
 		this._isTouch=false;
@@ -97,9 +100,11 @@ export class MouseManager
 		this._useSoftkeyboard=value;
 		if(!value && BuildMode.mode==BuildMode.AVM1){
 			window.addEventListener("keydown", this.onKeyDownDelegate);
+			window.addEventListener("keyup", this.onKeyUpDelegate);
 		}
 		else if(value){
 			window.removeEventListener("keydown", this.onKeyDownDelegate);
+			window.removeEventListener("keyup", this.onKeyUpDelegate);
 		}
 	}
 	public get useSoftkeyboard():boolean{
@@ -122,6 +127,7 @@ export class MouseManager
 			container.addEventListener("mouseout", this.onMouseOutDelegate);
 			if(BuildMode.mode==BuildMode.AVM1){
 				window.addEventListener("keydown", this.onKeyDownDelegate);
+				window.addEventListener("keyup", this.onKeyUpDelegate);
 			}
 			this._containerLookup.push(container);
 		}
@@ -143,6 +149,7 @@ export class MouseManager
 			container.removeEventListener("mouseout", this.onMouseOutDelegate);
 			if(BuildMode.mode==BuildMode.AVM1){
 				window.removeEventListener("keydown", this.onKeyDownDelegate);
+				window.removeEventListener("keyup", this.onKeyUpDelegate);
 			}
 
 			this._containerLookup.slice(this._containerLookup.indexOf(container), 1);
@@ -351,8 +358,11 @@ export class MouseManager
 
 				//if (this._prevICollision && this._iCollision != this._prevICollision)
 				//	this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._prevICollision);
-
-				if(this._mouseDownObject && this._mouseDownObject!=tmpDispatcher){
+				
+				if(this.isAVM1Dragging && this._mouseDownObject){
+					this._mouseDownObject.dispatchEvent(event);
+				}
+				else if(this._mouseDownObject && this._mouseDownObject!=tmpDispatcher){
 					// MOUSE_UP but _mouseDownObject has changed. 
 					// we need to dispatch a MOUSE_UP_OUTSIDE on the old _mouseDownObject
 
@@ -376,6 +386,7 @@ export class MouseManager
 						}
 					}
 				}
+				this.isAVM1Dragging=false;
 				if(this._mouseDownObject){
 					if(this._mouseDownObject.isAsset(TextField)){
 						// MOUSE_UP on a TextField. stop any textfield selection.
@@ -702,13 +713,33 @@ export class MouseManager
 	{
 		event.preventDefault();
 
-		if(this._objectInFocus){
+		if(this._objectInFocus || this._stage){
 			//console.log("dispatch keydown on ", this._objectInFocus);
 			var newEvent:KeyboardEvent=new KeyboardEvent(KeyboardEvent.KEYDOWN, event.key, event.code);
 			newEvent.isShift=event.shiftKey;
 			newEvent.isCTRL=event.ctrlKey;
 			newEvent.isAlt=event.altKey;
-			this._objectInFocus.dispatchEvent(newEvent);
+			if(this._objectInFocus)
+				this._objectInFocus.dispatchEvent(newEvent);
+			if(this._stage)
+				this._stage.dispatchEvent(newEvent);
+		}
+
+	}
+	public onKeyUp(event):void
+	{
+		event.preventDefault();
+
+		if(this._objectInFocus || this._stage){
+			//console.log("dispatch keydown on ", this._objectInFocus);
+			var newEvent:KeyboardEvent=new KeyboardEvent(KeyboardEvent.KEYUP, event.key, event.code);
+			newEvent.isShift=event.shiftKey;
+			newEvent.isCTRL=event.ctrlKey;
+			newEvent.isAlt=event.altKey;
+			if(this._objectInFocus)
+				this._objectInFocus.dispatchEvent(newEvent);
+			if(this._stage)
+				this._stage.dispatchEvent(newEvent);
 		}
 
 	}
