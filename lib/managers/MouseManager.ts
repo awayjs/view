@@ -314,10 +314,10 @@ export class MouseManager
 						this._mouseDownObject=tmpDispatcher;
 						if(this._objectInFocus)
 							this._objectInFocus.setFocus(false, true);
-						if(tmpDispatcher.isTabEnabled){
+						//if(tmpDispatcher.isTabEnabled){
 							this._objectInFocus=this._mouseDownObject;
 							this._mouseDownObject.setFocus(true, true);
-						}
+						//}
 						if(tmpDispatcher.isAsset(TextField)){
 							(<TextField>tmpDispatcher).startSelectionByMouse(event);
 						}
