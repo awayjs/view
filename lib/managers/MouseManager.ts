@@ -215,7 +215,7 @@ export class MouseManager
 					(<any>this._prevICollision.entity).buttonReset();
 				}
 				if(!this._isTouch)
-					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._prevICollision);
+					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._prevICollision, false);
 			}
 
 			this._prevActiveButton=null;
@@ -664,7 +664,7 @@ export class MouseManager
 	// Private.
 	// ---------------------------------------------------------------------
 
-	private queueDispatch(event:MouseEvent, sourceEvent, collision:PickingCollision = null):void
+	private queueDispatch(event:MouseEvent, sourceEvent, collision:PickingCollision = null, queueEvent:boolean=true):void
 	{
 		// 2D properties.
 		if (sourceEvent) {
@@ -701,8 +701,21 @@ export class MouseManager
 			event.elementIndex = 0;
 		}
 
-		// Store event to be dispatched later.
-		this._queuedEvents.push(event);
+		if(queueEvent){
+			// Store event to be dispatched later.
+			this._queuedEvents.push(event);
+			return;
+		}
+		var dispatcher = <DisplayObject> event.entity;
+		while (dispatcher) {
+			if (dispatcher._iIsMouseEnabled()){
+				//console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
+				dispatcher.dispatchEvent(event);
+
+			}
+			dispatcher = dispatcher.parent;
+		}
+
 	}
 
 	// ---------------------------------------------------------------------
