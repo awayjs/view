@@ -120,7 +120,8 @@ export class EntityNode extends DisplayObjectNode
 				numChildren = children.length;
 				layerHit = false;
 				for (var j:number = 0; j < numChildren; j++) {
-					if (children[j].hitTestPoint(this._maskPosition.x, this._maskPosition.y, true, true)) {
+					// todo: figure out why a mask can be null here!
+					if (children[j] && children[j].hitTestPoint(this._maskPosition.x, this._maskPosition.y, true, true)) {
 						layerHit = true;
 						break;
 					}
