@@ -52,6 +52,9 @@ export class RaycastPicker extends TraverserBase implements IPicker
 	public getNextTabEntity(currentFocus:IEntity):IEntity{
 		return currentFocus;
 	}
+	public getPrevTabEntity(currentFocus:IEntity):IEntity{
+		return currentFocus;
+	}
 	/**
 	 * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
 	 *

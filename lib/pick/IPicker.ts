@@ -33,4 +33,5 @@ export interface IPicker
 	/**
 	 */
 	getNextTabEntity(IEntity):IEntity;
+	getPrevTabEntity(IEntity):IEntity;
 }
