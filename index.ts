@@ -1,4 +1,4 @@
-console.log("AwayJS - View - 0.3.47");
+console.log("AwayJS - View - 0.3.48");
 export {MouseManager} from "./lib/managers/MouseManager";
 export {ViewImage2D} from "./lib/image/ViewImage2D";
 export {BasicPartition} from "./lib/partition/BasicPartition";
