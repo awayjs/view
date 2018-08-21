@@ -391,7 +391,9 @@ export class View implements IView
 		//return this._pEntityCollector._pNumTriangles;//numTriangles;
 	}
 
-	/**
+	public beforeRenderCallback:Function;
+	
+	/** 
 	 * Renders the view.
 	 */
 	public render():void
@@ -417,6 +419,9 @@ export class View implements IView
 
 			this._mouseManager.fireMouseEvents(this.forceMouseMove);
 			//_touch3DManager.fireTouchEvents();
+		}
+		if(this.beforeRenderCallback){
+			this.beforeRenderCallback();
 		}
 		//_touch3DManager.updateCollider();
 
