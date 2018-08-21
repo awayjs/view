@@ -316,6 +316,10 @@ export class MouseManager
 				// if a mouse-enabled object is found, the this._objectInFocus will be set to unFocused if it exists
 				// if this._mouseDownObject is tab-enabled, we update this._objectInFocus to be that object
 				
+				if(this._isTouch){
+					this.queueDispatch(this._mouseOver, this._mouseMoveEvent, this._iCollision);
+
+				}
 
 				var found:boolean=false;
 				while (tmpDispatcher && !found) {
@@ -361,7 +365,7 @@ export class MouseManager
 				// if this is MOUSE_UP event, and not the _objectInFocuse,
 				// dispatch a MOUSE_UP_OUTSIDE
 				if(this._isTouch){
-					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._iCollision);
+					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._mouseDownObject?this._mouseDownObject._iPickingCollision:null);
 
 				}
 
