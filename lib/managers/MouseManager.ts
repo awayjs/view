@@ -142,8 +142,8 @@ export class MouseManager
 			container.removeEventListener("mousedown", this.onMouseDownDelegate);
 			container.removeEventListener("touchmove", this.onMouseMoveDelegate);
 			container.removeEventListener("mousemove", this.onMouseMoveDelegate);
-			container.removeEventListener("touchend", this.onMouseUpDelegate);
-			container.removeEventListener("mouseup", this.onMouseUpDelegate);
+			window.removeEventListener("touchend", this.onMouseUpDelegate);
+			window.removeEventListener("mouseup", this.onMouseUpDelegate);
 			container.removeEventListener("mousewheel", this.onMouseWheelDelegate);
 			container.removeEventListener("mouseover", this.onMouseOverDelegate);
 			container.removeEventListener("mouseout", this.onMouseOutDelegate);
@@ -373,6 +373,7 @@ export class MouseManager
 				//	this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._prevICollision);
 				
 				if(this.isAVM1Dragging && this._mouseDownObject){
+                    dispatchedMouseOutsideUPEvent=true;
 					this._mouseDownObject.dispatchEvent(event);
 				}
 				else if(this._mouseDownObject && this._mouseDownObject!=tmpDispatcher){
