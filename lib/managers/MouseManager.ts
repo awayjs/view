@@ -142,8 +142,8 @@ export class MouseManager
 			container.removeEventListener("mousedown", this.onMouseDownDelegate);
 			container.removeEventListener("touchmove", this.onMouseMoveDelegate);
 			container.removeEventListener("mousemove", this.onMouseMoveDelegate);
-			window.removeEventListener("touchend", this.onMouseUpDelegate);
-			window.removeEventListener("mouseup", this.onMouseUpDelegate);
+			container.removeEventListener("touchend", this.onMouseUpDelegate);
+			container.removeEventListener("mouseup", this.onMouseUpDelegate);
 			container.removeEventListener("mousewheel", this.onMouseWheelDelegate);
 			container.removeEventListener("mouseover", this.onMouseOverDelegate);
 			container.removeEventListener("mouseout", this.onMouseOutDelegate);
