@@ -374,7 +374,19 @@ export class MouseManager
 				
 				if(this.isAVM1Dragging && this._mouseDownObject){
                     dispatchedMouseOutsideUPEvent=true;
-					this._mouseDownObject.dispatchEvent(event);
+                    tmpDispatcher=this._mouseDownObject;
+                    while (tmpDispatcher) {
+                        if (tmpDispatcher._iIsMouseEnabled()) {
+                            //console.log("		dispatcher mouse event", event.type, "on:", dispatcher, dispatcher.adapter.constructor.name);
+                            //tmpDispatcher.dispatchEvent(newEvent);
+                            this._finalDispatchQueueObjects[this._finalDispatchQueueObjects.length]=tmpDispatcher;
+                            this._finalDispatchQueueEvents[this._finalDispatchQueueEvents.length]=event;
+
+                        }
+                        tmpDispatcher = tmpDispatcher.parent;
+
+                    }
+					//this._mouseDownObject.dispatchEvent(event);
 				}
 				else if(this._mouseDownObject && this._mouseDownObject!=tmpDispatcher){
 					// MOUSE_UP but _mouseDownObject has changed. 
