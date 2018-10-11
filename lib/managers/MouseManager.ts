@@ -861,14 +861,14 @@ export class MouseManager
 		var len:number = this._viewLookup.length;
 		for (var i:number = 0; i < len; i++) {
 			view = this._viewLookup[i];
-			view._pTouchPoints.length = 0;
+			view._touchPoints.length = 0;
 
 			if (event.touches) {
 				var touch;
 				var len:number = event.touches.length;
 				for (var i:number = 0; i < len; i++) {
 					touch = event.touches[i];
-					view._pTouchPoints.push(new TouchPoint(touch.clientX + view.x, touch.clientY + view.y, touch.identifier));
+					view._touchPoints.push(new TouchPoint(touch.clientX + view.x, touch.clientY + view.y, touch.identifier));
 				}
 			}
 
@@ -876,25 +876,25 @@ export class MouseManager
 				continue;
 
 			if (mouseX < view.x){
-				view._pMouseX = view.x;
+				view._mouseX = view.x;
 			}
 			else if (mouseX > view.x + view.width){
-				view._pMouseX = view.x+ view.width;
+				view._mouseX = view.x+ view.width;
 
 			}
 			else{
-				view._pMouseX = mouseX - view.x;
+				view._mouseX = mouseX - view.x;
 
 			}
 			if(mouseY < view.y){
-				view._pMouseY = view.y;
+				view._mouseY = view.y;
 
 			} 
 			else if(mouseY > view.y + view.height) {
-				view._pMouseY = view.y+ view.height;
+				view._mouseY = view.y+ view.height;
 			}
 			else {
-				view._pMouseY = mouseY - view.y;
+				view._mouseY = mouseY - view.y;
 			}
 
 			view.updateCollider();

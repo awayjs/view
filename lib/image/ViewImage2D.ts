@@ -2,11 +2,9 @@ import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProject
 
 import {Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode} from "@awayjs/stage";
 
-import {DefaultRenderer} from "@awayjs/renderer";
+import {DefaultRenderer, SceneGraphPartition} from "@awayjs/renderer";
 
-import {Scene, DisplayObject, DisplayObjectContainer, Camera, HoverController} from "@awayjs/scene";
-
-import {SceneGraphPartition} from "../partition/SceneGraphPartition";
+import {Scene, DisplayObject, DisplayObjectContainer} from "@awayjs/scene";
 
 import {View} from "../View";
 
@@ -67,27 +65,25 @@ export class ViewImage2D extends BitmapImage2D
 		this._stage = stage;
 	}
 
-	private createView()
+	private createView(root:DisplayObjectContainer)
 	{
+		//create the projection
+		var projection = new PerspectiveProjection();
+		projection.coordinateSystem = CoordinateSystem.RIGHT_HANDED;
+		projection.originX = -1;
+		projection.originY = -1;
+
 		//create the view
-		this._view = new View(new DefaultRenderer(this._stage));
+		this._view = new View(new DefaultRenderer(new SceneGraphPartition(root), projection, this._stage));
 		this._view.disableMouseEvents = true;
 		this._view.width = this._rect.width;
 		this._view.height = this._rect.height;
 		this._fillColor = this._fillColor;
-		this._view.backgroundAlpha = this._transparent? ( this._fillColor & 0xff000000 ) >>> 24 : 1;
-		this._view.backgroundColor = this._fillColor & 0xffffff;
+		this._view.renderer.viewport.backgroundAlpha = this._transparent? ( this._fillColor & 0xff000000 ) >>> 24 : 1;
+		this._view.renderer.viewport.backgroundColor = this._fillColor & 0xffffff;
+		this._view.renderer.viewport.preserveFocalLength = true;
 
 		this._view.renderer.renderableSorter = null;//new RenderableSort2D();
-
-		//create the projection
-		var projection = new PerspectiveProjection();
-		projection.coordinateSystem = CoordinateSystem.RIGHT_HANDED;
-		projection.originX = 0;
-		projection.originY = 0;
-		projection.preserveFocalLength = true;
-		projection.setViewRect(0, 0, this._rect.width, this._rect.height);
-		projection.setStageRect(0, 0, this._rect.width, this._rect.height);
 
 		this._view.camera.projection = projection;
 	}
@@ -207,11 +203,7 @@ export class ViewImage2D extends BitmapImage2D
 			root.transform.colorTransform = colorTransform;
 
 			if (!this._view)
-				this.createView();
-
-			this._view.scene = new Scene();
-			this._view.scene.addChild(root);
-			this._view.setPartition(root, new SceneGraphPartition(root, this._view));
+				this.createView(root);
 
 			//save snapshot if unlocked
 			if (!this._locked)
@@ -220,30 +212,12 @@ export class ViewImage2D extends BitmapImage2D
 			this._view.renderer.disableClear = !this._locked;
 
 			//render
-			this._view.renderer._iRender(this._view.camera.projection, this._view, this);
+			this._view.renderer.render();
 
 			return;
 		}
 
 		super.draw(source, matrix, colorTransform, blendMode, clipRect, smoothing);
-	}
-
-	/**
-	 *
-	 * @param width
-	 * @param height
-	 * @private
-	 */
-	public _setSize(width:number, height:number):void
-	{
-		super._setSize(width, height);
-
-		if (this._view) {
-			this._view.width = this._rect.width;
-			this._view.height = this._rect.height;
-			this._view.camera.projection.setViewRect(0, 0, this._rect.width, this._rect.height);
-			this._view.camera.projection.setStageRect(0, 0, this._rect.width, this._rect.height);
-		}
 	}
 }
 
