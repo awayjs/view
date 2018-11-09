@@ -1,6 +1,6 @@
 import {BuildMode, Vector3D} from "@awayjs/core";
 
-import {PickingCollision, TouchPoint} from "@awayjs/renderer";
+import {PickingCollision, TouchPoint, PickGroup, IEntity} from "@awayjs/renderer";
 
 import {DisplayObject, KeyboardEvent, MouseEvent, FrameScriptManager, TextField, MovieClip} from "@awayjs/scene";
 
@@ -15,13 +15,16 @@ export class MouseManager
 {
 	private static _instance:MouseManager;
 
+	private _pickGroup:PickGroup;
 	private _viewLookup:Array<View> = new Array<View>();
 	private _containerLookup:Array<HTMLElement> = new Array<HTMLElement>();
 
 	public _iActiveView:View;
 	public _iUpdateDirty:boolean;
 	public _iCollision:PickingCollision;
-	private _prevICollision:PickingCollision;
+	public  _prevICollision:PickingCollision;
+	private _iCollisionEntity:IEntity;
+	private _prevICollisionEntity:IEntity;
 	
 	public _stage:DisplayObject;
 	
@@ -71,8 +74,9 @@ export class MouseManager
 	/**
 	 * Creates a new <code>MouseManager</code> object.
 	 */
-	constructor()
+	constructor(pickGroup:PickGroup)
 	{
+		this._pickGroup = pickGroup;
 		this.onClickDelegate = (event) => this.onClick(event);
 		this.onDoubleClickDelegate = (event) => this.onDoubleClick(event);
 		this.onMouseDownDelegate = (event) => this.onMouseDown(event);
@@ -156,12 +160,12 @@ export class MouseManager
 		}
 	}
 
-	public static getInstance():MouseManager
+	public static getInstance(pickGroup:PickGroup):MouseManager
 	{
 		if (this._instance)
 			return this._instance;
 
-		return (this._instance = new MouseManager());
+		return (this._instance = new MouseManager(pickGroup));
 	}
 
 	public setFocus(obj:DisplayObject){
@@ -215,30 +219,35 @@ export class MouseManager
 		this._finalDispatchQueueEvents.length=0;
 
 		this._fireMouseOver=false;
+
+		this._iCollisionEntity = this._iCollision && this._iCollision.entity;
+		while (this._iCollisionEntity && !this._iCollisionEntity._iIsMouseEnabled())
+			this._iCollisionEntity = this._iCollisionEntity.parent;
+
 		 // If colliding object has changed, queue over/out events.
-		if (this._iCollision != this._prevICollision) {
-			if (this._prevICollision){
+		if (this._iCollisionEntity != this._prevICollisionEntity) {
+			if (this._prevICollisionEntity){
 
 				//todo: do this without any typing hacks (makes sure that a newly-disabled button still gets resetet on mouseout):
-				if((<any>this._prevICollision.entity).buttonReset){
-					(<any>this._prevICollision.entity).buttonReset();
+				if((<any>this._prevICollisionEntity).buttonReset){
+					(<any>this._prevICollisionEntity).buttonReset();
 				}
 				if(!this._isTouch)
-					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._prevICollision, false);
+					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._prevICollision, this._prevICollisionEntity, false);
 			}
 
 			this._prevActiveButton=null;
 			if (this._iCollision){
 				//console.log("new collision");
 				//console.log("_iCollision", this._iCollision.entity.name);
-				document.body.style.cursor = this._showCursor ? this._iCollision.entity.getMouseCursor() : "none";
+				document.body.style.cursor = this._showCursor ? this._iCollisionEntity.getMouseCursor() : "none";
 				if(!this._isTouch)
 					this.queueDispatch(this._mouseOver, this._mouseMoveEvent);
-				if((<any>this._iCollision.entity).isButton && (<any>this._iCollision.entity).buttonEnabled){
-					this._prevActiveButton=<DisplayObject>this._iCollision.entity;
+				if((<any>this._iCollisionEntity).isButton && (<any>this._iCollisionEntity).buttonEnabled){
+					this._prevActiveButton=<DisplayObject>this._iCollisionEntity;
 					//console.log("new collision with active button", this._iCollision.entity.name);
 				}
-				else if((<any>this._iCollision.entity).isButton){
+				else if((<any>this._iCollisionEntity).isButton){
 					//console.log("new collision with inActive button", this._iCollision.entity.name);
 
 				}
@@ -248,22 +257,22 @@ export class MouseManager
 				//console.log("no collision");
 
 			}
-			this._prevICollision = this._iCollision;
+			this._prevICollisionEntity = this._iCollisionEntity;
 		}
 		else{
 			if(this._iCollision){
-				//console.log("same collision", this._iCollision.entity.name, this._iCollision.entity._iIsVisible());
+				//console.log("same collision", this._iCollisionEntity.name, this._iCollisionEntity._iIsVisible());
 
-				if((<MovieClip>this._iCollision.entity).isButton && (<any>this._iCollision.entity).buttonEnabled){
-					if(this._prevActiveButton!=this._iCollision.entity){
-						//console.log("state has changed to active", this._iCollision.entity.name);
-						this._prevActiveButton=<DisplayObject>this._iCollision.entity;
+				if((<MovieClip>this._iCollisionEntity).isButton && (<any>this._iCollisionEntity).buttonEnabled){
+					if(this._prevActiveButton!=this._iCollisionEntity){
+						//console.log("state has changed to active", this._iCollisionEntity.name);
+						this._prevActiveButton=<DisplayObject>this._iCollisionEntity;
 						this._fireMouseOver=true;	
 					}
 				}
 				else{
-					if((<any>this._iCollision.entity).isButton && this._prevActiveButton){
-						//console.log("state has changed to inactive", this._iCollision.entity.name);
+					if((<any>this._iCollisionEntity).isButton && this._prevActiveButton){
+						//console.log("state has changed to inactive", this._iCollisionEntity.name);
 
 					}
 					this._prevActiveButton=null;
@@ -365,7 +374,7 @@ export class MouseManager
 				// if this is MOUSE_UP event, and not the _objectInFocuse,
 				// dispatch a MOUSE_UP_OUTSIDE
 				if(this._isTouch){
-					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._mouseDownObject?this._mouseDownObject._iPickingCollision:null);
+					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._mouseDownObject?this._pickGroup.getAbstraction(this._mouseDownObject).pickingCollision:null);
 
 				}
 
@@ -678,7 +687,7 @@ export class MouseManager
 	// Private.
 	// ---------------------------------------------------------------------
 
-	private queueDispatch(event:MouseEvent, sourceEvent, collision:PickingCollision = null, queueEvent:boolean=true):void
+	private queueDispatch(event:MouseEvent, sourceEvent, collision:PickingCollision = null, collisionEntity:IEntity = null, queueEvent:boolean=true):void
 	{
 		// 2D properties.
 		if (sourceEvent) {
@@ -693,10 +702,13 @@ export class MouseManager
 		if (collision == null)
 			collision = this._iCollision;
 
+		if (collisionEntity == null)
+			collisionEntity = this._iCollisionEntity;
+
 		// 3D properties.
 		if (collision) {
 			// Object.
-			event.entity = collision.entity;
+			event.entity = collisionEntity;
 			event.renderable = collision.renderable;
 			// UV.
 			event.uv = collision.uv;

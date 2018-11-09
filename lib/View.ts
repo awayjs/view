@@ -2,7 +2,7 @@ import {Vector3D, getTimer} from "@awayjs/core";
 
 import {Camera, Scene, CameraEvent} from "@awayjs/scene";
 
-import {DefaultRenderer, RendererBase, IEntity, TouchPoint, IView, PickingCollision, BasicPartition, PartitionBase, IPicker, RaycastPicker} from "@awayjs/renderer";
+import {DefaultRenderer, RendererBase, IEntity, TouchPoint, IView, PickingCollision, BasicPartition, PartitionBase, IPicker, RaycastPicker, PickGroup} from "@awayjs/renderer";
 
 import {MouseManager} from "./managers/MouseManager";
 import { Viewport } from '@awayjs/stage';
@@ -35,7 +35,7 @@ export class View implements IView
 
 	private _onProjectionChangedDelegate:(event:CameraEvent) => void;
 	private _mouseManager:MouseManager;
-	private _mousePicker:IPicker;
+	private _mousePicker:RaycastPicker;
 
 	public _mouseX:number;
 	public _mouseY:number;
@@ -54,13 +54,14 @@ export class View implements IView
 	constructor(renderer:RendererBase = null, scene:Scene = null, camera:Camera = null)
 	{
 		this._onProjectionChangedDelegate = (event:CameraEvent) => this._onProjectionChanged(event);
-		this._mouseManager = MouseManager.getInstance();
-		this._mouseManager.registerView(this);
 
 		this.camera = camera || new Camera();
 		this.renderer = renderer || new DefaultRenderer(new BasicPartition(scene || new Scene()));
 
-		this._mousePicker = new RaycastPicker(this._partition);
+		this._mousePicker = new RaycastPicker(this._partition, PickGroup.getInstance(this.renderer.viewport));
+		this._mouseManager = MouseManager.getInstance(this._renderer.pickGroup);
+		this._mouseManager.registerContainer(this._renderer.stage.container);
+		this._mouseManager.registerView(this);
 
 //			if (this._shareContext)
 //				this._mouse3DManager.addViewLayer(this);
@@ -132,10 +133,12 @@ export class View implements IView
 		this._partition = this._renderer.partition;
 
 		this._scene = <Scene> this._partition.root;
+		this._scene.partition = this._partition;
 
-		this._mouseManager.registerContainer(this._renderer.stage.container);
+		if (this._mouseManager)
+			this._mouseManager.registerContainer(this._renderer.stage.container);
 
-		this._mousePicker = new RaycastPicker(this._partition);
+		this._mousePicker = new RaycastPicker(this._partition, new PickGroup(this.renderer.viewport));
 
 		if (this._camera) {
 			this._renderer.viewport.projection = this._camera.projection;
@@ -265,18 +268,18 @@ export class View implements IView
 	/**
 	 *
 	 */
-	public get mousePicker():IPicker
+	public get mousePicker():RaycastPicker
 	{
 		return this._mousePicker;
 	}
 
-	public set mousePicker(value:IPicker)
+	public set mousePicker(value:RaycastPicker)
 	{
 		if (this._mousePicker == value)
 			return;
 
 		if (value == null)
-			this._mousePicker = new RaycastPicker(this._partition);
+			this._mousePicker = new RaycastPicker(this._partition, new PickGroup(this.renderer.viewport));
 		else
 			this._mousePicker = value;
 	}
@@ -445,6 +448,6 @@ export class View implements IView
 		var rayPosition:Vector3D = view.unproject(x, y, 0);
 		var rayDirection:Vector3D = view.unproject(x, y, 1).subtract(rayPosition);
 
-		return this._mousePicker.getCollision(rayPosition, rayDirection);
+		return this._mousePicker.getCollision(rayPosition, rayDirection, false, true);
 	}
 }
