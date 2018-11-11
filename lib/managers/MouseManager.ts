@@ -220,9 +220,7 @@ export class MouseManager
 
 		this._fireMouseOver=false;
 
-		this._iCollisionEntity = this._iCollision && this._iCollision.entity;
-		while (this._iCollisionEntity && !this._iCollisionEntity._iIsMouseEnabled())
-			this._iCollisionEntity = this._iCollisionEntity.parent;
+		this._iCollisionEntity = (this._iCollision)? this._iCollision.pickerEntity : null;
 
 		 // If colliding object has changed, queue over/out events.
 		if (this._iCollisionEntity != this._prevICollisionEntity) {
@@ -237,7 +235,7 @@ export class MouseManager
 			}
 
 			this._prevActiveButton=null;
-			if (this._iCollision){
+			if (this._iCollisionEntity){
 				//console.log("new collision");
 				//console.log("_iCollision", this._iCollision.entity.name);
 				document.body.style.cursor = this._showCursor ? this._iCollisionEntity.getMouseCursor() : "none";
@@ -260,7 +258,7 @@ export class MouseManager
 			this._prevICollisionEntity = this._iCollisionEntity;
 		}
 		else{
-			if(this._iCollision){
+			if(this._iCollisionEntity){
 				//console.log("same collision", this._iCollisionEntity.name, this._iCollisionEntity._iIsVisible());
 
 				if((<MovieClip>this._iCollisionEntity).isButton && (<any>this._iCollisionEntity).buttonEnabled){
@@ -326,7 +324,7 @@ export class MouseManager
 				// if this._mouseDownObject is tab-enabled, we update this._objectInFocus to be that object
 				
 				if(this._isTouch){
-					this.queueDispatch(this._mouseOver, this._mouseMoveEvent, this._iCollision);
+					this.queueDispatch(this._mouseOver, this._mouseMoveEvent, this._iCollision, this._iCollisionEntity);
 
 				}
 
