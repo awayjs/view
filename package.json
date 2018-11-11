@@ -1,6 +1,6 @@
 {
   "name": "@awayjs/view",
-  "version": "0.3.54",
+  "version": "0.4.0",
   "description": "View for AwayJS",
   "main": "bundle/awayjs-view.umd.js",
   "module": "dist/index.js",
@@ -39,8 +39,8 @@
   "homepage": "https://github.com/awayjs/view#readme",
   "dependencies": {
     "@awayjs/core": "^0.7.0",
-    "@awayjs/graphics": "^0.2.0",
-    "@awayjs/scene": "^0.9.0",
+    "@awayjs/graphics": "^0.3.0",
+    "@awayjs/scene": "^0.11.0",
     "@awayjs/stage": "^0.9.0",
     "@awayjs/renderer": "^0.9.0",
     "tslib": "^1.9.0"
