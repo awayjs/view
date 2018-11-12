@@ -187,7 +187,7 @@ export class MouseManager
 	public focusNextTab(){
 		if(this._viewLookup.length==0)
 			return;
-		var newFocus:DisplayObject=<DisplayObject>this._viewLookup[0].mousePicker.getNextTabEntity(this._objectInFocus);
+		var newFocus:DisplayObject=<DisplayObject>this._viewLookup[0].tabPicker.getNextTabEntity(this._objectInFocus);
 		if(newFocus==this._objectInFocus)
 			return;
 		this._objectInFocus.setFocus(false, false);
@@ -197,7 +197,7 @@ export class MouseManager
 	public focusPreviousTab(){
 		if(this._viewLookup.length==0)
 			return;
-		var newFocus:DisplayObject=<DisplayObject>this._viewLookup[0].mousePicker.getPrevTabEntity(this._objectInFocus);
+		var newFocus:DisplayObject=<DisplayObject>this._viewLookup[0].tabPicker.getPrevTabEntity(this._objectInFocus);
 		if(newFocus==this._objectInFocus)
 			return;
 		this._objectInFocus.setFocus(false, false);
@@ -334,7 +334,7 @@ export class MouseManager
 						this._mouseDownObject=tmpDispatcher;
 						if(this._objectInFocus)
 							this._objectInFocus.setFocus(false, true);
-						//if(tmpDispatcher.isTabEnabled){
+						//if(tmpDispatcher.tabEnabled){
 							this._objectInFocus=this._mouseDownObject;
 							this._mouseDownObject.setFocus(true, true);
 						//}

@@ -2,7 +2,7 @@ import {Vector3D, getTimer} from "@awayjs/core";
 
 import {Camera, Scene, CameraEvent} from "@awayjs/scene";
 
-import {DefaultRenderer, RendererBase, IEntity, TouchPoint, IView, PickingCollision, BasicPartition, PartitionBase, IPicker, RaycastPicker, PickGroup} from "@awayjs/renderer";
+import {DefaultRenderer, RendererBase, IEntity, TouchPoint, IView, PickingCollision, BasicPartition, PartitionBase, TabPicker, RaycastPicker, PickGroup} from "@awayjs/renderer";
 
 import {MouseManager} from "./managers/MouseManager";
 import { Viewport } from '@awayjs/stage';
@@ -36,6 +36,7 @@ export class View implements IView
 	private _onProjectionChangedDelegate:(event:CameraEvent) => void;
 	private _mouseManager:MouseManager;
 	private _mousePicker:RaycastPicker;
+	private _tabPicker:TabPicker;
 
 	public _mouseX:number;
 	public _mouseY:number;
@@ -59,6 +60,7 @@ export class View implements IView
 		this.renderer = renderer || new DefaultRenderer(new BasicPartition(scene || new Scene()));
 
 		this._mousePicker = new RaycastPicker(this._partition, PickGroup.getInstance(this.renderer.viewport));
+		this._tabPicker = new TabPicker(this._partition, PickGroup.getInstance(this.renderer.viewport));
 		this._mouseManager = MouseManager.getInstance(this._renderer.pickGroup);
 		this._mouseManager.registerContainer(this._renderer.stage.container);
 		this._mouseManager.registerView(this);
@@ -282,6 +284,26 @@ export class View implements IView
 			this._mousePicker = new RaycastPicker(this._partition, new PickGroup(this.renderer.viewport));
 		else
 			this._mousePicker = value;
+	}
+
+	
+	/**
+	 *
+	 */
+	public get tabPicker():TabPicker
+	{
+		return this._tabPicker;
+	}
+
+	public set tabPicker(value:TabPicker)
+	{
+		if (this._tabPicker == value)
+			return;
+
+		if (value == null)
+			this._tabPicker = new TabPicker(this._partition, new PickGroup(this.renderer.viewport));
+		else
+			this._tabPicker = value;
 	}
 
 	/**
