@@ -64,7 +64,8 @@ export class View implements IView
 		this._mouseManager = MouseManager.getInstance(this._renderer.pickGroup);
 		this._mouseManager.registerContainer(this._renderer.stage.container);
 		this._mouseManager.registerView(this);
-
+		this._mousePicker.findClosestCollision = true;
+		
 //			if (this._shareContext)
 //				this._mouse3DManager.addViewLayer(this);
 	}
@@ -470,6 +471,6 @@ export class View implements IView
 		var rayPosition:Vector3D = view.unproject(x, y, 0);
 		var rayDirection:Vector3D = view.unproject(x, y, 1).subtract(rayPosition);
 
-		return this._mousePicker.getCollision(rayPosition, rayDirection, false, true);
+		return this._mousePicker.getCollision(rayPosition, rayDirection);
 	}
 }

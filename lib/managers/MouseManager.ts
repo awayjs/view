@@ -231,7 +231,7 @@ export class MouseManager
 					(<any>this._prevICollisionEntity).buttonReset();
 				}
 				if(!this._isTouch)
-					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._prevICollision, this._prevICollisionEntity, false);
+					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._prevICollision, false);
 			}
 
 			this._prevActiveButton=null;
@@ -255,6 +255,7 @@ export class MouseManager
 				//console.log("no collision");
 
 			}
+			this._prevICollision = this._iCollision;
 			this._prevICollisionEntity = this._iCollisionEntity;
 		}
 		else{
@@ -324,7 +325,7 @@ export class MouseManager
 				// if this._mouseDownObject is tab-enabled, we update this._objectInFocus to be that object
 				
 				if(this._isTouch){
-					this.queueDispatch(this._mouseOver, this._mouseMoveEvent, this._iCollision, this._iCollisionEntity);
+					this.queueDispatch(this._mouseOver, this._mouseMoveEvent, this._iCollision);
 
 				}
 
@@ -697,7 +698,7 @@ export class MouseManager
 	// Private.
 	// ---------------------------------------------------------------------
 
-	private queueDispatch(event:MouseEvent, sourceEvent, collision:PickingCollision = null, collisionEntity:IEntity = null, queueEvent:boolean=true):void
+	private queueDispatch(event:MouseEvent, sourceEvent, collision:PickingCollision = null, queueEvent:boolean=true):void
 	{
 		// 2D properties.
 		if (sourceEvent) {
@@ -712,13 +713,10 @@ export class MouseManager
 		if (collision == null)
 			collision = this._iCollision;
 
-		if (collisionEntity == null)
-			collisionEntity = this._iCollisionEntity;
-
 		// 3D properties.
 		if (collision) {
 			// Object.
-			event.entity = collisionEntity;
+			event.entity = collision.pickerEntity;
 			event.renderable = collision.renderable;
 			// UV.
 			event.uv = collision.uv;
