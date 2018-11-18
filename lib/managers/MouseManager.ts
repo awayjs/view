@@ -203,7 +203,8 @@ export class MouseManager {
         var newFocus: DisplayObject = <DisplayObject>this._viewLookup[0].tabPicker.getNextTabEntity(this._currentFocusEntity);
         if (newFocus == this._currentFocusEntity)
             return;
-        this._currentFocusEntity.setFocus(false, false);
+        if(this._currentFocusEntity)
+            this._currentFocusEntity.setFocus(false, false);
         this._currentFocusEntity = newFocus;
         this._currentFocusEntity.setFocus(true, false);
     }
@@ -213,7 +214,8 @@ export class MouseManager {
         var newFocus: DisplayObject = <DisplayObject>this._viewLookup[0].tabPicker.getPrevTabEntity(this._currentFocusEntity);
         if (newFocus == this._currentFocusEntity)
             return;
-        this._currentFocusEntity.setFocus(false, false);
+        if(this._currentFocusEntity)
+            this._currentFocusEntity.setFocus(false, false);
         this._currentFocusEntity = newFocus;
         this._currentFocusEntity.setFocus(true, false);
     }
@@ -316,7 +318,7 @@ export class MouseManager {
 
                 if (this._isTouch) {
                     // on Touch dispatch mouseOver Command
-                    //this.setupAndDispatchEvent(this._mouseOver, this._mouseMoveEvent, this._iCollision, this._iCollisionEntity);
+                    this.setupAndDispatchEvent(this._mouseOver, this._mouseMoveEvent, this._iCollision, this._iCollisionEntity);
                 }
 
                 this._mouseDragEntity = dispatcher;
@@ -366,7 +368,7 @@ export class MouseManager {
                 }
 
                 if (this._isTouch) {
-                    //this.setupAndDispatchEvent(this._mouseOut, this._mouseMoveEvent, upEventDispatcher ? this._pickGroup.getAbstraction(upEventDispatcher).pickingCollision : null);
+                    this.setupAndDispatchEvent(this._mouseOut, this._mouseMoveEvent, upEventDispatcher ? this._pickGroup.getAbstraction(upEventDispatcher).pickingCollision : null);
                 }
                 if(upEventDispatcher){
                     this.dispatchEvent(event, upEventDispatcher);
