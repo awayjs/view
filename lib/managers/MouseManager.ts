@@ -21,6 +21,7 @@ export class MouseManager {
     public _iActiveView: View;
     public _iUpdateDirty: boolean;
     public _iCollision: PickingCollision;
+    public _prevICollision: PickingCollision;
     
     private _iCollisionEntity: IEntity;         // current hit entity
     private _prevICollisionEntity: IEntity;     // entity hit on last frame
@@ -240,8 +241,8 @@ export class MouseManager {
         }
     }
 
-    private setupAndDispatchEvent(event: MouseEvent, sourceEvent, collision: PickingCollision = null, collisionEntity: IEntity = null){
-        event=this.setUpEvent(event, sourceEvent, collision, collisionEntity);
+    private setupAndDispatchEvent(event: MouseEvent, sourceEvent, collision: PickingCollision){
+        event=this.setUpEvent(event, sourceEvent, collision);
         this.dispatchEvent(event, event.entity);
     }
 
@@ -263,19 +264,21 @@ export class MouseManager {
 
             if (this._prevICollisionEntity) { 
                 if (!this._isTouch && !this._mouseDragging)
-                    this.queueDispatch(this._mouseOut, this._mouseMoveEvent, null, this._prevICollisionEntity);
+                    this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._prevICollision);
                 else if (this._mouseDragging && this._mouseDragEntity && this._mouseDragEntity == this._prevICollisionEntity)
-                    this.queueDispatch(this._dragOut, this._mouseMoveEvent, null, this._prevICollisionEntity);
+                    this.queueDispatch(this._dragOut, this._mouseMoveEvent, this._prevICollision);
             }
 
             this._collisionIsEnabledButton=this._iCollisionEntity?(<any>this._iCollisionEntity).buttonEnabled:false;
 
             if (this._iCollisionEntity) {
                 if (!this._isTouch && !this._mouseDragging)
-                    this.queueDispatch(this._mouseOver, this._mouseMoveEvent, this._iCollision, this._iCollisionEntity);
+                    this.queueDispatch(this._mouseOver, this._mouseMoveEvent, this._iCollision);
                 else if (this._mouseDragging && this._mouseDragEntity && this._mouseDragEntity == this._iCollisionEntity)
-                    this.queueDispatch(this._dragOver, this._mouseMoveEvent, this._iCollision, this._iCollisionEntity);
+                    this.queueDispatch(this._dragOver, this._mouseMoveEvent, this._iCollision);
             }
+
+            this._prevICollision = this._iCollision;
             this._prevICollisionEntity = this._iCollisionEntity;
         }
         else {            
@@ -284,9 +287,9 @@ export class MouseManager {
             var isActiveButton=this._iCollisionEntity?(<any>this._iCollisionEntity).buttonEnabled:false;
             if(this._collisionIsEnabledButton!=isActiveButton && isActiveButton){
                 if (!this._isTouch)
-                    this.queueDispatch(this._mouseOver, this._mouseMoveEvent, this._iCollision, this._iCollisionEntity);
+                    this.queueDispatch(this._mouseOver, this._mouseMoveEvent, this._iCollision);
                 else if (this._mouseDragEntity == this._iCollisionEntity)
-                    this.queueDispatch(this._dragOver, this._mouseMoveEvent, this._iCollision, this._iCollisionEntity);
+                    this.queueDispatch(this._dragOver, this._mouseMoveEvent, this._iCollision);
             }
             this._collisionIsEnabledButton=isActiveButton;
         }
@@ -318,7 +321,7 @@ export class MouseManager {
 
                 if (this._isTouch) {
                     // on Touch dispatch mouseOver Command
-                    this.setupAndDispatchEvent(this._mouseOver, this._mouseMoveEvent, this._iCollision, this._iCollisionEntity);
+                    this.setupAndDispatchEvent(this._mouseOver, this._mouseMoveEvent, this._iCollision);
                 }
 
                 this._mouseDragEntity = dispatcher;
@@ -337,7 +340,7 @@ export class MouseManager {
                         this._currentFocusEntity.setFocus(true, true);
                 }
                 if(this._mouseDragEntity)
-                    this.setupAndDispatchEvent(this._dragStart, event, this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision, this._mouseDragEntity);
+                    this.setupAndDispatchEvent(this._dragStart, event, this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision);
                
             }
 
@@ -359,12 +362,12 @@ export class MouseManager {
                     // no avm1dragging is in process, but current collision is not the same as collision that appeared on mouse-down,
                     // need to dispatch a MOUSE_UP_OUTSIDE on _mouseDragEntity
                     if((<any>this._mouseDragEntity).buttonEnabled){
-                        this.setupAndDispatchEvent(this._mouseOut, event, this._mouseDragEntity ? this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision : null, this._mouseDragEntity);
+                        this.setupAndDispatchEvent(this._mouseOut, event, this._mouseDragEntity ? this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision : null);
                     }
-                    this.setupAndDispatchEvent(this._mouseUpOutside, event, this._mouseDragEntity ? this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision : null, this._mouseDragEntity);
+                    this.setupAndDispatchEvent(this._mouseUpOutside, event, this._mouseDragEntity ? this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision : null);
                 }
                 if(this._mouseDragging && dispatcher){
-                    this.setupAndDispatchEvent(this._mouseOver, event, this._iCollision, this._iCollisionEntity);
+                    this.setupAndDispatchEvent(this._mouseOver, event, this._iCollision);
                 }
 
                 if (this._isTouch) {
@@ -374,7 +377,7 @@ export class MouseManager {
                     this.dispatchEvent(event, upEventDispatcher);
                 }
                 if(this._mouseDragEntity)
-                    this.setupAndDispatchEvent(this._dragStop, event, this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision, this._mouseDragEntity);
+                    this.setupAndDispatchEvent(this._dragStop, event, this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision);
                 this._mouseDragEntity = null;
                 this._mouseDragging=false;
                 this.isAVM1Dragging = false;
@@ -386,7 +389,7 @@ export class MouseManager {
                     this._stage.dispatchEvent(event);
                 }
                 if(this._mouseDragEntity)
-                    this.setupAndDispatchEvent(this._dragMove, event, this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision, this._mouseDragEntity);
+                    this.setupAndDispatchEvent(this._dragMove, event, this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision);
            
             }
 
@@ -595,7 +598,7 @@ export class MouseManager {
     // ---------------------------------------------------------------------
     // Private.
     // ---------------------------------------------------------------------
-    private setUpEvent(event: MouseEvent, sourceEvent, collision: PickingCollision = null, collisionEntity: IEntity = null): MouseEvent {
+    private setUpEvent(event: MouseEvent, sourceEvent, collision:PickingCollision): MouseEvent {
         // 2D properties.
         if (sourceEvent) {
             event.delta = sourceEvent.wheelDelta;
@@ -607,15 +610,9 @@ export class MouseManager {
         }
         //console.log("event", event, collisionEntity, collisionEntity);
 
-        //if (collision == null)
-            //collision = this._iCollision;
-
-        //if (collisionEntity == null)
-            //collisionEntity = this._iCollisionEntity;
-
-        event.entity=null;
-        if(collisionEntity)
-            event.entity = collisionEntity;
+        var collisionEntity:IEntity = (collision) ? collision.pickerEntity : null;
+        
+        event.entity = collisionEntity;
 
         // 3D properties.
         if (collision) {
@@ -639,9 +636,9 @@ export class MouseManager {
         return event;
 
     }
-    private queueDispatch(event: MouseEvent, sourceEvent, collision: PickingCollision = null, collisionEntity: IEntity = null): void {
+    private queueDispatch(event: MouseEvent, sourceEvent, collision: PickingCollision): void {
         // Store event to be dispatched later.
-        this._queuedEvents.push(this.setUpEvent(event, sourceEvent, collision, collisionEntity));
+        this._queuedEvents.push(this.setUpEvent(event, sourceEvent, collision));
 
     }
 
@@ -687,36 +684,31 @@ export class MouseManager {
 
         this.updateColliders(event);
 
-        //if (this._iCollision)
-            this.queueDispatch(this._mouseMove, this._mouseMoveEvent = event);
+        this.queueDispatch(this._mouseMove, this._mouseMoveEvent = event, this._iCollision);
     }
 
     private onMouseOut(event): void {
         this.updateColliders(event);
 
-        //if (this._iCollision)
-        this.queueDispatch(this._mouseOut, event, this._iCollision, this._iCollisionEntity);
+        this.queueDispatch(this._mouseOut, event, this._iCollision);
     }
 
     private onMouseOver(event): void {
         this.updateColliders(event);
 
-        //if (this._iCollision)
-            this.queueDispatch(this._mouseOver, event, this._iCollision, this._iCollisionEntity);
+        this.queueDispatch(this._mouseOver, event, this._iCollision);
     }
 
     private onClick(event): void {
         this.updateColliders(event);
 
-        //if (this._iCollision)
-            this.queueDispatch(this._mouseClick, event, this._iCollision, this._iCollisionEntity);
+        this.queueDispatch(this._mouseClick, event, this._iCollision);
     }
 
     private onDoubleClick(event): void {
         this.updateColliders(event);
 
-        //if (this._iCollision)
-            this.queueDispatch(this._mouseDoubleClick, event, this._iCollision, this._iCollisionEntity);
+        this.queueDispatch(this._mouseDoubleClick, event, this._iCollision);
     }
 
 
@@ -732,8 +724,8 @@ export class MouseManager {
         this.updateColliders(event);
 
         console.log("this._iCollisionEntity", this._iCollisionEntity);
-        //if (this._iCollision)
-            this.queueDispatch(this._mouseDown, event, this._iCollision, this._iCollisionEntity);
+
+        this.queueDispatch(this._mouseDown, event, this._iCollision);
     }
 
     public onMouseUp(event): void {
@@ -745,15 +737,13 @@ export class MouseManager {
 
         this.updateColliders(event);
 
-        //if (this._iCollision)
-            this.queueDispatch(this._mouseUp, event, this._iCollision, this._iCollisionEntity);
+        this.queueDispatch(this._mouseUp, event, this._iCollision);
     }
 
     private onMouseWheel(event): void {
         this.updateColliders(event);
 
-        //if (this._iCollision)
-            this.queueDispatch(this._mouseWheel, event, this._iCollision, this._iCollisionEntity);
+        this.queueDispatch(this._mouseWheel, event, this._iCollision);
     }
 
 
@@ -778,27 +768,9 @@ export class MouseManager {
             if (this._iUpdateDirty)
                 continue;
 
-            if (mouseX < view.x) {
-                view._mouseX = view.x;
-            }
-            else if (mouseX > view.x + view.width) {
-                view._mouseX = view.x + view.width;
-
-            }
-            else {
-                view._mouseX = mouseX - view.x;
-
-            }
-            if (mouseY < view.y) {
-                view._mouseY = view.y;
-
-            }
-            else if (mouseY > view.y + view.height) {
-                view._mouseY = view.y + view.height;
-            }
-            else {
-                view._mouseY = mouseY - view.y;
-            }
+            view._mouseX = (mouseX < view.x)? view.x : (mouseX > view.x + view.width)? view.x + view.width : mouseX - view.x;
+  
+            view._mouseY = (mouseY < view.y)? view.y : (mouseY > view.y + view.height)? view.y + view.height : mouseY - view.y;
 
             view.updateCollider();
 
