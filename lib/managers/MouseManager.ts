@@ -716,7 +716,7 @@ export class MouseManager {
 
         this.updateColliders(event);
 
-        console.log("this._iCollisionEntity", this._iCollisionEntity);
+        //console.log("this._iCollisionEntity", this._iCollisionEntity);
 
         this.queueDispatch(this._mouseDown, event, this._iCollision);
     }
