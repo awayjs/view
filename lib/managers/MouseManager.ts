@@ -30,8 +30,6 @@ export class MouseManager {
     private _mouseDragging: boolean;            // true while mosue is dragged
     private _currentFocusEntity: IEntity;       // entity currently in focus
     
-    private _finalDispatchQueueObjects: IEntity[] = [];
-    private _finalDispatchQueueEvents: EventBase[] = [];
 
     private _collisionIsEnabledButton:boolean=false;
 
@@ -86,6 +84,13 @@ export class MouseManager {
     }
     public set showCursor(value: boolean) {
         this._showCursor = value;
+    }
+
+    public get eventBubbling(): boolean {
+        return this._eventBubbling;
+    }
+    public set eventBubbling(value: boolean) {
+        this._eventBubbling = value;
     }
 
 	/**
@@ -145,10 +150,10 @@ export class MouseManager {
             container.addEventListener("mousewheel", this.onMouseWheelDelegate);
             container.addEventListener("mouseover", this.onMouseOverDelegate);
             container.addEventListener("mouseout", this.onMouseOutDelegate);
-            if (BuildMode.mode == BuildMode.AVM1) {
+           // if (BuildMode.mode == BuildMode.AVM1) {
                 window.addEventListener("keydown", this.onKeyDownDelegate);
                 window.addEventListener("keyup", this.onKeyUpDelegate);
-            }
+           // }
             this._containerLookup.push(container);
         }
     }
@@ -166,10 +171,10 @@ export class MouseManager {
             container.removeEventListener("mousewheel", this.onMouseWheelDelegate);
             container.removeEventListener("mouseover", this.onMouseOverDelegate);
             container.removeEventListener("mouseout", this.onMouseOutDelegate);
-            if (BuildMode.mode == BuildMode.AVM1) {
+            //if (BuildMode.mode == BuildMode.AVM1) {
                 window.removeEventListener("keydown", this.onKeyDownDelegate);
                 window.removeEventListener("keyup", this.onKeyUpDelegate);
-            }
+            //}
 
             this._containerLookup.slice(this._containerLookup.indexOf(container), 1);
         }
@@ -233,10 +238,9 @@ export class MouseManager {
         }
 
         while (dispatcher) {
-            if (dispatcher._iIsMouseEnabled()) {
-                this._finalDispatchQueueObjects[this._finalDispatchQueueObjects.length] = dispatcher;
-                this._finalDispatchQueueEvents[this._finalDispatchQueueEvents.length] = event;
-            }
+            //if (dispatcher._iIsMouseEnabled()) {
+                dispatcher.dispatchEvent(event);
+            //}
             dispatcher = dispatcher.parent;
         }
     }
@@ -247,9 +251,6 @@ export class MouseManager {
     }
 
     public fireMouseEvents(forceMouseMove: boolean): void {
-
-        this._finalDispatchQueueObjects.length = 0;
-        this._finalDispatchQueueEvents.length = 0;
 
         this._iCollisionEntity = (this._iCollision) ? this._iCollision.pickerEntity : null;
 
@@ -398,8 +399,14 @@ export class MouseManager {
 
             } else if (event.type == MouseEvent.MOUSE_MOVE) {                
                 // no event-bubbling. dispatch on stage first
-                if(!this._eventBubbling && this._stage)
+                if(!this._eventBubbling){
+                    if(this._stage)
                     this._stage.dispatchEvent(event);
+                }
+                else{
+                    this.dispatchEvent(event, event.pickerEntity);
+
+                }
 
                 if(this._mouseDragEntity)
                     this.setupAndDispatchEvent(this._dragMove, event, this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision);
