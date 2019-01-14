@@ -1,476 +1,485 @@
-import {Vector3D, getTimer} from "@awayjs/core";
+import { ProjectionBase, Vector3D, ProjectionEvent, Matrix3D, Rectangle, AssetEvent, PerspectiveProjection, ErrorBase, AssetBase } from "@awayjs/core";
 
-import {Camera, Scene, CameraEvent} from "@awayjs/scene";
+import { Stage, StageEvent, ImageBase, Image2D, ImageCube, ContextGLClearMask, ContextGLProfile, ContextMode, StageManager } from "@awayjs/stage";
 
-import {DefaultRenderer, RendererBase, IEntity, TouchPoint, IView, PickingCollision, BasicPartition, PartitionBase, TabPicker, RaycastPicker, PickGroup} from "@awayjs/renderer";
-
-import {MouseManager} from "./managers/MouseManager";
-import { Viewport } from '@awayjs/stage';
+import { ViewEvent } from './events/ViewEvent';
 
 
-export class View implements IView
+export class View extends AssetBase
 {
+    private _shareContext:boolean;
+    private _rect:Rectangle = new Rectangle();
+    private _backgroundColor:number;
+    private _backgroundRed:number = 0;
+    private _backgroundGreen:number = 0;
+    private _backgroundBlue:number = 0;
+    private _projection:ProjectionBase;
+    private _stage:Stage;
+    private _target:ImageBase;
+    private _targetWidth:number;
+    private _targetHeight:number;
+    private _focalLength:number = 1000;
+    private _pixelRatio:number = 1;
+    private _frustumMatrix3D:Matrix3D = new Matrix3D();
+    private _viewMatrix3D:Matrix3D = new Matrix3D();
+    private _inverseViewMatrix3D:Matrix3D = new Matrix3D();
+    private _components:Array<Vector3D> = new Array<Vector3D>(4);
+    private _offset:Vector3D = new Vector3D();
+    private _scale:Vector3D = new Vector3D(1, 1, 1);
 
-	/*
-	 *************************************************************************************************************************
-	 * Development Notes
-	 *************************************************************************************************************************
-	 *
-	 * ShareContext     - this is not being used at the moment integration with other frameworks is not yet implemented or tested
-	 *                    and ( _localPos / _globalPos ) position of viewport are the same for the moment
-	 *
-	 * Background
-	 *                  - this is currently not being included in our tests and is currently disabled
-	 *
-	 ******************clear********************************************************************************************************
-	 */
+    private _frustumMatrix3DDirty:boolean = true;
+    private _viewMatrix3DDirty:boolean = true;
+	private _inverseViewMatrix3DDirty:boolean = true;
+    private _onInvalidateSizeDelegate:(event:StageEvent | AssetEvent) => void;
+    private _onInvalidateViewMatrix3DDelegate:(event:ProjectionEvent) => void;
 
-	private _scene:Scene;
-	private _camera:Camera;
-	private _partition:PartitionBase;
-	private _renderer:RendererBase;
+    /**
+     * 
+     */
+    public backgroundAlpha:number = 1;
 
-	private _time:number = 0;
-	private _deltaTime:number = 0;
+    /**
+     * 
+     */
+    public backgroundDepth:number = 1;
 
-	private _onProjectionChangedDelegate:(event:CameraEvent) => void;
-	private _mouseManager:MouseManager;
-	private _mousePicker:RaycastPicker;
-	private _tabPicker:TabPicker;
+    /**
+     * 
+     */
+    public backgroundStencil:number = 0;
 
-	public _mouseX:number;
-	public _mouseY:number;
-	public _touchPoints:Array<TouchPoint> = new Array<TouchPoint>();
+    public backgroundClearMask:ContextGLClearMask = ContextGLClearMask.ALL
+    
+    /**
+     * 
+     */
+    public preservePixelRatio:boolean = true;
 
-	/*
-	 ***********************************************************************
-	 * Disabled / Not yet implemented
-	 ***********************************************************************
-	 *
-	 * private _background:away.textures.Texture2DBase;
-	 *
-	 * public _pTouch3DManager:away.managers.Touch3DManager;
-	 *
-	 */
-	constructor(renderer:RendererBase = null, scene:Scene = null, camera:Camera = null)
-	{
-		this._onProjectionChangedDelegate = (event:CameraEvent) => this._onProjectionChanged(event);
+    /**
+     * 
+     */
+    public preserveFocalLength:boolean = false;
 
-		this.camera = camera || new Camera();
-		this.renderer = renderer || new DefaultRenderer(new BasicPartition(scene || new Scene()));
+    /**
+     * 
+     */
+    public preserveDimensions:boolean = false;
 
-		this._mousePicker = new RaycastPicker(this._partition, PickGroup.getInstance(this.renderer.viewport));
-		this._tabPicker = new TabPicker(this._partition, PickGroup.getInstance(this.renderer.viewport));
-		this._mouseManager = MouseManager.getInstance(this._renderer.pickGroup);
-		this._mouseManager.registerContainer(this._renderer.stage.container);
-		this._mouseManager.registerView(this);
-		this._mousePicker.findClosestCollision = true;
-		
-//			if (this._shareContext)
-//				this._mouse3DManager.addViewLayer(this);
-	}
+    /**
+     * 
+     */
+    public get shareContext():boolean
+    {
+        return this._shareContext;
+    }
+    
+    /**
+     * 
+     */
+    public get x():number
+    {
+        if (this._shareContext || this._target)
+            return this._rect.x;
+        
+        return this._stage.x;
+    }
 
-	public layeredView:boolean; //TODO: something to enable this correctly
+    public set x(value:number)
+    {
+        if (this._shareContext || this._target) {
+            if (this._rect.x == value)
+                return;
 
-	public disableMouseEvents:boolean; //TODO: hack to ignore mouseevents on certain views
-	
-	public get mouseX():number
-	{
-		return this._mouseX;
-	}
+            this._offset.x = (this._rect.x = value)/this._targetWidth;
 
-	public get mouseY():number
-	{
-		return this._mouseY;
-	}
+            this._invalidateViewMatrix3D();
+        } else {
+            this._stage.x = value;
+        }
+    }
+    
+    /**
+     * 
+     */
+    public get y():number
+    {
+        if (this._shareContext || this._target)
+            return this._rect.y;
+        
+        return this._stage.y;
+    }
 
-	public get touchPoints():Array<TouchPoint>
-	{
-		return this._touchPoints;
-	}
+    public set y(value:number)
+    {
+        if (this._shareContext || this._target) {
+            if (this._rect.y == value)
+                return;
 
-	public getLocalMouseX(entity:IEntity):number
-	{
-		return entity.transform.inverseConcatenatedMatrix3D.transformVector(this.unproject(this._mouseX, this._mouseY, 1000)).x;
-	}
+            this._offset.y = (this._rect.y = value)/this._targetHeight;
 
-	public getLocalMouseY(entity:IEntity):number
-	{
-		return entity.transform.inverseConcatenatedMatrix3D.transformVector(this.unproject(this._mouseX, this._mouseY, 1000)).y;
-	}
+            this._invalidateViewMatrix3D();
+        } else {
+            this._stage.y = value;
+        }
+    }
 
-	public getLocalTouchPoints(entity:IEntity):Array<TouchPoint>
-	{
-		var localPosition:Vector3D;
-		var localTouchPoints:Array<TouchPoint> = new Array<TouchPoint>();
+    /**
+     * 
+     */
+    public get width():number
+    {
+        return this._rect.width;
+    }
 
-		var len:number = this._touchPoints.length;
-		for (var i:number = 0; i < len; i++) {
-			localPosition = entity.transform.inverseConcatenatedMatrix3D.transformVector(this.unproject(this._touchPoints[i].x, this._touchPoints[i].y, 1000));
-			localTouchPoints.push(new TouchPoint(localPosition.x, localPosition.y, this._touchPoints[i].id));
-		}
+    public set width(value:number)
+    {
+        if (this._rect.width == value)
+            return;
 
-		return localTouchPoints;
-	}
+        this._rect.width = value;
 
-	/**
-	 *
-	 */
-	public get renderer():RendererBase
-	{
-		return this._renderer;
-	}
+        if (this._shareContext || this._target) {
+            this._scale.x = value/this._targetWidth;
 
-	public set renderer(value:RendererBase)
-	{
-		if (this._renderer == value)
-			return;
+            this._updatePixelRatio();
 
-		if (this._renderer) {
-			this._mouseManager.unregisterContainer(this._renderer.stage.container);
-			this._renderer.dispose();
-		}
+            this._invalidateViewMatrix3D();
+        } else {
+            this._stage.width = value;
+        }
 
-		this._renderer = value;
+        this._invalidateSize();
+    }
 
-		this._partition = this._renderer.partition;
+    /**
+     * 
+     */
+    public get height():number
+    {
+        return this._scale.y*this._targetHeight;
+    }
 
-		this._scene = <Scene> this._partition.root;
-		this._scene.partition = this._partition;
+    public set height(value:number)
+    {
+        if (this._rect.height == value)
+            return;
 
-		if (this._mouseManager)
-			this._mouseManager.registerContainer(this._renderer.stage.container);
+        this._rect.height = value;
 
-		this._mousePicker = new RaycastPicker(this._partition, new PickGroup(this.renderer.viewport));
+        if (this._shareContext || this._target) {
+            this._scale.y = value/this._targetHeight;
 
-		if (this._camera) {
-			this._renderer.viewport.projection = this._camera.projection;
-			this._renderer.partition.invalidateEntity(this._camera);
-			this._camera.partition = this._renderer.partition;
-		}
-	}
+            this._updateFocalLength();
+            this._updatePixelRatio();
 
-	
+            this._invalidateViewMatrix3D();
+        } else {
+            this._stage.height = value;
+        }
+
+        this._invalidateSize();
+    }
+
+    
 	/**
 	 *
 	 */
 	public get backgroundColor():number
 	{
-		return this._renderer.viewport.backgroundColor;
+		return this._backgroundColor;
 	}
 
 	public set backgroundColor(value:number)
 	{
-		this._renderer.viewport.backgroundColor = value;
-	}
-
-	/**
-	 *
-	 * @returns {number}
-	 */
-	public get backgroundAlpha():number
-	{
-		return this._renderer.viewport.backgroundAlpha;
-	}
-
-	/**
-	 *
-	 * @param value
-	 */
-	public set backgroundAlpha(value:number)
-	{
-		this._renderer.viewport.backgroundAlpha = value;
-	}
-
-	/**
-	 *
-	 * @returns {Camera3D}
-	 */
-	public get camera():Camera
-	{
-		return this._camera;
-	}
-
-	/**
-	 * Set camera that's used to render the scene for this viewport
-	 */
-	public set camera(value:Camera)
-	{
-		if (this._camera == value)
+		if (this._backgroundColor == value)
 			return;
 
-		if (this._camera)
-			this._camera.removeEventListener(CameraEvent.PROJECTION_CHANGED, this._onProjectionChangedDelegate);
+		this._backgroundColor = value;
 
-		this._camera = value;
+		this._backgroundRed = ((value >> 16) & 0xff)/0xff;
+		this._backgroundGreen = ((value >> 8) & 0xff)/0xff;
+		this._backgroundBlue = (value & 0xff)/0xff;
+	}
+    
+    /**
+     * 
+     */
+    public get focalLength():number
+    {
+        return this._focalLength;
+    }
 
-		this._camera.addEventListener(CameraEvent.PROJECTION_CHANGED, this._onProjectionChangedDelegate);
+    public set focalLength(value:number)
+    {
+        if (this._focalLength == value)
+            return;
 
-		if (this._renderer) {
-			this._renderer.viewport.projection = this._camera.projection;
-			this._renderer.partition.invalidateEntity(this._camera);
-			this._camera.partition = this._renderer.partition;
+        this._focalLength = value;
+
+        this._updateFocalLength();
+    }
+    
+    /**
+     * 
+     */
+    public get pixelRatio():number
+    {
+        return this._pixelRatio;
+    }
+
+    public set pixelRatio(value:number)
+    {
+        if (this._pixelRatio == value)
+            return;
+
+        this._pixelRatio = value;
+
+        this._updatePixelRatio();
+    }
+    
+    public get projection():ProjectionBase
+    {
+        return this._projection;
+    }
+    public set projection(value:ProjectionBase)
+	{
+        if (value == null)
+            throw new ErrorBase("projection cannot be null");
+            
+		if (this._projection == value)
+			return;
+
+		this._projection.removeEventListener(ProjectionEvent.INVALIDATE_VIEW_MATRIX3D, this._onInvalidateViewMatrix3DDelegate);
+		
+		this._projection = value;
+
+		this._projection.addEventListener(ProjectionEvent.INVALIDATE_VIEW_MATRIX3D, this._onInvalidateViewMatrix3DDelegate);
+		
+		this._invalidateViewMatrix3D();
+    }
+
+    public get target():ImageBase
+    {
+        return this._target;
+    }
+
+    public set target(value:ImageBase)
+    {
+        if (this._target == value)
+            return;
+
+        this._updateTarget(value);
+    }
+
+    public get stage():Stage
+    {
+        return this._stage;
+    }
+
+    public get frustumMatrix3D():Matrix3D
+	{
+		if (this._frustumMatrix3DDirty) {
+			this._frustumMatrix3DDirty = false;
+            this._frustumMatrix3D.recompose(this._components);
+            this._frustumMatrix3D.prepend(this._projection.frustumMatrix3D);
 		}
-	}
 
-	/**
-	 *
-	 * @returns {away.containers.Scene3D}
-	 */
-	public get scene():Scene
+		return this._frustumMatrix3D;
+    }
+    
+    public get viewMatrix3D():Matrix3D
 	{
-		return this._scene;
+		if (this._viewMatrix3DDirty) {
+			this._viewMatrix3DDirty = false;
+            this._viewMatrix3D.recompose(this._components);
+            this._viewMatrix3D.prepend(this._projection.viewMatrix3D);
+		}
+
+		return this._viewMatrix3D;
 	}
-
-	/**
-	 * Set the scene that's used to render for this viewport
-	 */
-	public set scene(value:Scene)
-	{
-		if (this._scene == value)
-			return;
-
-		this.renderer = new DefaultRenderer(new BasicPartition(value));
-	}
-
-	/**
-	 *
-	 * @returns {number}
-	 */
-	public get deltaTime():number
-	{
-		return this._deltaTime;
-	}
-
-	/**
-	 *
-	 */
-	public get width():number
-	{
-		return this._renderer.viewport.width;
-	}
-
-	public set width(value:number)
-	{
-		this._renderer.viewport.width = value;
-	}
-
-	/**
-	 *
-	 */
-	public get height():number
-	{
-		return this._renderer.viewport.height;
-	}
-
-	public set height(value:number)
-	{
-		this._renderer.viewport.height = value;
-	}
-
-	/**
-	 *
-	 */
-	public get mousePicker():RaycastPicker
-	{
-		return this._mousePicker;
-	}
-
-	public set mousePicker(value:RaycastPicker)
-	{
-		if (this._mousePicker == value)
-			return;
-
-		if (value == null)
-			this._mousePicker = new RaycastPicker(this._partition, new PickGroup(this.renderer.viewport));
-		else
-			this._mousePicker = value;
-	}
-
 	
-	/**
-	 *
-	 */
-	public get tabPicker():TabPicker
+	public get inverseViewMatrix3D():Matrix3D
 	{
-		return this._tabPicker;
-	}
+		if (this._inverseViewMatrix3DDirty) {
+			this._inverseViewMatrix3DDirty = false;
+			this._inverseViewMatrix3D.copyFrom(this.viewMatrix3D);
+			this._inverseViewMatrix3D.invert();
+		}
+		
+		return this._inverseViewMatrix3D;
+    }
+    
+    constructor(projection:ProjectionBase = null, stage:Stage = null, forceSoftware:boolean = false, profile:ContextGLProfile = ContextGLProfile.BASELINE, mode:ContextMode = ContextMode.AUTO)
+    {
+        super();
 
-	public set tabPicker(value:TabPicker)
-	{
-		if (this._tabPicker == value)
-			return;
+        this._components[0] = this._offset;
+        this._components[3] = this._scale;
 
-		if (value == null)
-			this._tabPicker = new TabPicker(this._partition, new PickGroup(this.renderer.viewport));
-		else
-			this._tabPicker = value;
-	}
+        this._onInvalidateSizeDelegate = (event:StageEvent | AssetEvent) => this._onInvalidateSize(event);
+        this._onInvalidateViewMatrix3DDelegate = (event:ProjectionEvent) => this._onInvalidateViewMatrix3D(event);
+        
+        this._projection = projection || new PerspectiveProjection();
 
-	/**
-	 *
-	 */
-	public get x():number
-	{
-		return this._renderer.viewport.x;
-	}
+        this._projection.addEventListener(ProjectionEvent.INVALIDATE_VIEW_MATRIX3D, this._onInvalidateViewMatrix3DDelegate);
 
-	public set x(value:number)
-	{
-		this._renderer.viewport.x = value;
-	}
+        if (stage)
+            this._shareContext = true;
 
-	/**
-	 *
-	 */
-	public get y():number
-	{
-		return this._renderer.viewport.y;
-	}
+        this._stage = stage || StageManager.getInstance().getFreeStage(forceSoftware, profile, mode);
 
-	public set y(value:number)
-	{
-		this._renderer.viewport.y = value;
-	}
+        this._stage.addEventListener(StageEvent.INVALIDATE_SIZE, this._onInvalidateSizeDelegate);
 
-	/**
-	 *
-	 * @returns {number}
-	 */
-	public get renderedFacesCount():number
-	{
-		return 0; //TODO
-		//return this._pEntityCollector._pNumTriangles;//numTriangles;
-	}
+        this._targetWidth = this._stage.width;
+        this._targetHeight = this._stage.height;
+        
+        this._updateFocalLength();
+        this._updatePixelRatio();
+    }
 
-	public beforeRenderCallback:Function;
+    public clear(enableBackground:boolean = true, enableDepthAndStencil:boolean = true, surfaceSelector:number = 0):void
+    {
+        this._stage.setRenderTarget(this._target, enableDepthAndStencil, surfaceSelector);
+
+        //TODO: make scissor compatible with image targets
+        this._stage.context.setScissorRectangle((this._target == null)? this._rect : null);
+
+        if (enableBackground)
+            this._stage.clear(this._backgroundRed, this._backgroundGreen, this._backgroundBlue, this.backgroundAlpha, this.backgroundDepth, this.backgroundStencil, this.backgroundClearMask);
+    }
+
+    public present():void
+    {
+        if (!this._shareContext && this._target == null)
+            this._stage.context.present();
+    }
+    
+	/*
 	
-	/** 
-	 * Renders the view.
 	 */
-	public render():void
-	{
-		this._updateTime();
-
-		// update picking
-		if (!this.disableMouseEvents) {
-			if (this.forceMouseMove && !this._mouseManager._iUpdateDirty)
-				this._mouseManager._iCollision = this.getViewCollision(this._mouseX, this._mouseY, this);
-
-			this._mouseManager.fireMouseEvents(this.forceMouseMove);
-			//_touch3DManager.fireTouchEvents();
-		}
-		if(this.beforeRenderCallback){
-			this.beforeRenderCallback();
-		}
-		//_touch3DManager.updateCollider();
-
-		//render the contents of the scene
-		this._renderer.render();
-	}
-
-	/**
-	 *
-	 */
-	private _updateTime():void
-	{
-		var time:number = getTimer();
-
-		if (this._time == 0)
-			this._time = time;
-
-		this._deltaTime = time - this._time;
-		this._time = time;
-	}
-
-	/**
-	 *
-	 */
-	public dispose():void
-	{
-		this._renderer.dispose();
-
-		// TODO: imeplement mouseManager / touch3DManager
-		this._mouseManager.unregisterView(this);
-
-		//this._touch3DManager.disableTouchListeners(this);
-		//this._touch3DManager.dispose();
-
-		this._mouseManager = null;
-		//this._touch3DManager = null;
-
-		this._renderer = null;
-	}
-
-	/**
-	 *
-	 */
-	private _onProjectionChanged(event:CameraEvent):void
-	{
-		if (this._renderer)
-			this._renderer.viewport.projection = this._camera.projection;
-	}
-
 	public project(position:Vector3D, target:Vector3D = null):Vector3D
 	{
-		return this._renderer.viewport.project(position, target);
+        target = this._projection.project(position, target);
+
+		target.x = (target.x + 1)*this.width/2;
+        target.y = (target.y + 1)*this.height/2;
+        
+        return target;
 	}
 
 	public unproject(sX:number, sY:number, sZ:number, target:Vector3D = null):Vector3D
 	{
-		return this._renderer.viewport.unproject(sX, sY, sZ, target);
-	}
+        return this._projection.unproject(2*sX/this.width - 1, 2*sY/this.height - 1, sZ, target);
+    }
 
-	/* TODO: implement Touch3DManager
-	 public get touchPicker():IPicker
-	 {
-	 return this._touch3DManager.touchPicker;
-	 }
-	 */
-	/* TODO: implement Touch3DManager
-	 public set touchPicker( value:IPicker)
-	 {
-	 this._touch3DManager.touchPicker = value;
-	 }
-	 */
+    public dispose()
+    {
+        if (this._target) {
+            this._target.removeEventListener(AssetEvent.INVALIDATE, this._onInvalidateSizeDelegate);
+            this._target = null;
+        } else {
+            this._stage.removeEventListener(StageEvent.INVALIDATE_SIZE, this._onInvalidateSizeDelegate);
 
-	public forceMouseMove:boolean;
+            if (!this._shareContext && this._target == null)
+                this._stage.dispose();
+            
+            this._stage = null;
+        }
 
-	/*TODO: implement Background
-	 public get background():away.textures.Texture2DBase
-	 {
-	 return this._background;
-	 }
-	 */
-	/*TODO: implement Background
-	 public set background( value:away.textures.Texture2DBase )
-	 {
-	 this._background = value;
-	 this._renderer.background = _background;
-	 }
-	 */
-
-	// TODO: required dependency stageGL
-	public updateCollider():void
+        if (this._projection) {
+            this._projection.removeEventListener(ProjectionEvent.INVALIDATE_VIEW_MATRIX3D, this._onInvalidateViewMatrix3DDelegate);
+            this._projection = null;
+        }
+    }
+    
+    private _onInvalidateSize(event:StageEvent | AssetEvent):void
+    {
+        this._updateDimensions();
+        this._updateFocalLength();
+        this._updatePixelRatio();
+    }
+        
+    private _onInvalidateViewMatrix3D(event:ProjectionEvent):void
 	{
-		if (!this.disableMouseEvents) {
-			// if (!this._renderer.shareContext) {
-				this._mouseManager._iCollision = this.getViewCollision(this._mouseX, this._mouseY, this);
-			// } else {
-			// 	var collidingObject:PickingCollision = this.getViewCollision(this._mouseX, this._mouseY, this);
-			//
-			// 	if (this.layeredView || this._mouseManager._iCollision == null || collidingObject.rayEntryDistance < this._mouseManager._iCollision.rayEntryDistance)
-			// 		this._mouseManager._iCollision = collidingObject;
-			// }
-		}
-	}
-	
-	public getViewCollision(x:number, y:number, view:View):PickingCollision
-	{
-		//update ray
-		var rayPosition:Vector3D = view.unproject(x, y, 0);
-		var rayDirection:Vector3D = view.unproject(x, y, 1).subtract(rayPosition);
+		this._invalidateViewMatrix3D();
+    }
 
-		return this._mousePicker.getCollision(rayPosition, rayDirection);
-	}
+    private _updateTarget(value:ImageBase):void
+    {
+        if (this._target)
+            this._target.removeEventListener(AssetEvent.INVALIDATE, this._onInvalidateSizeDelegate);
+        else
+            this._stage.removeEventListener(StageEvent.INVALIDATE_SIZE, this._onInvalidateSizeDelegate);
+
+        this._target = value;
+
+        if (this._target)
+            this._target.addEventListener(AssetEvent.INVALIDATE, this._onInvalidateSizeDelegate);
+        else
+            this._stage.addEventListener(StageEvent.INVALIDATE_SIZE, this._onInvalidateSizeDelegate);
+        
+        this._updateDimensions();
+        this._updateFocalLength();
+        this._updatePixelRatio();
+    }
+
+    private _updateDimensions():void
+    {
+        if (this._target) {
+            if (this._target instanceof Image2D) {
+                this._targetWidth = (<Image2D> this._target).width;
+                this._targetHeight = (<Image2D> this._target).height;
+            } else if (this._target instanceof ImageCube) {
+                this._targetWidth = (<ImageCube> this._target).size;
+                this._targetHeight = (<ImageCube> this._target).size;
+            }
+        } else {
+            this._targetWidth = this._stage.width;
+            this._targetHeight = this._stage.height;
+        }
+        
+        if (this.preserveDimensions && (this._shareContext || this._target)) {
+            this._offset.x = this._rect.x/this._targetWidth;
+            this._offset.y = this._rect.y/this._targetHeight;
+            this._scale.x = this._rect.width/this._targetWidth;
+            this._scale.y = this._rect.height/this._targetHeight;
+        } else {
+            this._rect.x = this._offset.x*this._targetWidth;
+            this._rect.y = this._offset.y*this._targetHeight;
+            this._rect.width = this._scale.x*this._targetWidth;
+            this._rect.height = this._scale.y*this._targetHeight;
+
+            this._invalidateSize();
+        }
+    }
+    
+    private _updateFocalLength():void
+    {
+        if (this.preserveFocalLength)
+            this.projection.scale = this._focalLength/this._rect.height;
+        else
+            this._focalLength = this._projection.scale*this._rect.height;
+    }
+
+    private _updatePixelRatio():void
+    {
+        if (this.preservePixelRatio)
+            this._projection.ratio = this._pixelRatio*this._rect.width/this._rect.height;
+        else
+            this._pixelRatio = this._projection.ratio*this._rect.height/this._rect.width;
+    }
+
+	private _invalidateViewMatrix3D():void
+	{
+        this._frustumMatrix3DDirty = true;
+		this._viewMatrix3DDirty = true;
+		this._inverseViewMatrix3DDirty = true;
+
+		this.dispatchEvent(new ViewEvent(ViewEvent.INVALIDATE_VIEW_MATRIX3D, this));
+    }
+
+    private _invalidateSize():void
+	{
+		this.dispatchEvent(new ViewEvent(ViewEvent.INVALIDATE_SIZE, this));
+    }
 }
