@@ -1,4 +1,4 @@
-console.log("AwayJS - View - 0.4.13");
+console.log("AwayJS - View - 0.4.16");
 
 export {MouseManager} from "./lib/managers/MouseManager";
 export {ViewImage2D} from "./lib/image/ViewImage2D";
