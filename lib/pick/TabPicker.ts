@@ -5,11 +5,7 @@ import {PartitionBase} from "../partition/PartitionBase";
 import {IPartitionTraverser} from "../partition/IPartitionTraverser";
 import {INode} from "../partition/INode";
 
-import {PickingCollision} from "./PickingCollision";
-import { PickEntity } from '../base/PickEntity';
-import { PickGroup } from '../PickGroup';
 import { ITabEntity } from '../base/ITabEntity';
-import { ITraversable } from '../..';
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.
