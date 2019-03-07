@@ -23,6 +23,8 @@ export class MouseManager {
     public _iCollision: PickingCollision;
     public _prevICollision: PickingCollision;
     
+    public allowKeyInput: boolean=true;
+    
     private _iCollisionEntity: IEntity;         // current hit entity
     private _prevICollisionEntity: IEntity;     // entity hit on last frame
     private _mouseDragEntity: IEntity;     // entity hit on mouse-down
@@ -658,34 +660,38 @@ export class MouseManager {
     // ---------------------------------------------------------------------
 
     public onKeyDown(event): void {
-        //event.preventDefault();
-
-        if (this._currentFocusEntity || this._stage) {
-            //console.log("dispatch keydown on ", this._currentFocusEntity);
-            var newEvent: KeyboardEvent = new KeyboardEvent(KeyboardEvent.KEYDOWN, event.key, event.code);
-            newEvent.isShift = event.shiftKey;
-            newEvent.isCTRL = event.ctrlKey;
-            newEvent.isAlt = event.altKey;
-            if (this._currentFocusEntity)
-                this._currentFocusEntity.dispatchEvent(newEvent);
-            if (this._stage)
-                this._stage.dispatchEvent(newEvent);
+        if(this.allowKeyInput){
+            event.preventDefault();
+            if (this._currentFocusEntity || this._stage) {
+                //console.log("dispatch keydown on ", this._currentFocusEntity);
+                var newEvent: KeyboardEvent = new KeyboardEvent(KeyboardEvent.KEYDOWN, event.key, event.code);
+                newEvent.isShift = event.shiftKey;
+                newEvent.isCTRL = event.ctrlKey;
+                newEvent.isAlt = event.altKey;
+                if (this._currentFocusEntity)
+                    this._currentFocusEntity.dispatchEvent(newEvent);
+                if (this._stage)
+                    this._stage.dispatchEvent(newEvent);
+            }
         }
+        
 
     }
     public onKeyUp(event): void {
-        //event.preventDefault();
+        if(this.allowKeyInput){
+            event.preventDefault();
 
-        if (this._currentFocusEntity || this._stage) {
-            //console.log("dispatch keydown on ", this._currentFocusEntity);
-            var newEvent: KeyboardEvent = new KeyboardEvent(KeyboardEvent.KEYUP, event.key, event.code);
-            newEvent.isShift = event.shiftKey;
-            newEvent.isCTRL = event.ctrlKey;
-            newEvent.isAlt = event.altKey;
-            if (this._currentFocusEntity)
-                this._currentFocusEntity.dispatchEvent(newEvent);
-            if (this._stage)
-                this._stage.dispatchEvent(newEvent);
+            if (this._currentFocusEntity || this._stage) {
+                //console.log("dispatch keydown on ", this._currentFocusEntity);
+                var newEvent: KeyboardEvent = new KeyboardEvent(KeyboardEvent.KEYUP, event.key, event.code);
+                newEvent.isShift = event.shiftKey;
+                newEvent.isCTRL = event.ctrlKey;
+                newEvent.isAlt = event.altKey;
+                if (this._currentFocusEntity)
+                    this._currentFocusEntity.dispatchEvent(newEvent);
+                if (this._stage)
+                    this._stage.dispatchEvent(newEvent);
+            }
         }
 
     }
