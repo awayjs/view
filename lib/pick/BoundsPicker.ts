@@ -309,11 +309,11 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 					m.prepend(this._boundsPickers[i].entity.transform.matrix3D);
 					if (this._boundsPickers[i].entity._registrationMatrix3D)
 						m.prepend(this._boundsPickers[i].entity._registrationMatrix3D);
+				
+					target = this._boundsPickers[i]._getBoxBoundsInternal(m, strokeFlag, fastFlag, cache, target);
 				} else {
-					m = matrix3D;
+					target = this._boundsPickers[i]._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, target);
 				}
-
-				target = this._boundsPickers[i]._getBoxBoundsInternal(m, strokeFlag, fastFlag, cache, target);
 			}
 		}
 
@@ -350,11 +350,11 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 					m.prepend(this._boundsPickers[i].entity.transform.matrix3D);
 					if (this._boundsPickers[i].entity._registrationMatrix3D)
 						m.prepend(this._boundsPickers[i].entity._registrationMatrix3D);
+					
+					target = this._boundsPickers[i]._getSphereBoundsInternal(center, m, strokeFlag, fastFlag, cache, target);
 				} else {
-					m = matrix3D;
+					target = this._boundsPickers[i]._getSphereBoundsInternal(center, matrix3D, strokeFlag, fastFlag, cache, target);
 				}
-
-				target = this._boundsPickers[i]._getSphereBoundsInternal(center, m, strokeFlag, fastFlag, cache, target);
 			}
 		}
 
