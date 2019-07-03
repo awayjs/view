@@ -16,32 +16,33 @@ export class EntityNode extends AbstractionBase implements INode
 {
 	public _iUpdateQueueNext:EntityNode;
 	
-	public _entity:IPartitionEntity;
-
 	public _collectionMark:number;// = 0;
 
 	public parent:IContainerNode;
 
+	public get entity():IPartitionEntity
+	{
+		return <IPartitionEntity> this._asset;
+	}
+
 	public get pickObject():IPartitionEntity
 	{
-		return this._entity.pickObject;
+		return (<IPartitionEntity> this._asset).pickObject;
 	}
 
 	public get boundsVisible():boolean
 	{
-		return this._entity.boundsVisible;
+		return (<IPartitionEntity> this._asset).boundsVisible;
 	}
 
 	public getBoundsPrimitive(pickGroup:PickGroup):IPartitionEntity
 	{
-		return this._entity.getBoundsPrimitive(pickGroup);
+		return (<IPartitionEntity> this._asset).getBoundsPrimitive(pickGroup);
 	}
 
 	constructor(entity:IPartitionEntity, partition:PartitionBase)
 	{
 		super(entity, partition);
-
-		this._entity = entity;
 	}
 	
 	/**
@@ -50,7 +51,7 @@ export class EntityNode extends AbstractionBase implements INode
 	 */
 	public isCastingShadow():boolean
 	{
-		return this._entity.castsShadows;
+		return (<IPartitionEntity> this._asset).castsShadows;
 	}
 
 	/**
@@ -59,14 +60,14 @@ export class EntityNode extends AbstractionBase implements INode
 	 */
 	public isMask():boolean
 	{
-		return this._entity.maskMode;
+		return (<IPartitionEntity> this._asset).maskMode;
 	}
 
 	public onClear(event:AssetEvent):void
 	{
-		super.onClear(event);
+		(<PartitionBase> this._pool).clearEntity((<IPartitionEntity> this._asset));
 
-		this._entity = null;
+		super.onClear(event);
 	}
 
 	/**
@@ -84,7 +85,7 @@ export class EntityNode extends AbstractionBase implements INode
 	 */
 	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
 	{
-		if (!this._entity._iIsVisible())
+		if (!(<IPartitionEntity> this._asset)._iIsVisible())
 			return false;
 
 		return true; // todo: hack for 2d. attention. might break stuff in 3d.
@@ -93,7 +94,7 @@ export class EntityNode extends AbstractionBase implements INode
 
 	public isVisible():boolean
 	{
-		return this._entity._iIsVisible();
+		return (<IPartitionEntity> this._asset)._iIsVisible();
 	}
 
 	/**
@@ -101,7 +102,7 @@ export class EntityNode extends AbstractionBase implements INode
 	 */
 	public isIntersectingRay(rootEntity:IPartitionEntity, globalRayPosition:Vector3D, globalRayDirection:Vector3D, pickGroup:PickGroup):boolean
 	{
-		return pickGroup.getAbstraction(<IPickingEntity> this._entity)._isIntersectingRayInternal(rootEntity, globalRayPosition, globalRayDirection);
+		return pickGroup.getAbstraction(<IPickingEntity> this._asset)._isIntersectingRayInternal(rootEntity, globalRayPosition, globalRayDirection);
 		// if (!this._entity._iIsVisible() || !this.isIntersectingMasks(globalRayPosition, globalRayDirection, this._entity._iAssignedMasks()))
 		// 	return false;
 
@@ -131,7 +132,7 @@ export class EntityNode extends AbstractionBase implements INode
 	 */
 	public isRenderable():boolean
 	{
-		return this._entity._iAssignedColorTransform()._isRenderable();
+		return (<IPartitionEntity> this._asset)._iAssignedColorTransform()._isRenderable();
 	}
 	
 	/**
@@ -140,6 +141,6 @@ export class EntityNode extends AbstractionBase implements INode
 	public acceptTraverser(traverser:IPartitionTraverser):void
 	{
 		if (traverser.enterNode(this))
-			traverser.applyEntity(this._entity);
+			traverser.applyEntity((<IPartitionEntity> this._asset));
 	}
 }

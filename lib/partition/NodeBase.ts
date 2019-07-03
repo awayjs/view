@@ -24,6 +24,11 @@ export class NodeBase implements IContainerNode
 
 	public parent:IContainerNode;
 
+	public get entity():IPartitionEntity
+	{
+		return this._entity;
+	}
+
 	public get pickObject():IPartitionEntity
 	{
 		return this._entity.pickObject;
