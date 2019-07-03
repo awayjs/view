@@ -17,6 +17,8 @@ import { View } from './View';
 export class PickGroup implements IAbstractionPool
 {
 	private static _instancePool:Object = new Object();
+	public static get instancePool():Object {return PickGroup._instancePool};
+	
 	private static _tabPickerPool:TabPickerPool;
 	private _view:View;
 	private _entityPool:Object = new Object();
@@ -36,7 +38,25 @@ export class PickGroup implements IAbstractionPool
 		this._boundsPickerPool = new BoundsPickerPool(this);
 		this._tabPickerPool = PickGroup._tabPickerPool || (PickGroup._tabPickerPool = new TabPickerPool());
 	}
+	public static clearAllInstances()
+	{
+		for(var key in this._instancePool){
+			var inst=this._instancePool[key];
+			if(inst){
+				for(var key2 in inst._entityPool){
+					if(inst._entityPool[key2] && inst._entityPool[key2].entity){
+						inst._entityPool[key2].entity.dispose();
+					}
+					if(inst._entityPool[key2])
+						delete inst._entityPool[key2];
+				}
+				inst._entityPool=null;
 
+			}
+			delete this._instancePool[key];
+		}
+
+	}
 	public static getInstance(view:View):PickGroup
 	{
 		return this._instancePool[view.id] || (this._instancePool[view.id] = new PickGroup(view));

@@ -1,6 +1,6 @@
 {
   "name": "@awayjs/view",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "View for AwayJS",
   "main": "bundle/awayjs-view.umd.js",
   "module": "dist/index.js",
@@ -37,12 +37,15 @@
     "url": "https://github.com/awayjs/view/issues"
   },
   "homepage": "https://github.com/awayjs/view#readme",
-  "dependencies": {
+  "peerDependencies": {
     "@awayjs/core": "^0.8.0",
     "@awayjs/stage": "^0.10.0",
     "tslib": "^1.9.0"
   },
   "devDependencies": {
+    "@awayjs/core": "^0.8.0",
+    "@awayjs/stage": "^0.10.0",
+    "tslib": "^1.9.0",
     "rimraf": "^2.5.2",
     "rollup": "^0.36.4",
     "rollup-plugin-includepaths": "^0.2.1",
