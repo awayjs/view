@@ -80,7 +80,7 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser
         for(i=0; i<len; i++){
             var enabledEntity=this._tabEntities[i];
             var scenePosition:Vector3D = enabledEntity.transform.concatenatedMatrix3D.position;
-            console.log("enabledEntity.scenePosition.y", scenePosition.y);
+            //console.log("enabledEntity.scenePosition.y", scenePosition.y);
             var ySnappedToGrid=Math.floor(scenePosition.y/snapGridY);
             if(orderedOnY.length<=ySnappedToGrid){
                 orderedOnY.length=ySnappedToGrid+1;
@@ -94,14 +94,14 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser
         for(i=0; i<orderedOnY.length; i++){
             var entityRow=orderedOnY[i];
             if(entityRow){
-                console.log("entityRow", entityRow.length);
+                //console.log("entityRow", entityRow.length);
                 entityRow=entityRow.sort(function(a, b){
                     return a.transform.concatenatedMatrix3D.position.x>b.transform.concatenatedMatrix3D.position.x?1:-1;
                 })
                 for(e=0; e<entityRow.length; e++){
                     
-                    console.log("2enabledEntity.scenePosition.y", entityRow[e].transform.concatenatedMatrix3D.position.y);
-                    console.log("2enabledEntity.scenePosition.x", entityRow[e].transform.concatenatedMatrix3D.position.x);
+                    //console.log("2enabledEntity.scenePosition.y", entityRow[e].transform.concatenatedMatrix3D.position.y);
+                    //console.log("2enabledEntity.scenePosition.x", entityRow[e].transform.concatenatedMatrix3D.position.x);
                     this._tabEntities[this._tabEntities.length]=entityRow[e];
                 }
             }
