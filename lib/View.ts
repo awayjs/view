@@ -47,8 +47,6 @@ export class View extends AssetBase
      * 
      */
     public backgroundStencil:number = 0;
-
-    public backgroundClearMask:ContextGLClearMask = ContextGLClearMask.ALL
     
     /**
      * 
@@ -337,7 +335,7 @@ export class View extends AssetBase
         this._updatePixelRatio();
     }
 
-    public clear(enableBackground:boolean = true, enableDepthAndStencil:boolean = true, surfaceSelector:number = 0):void
+    public clear(enableBackground:boolean = true, enableDepthAndStencil:boolean = true, surfaceSelector:number = 0, clearMask:ContextGLClearMask = ContextGLClearMask.ALL):void
     {
         this._stage.setRenderTarget(this._target, enableDepthAndStencil, surfaceSelector);
 
@@ -345,7 +343,7 @@ export class View extends AssetBase
         this._stage.context.setScissorRectangle((this._target == null)? this._rect : null);
 
         if (enableBackground)
-            this._stage.clear(this._backgroundRed, this._backgroundGreen, this._backgroundBlue, this.backgroundAlpha, this.backgroundDepth, this.backgroundStencil, this.backgroundClearMask);
+            this._stage.clear(this._backgroundRed, this._backgroundGreen, this._backgroundBlue, this.backgroundAlpha, this.backgroundDepth, this.backgroundStencil, clearMask);
     }
 
     public present():void
