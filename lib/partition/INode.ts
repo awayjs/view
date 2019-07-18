@@ -20,13 +20,13 @@ export interface INode
 
 	boundsVisible:boolean;
 
+	maskId:number;
+
 	getBoundsPrimitive(pickGroup:PickGroup):IPartitionEntity;
 
 	parent:IContainerNode;
 
 	_collectionMark:number;
-
-	isMask():boolean;
 
 	isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean;
 	

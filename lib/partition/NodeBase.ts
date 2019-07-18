@@ -38,6 +38,15 @@ export class NodeBase implements IContainerNode
 	{
 		return false;
 	}
+	
+	/**
+	 *
+	 * @returns {number}
+	 */
+	public get maskId():number
+	{
+		return this._entity.maskId;
+	}
 
 	public getBoundsPrimitive(pickGroup:PickGroup):IPartitionEntity
 	{
@@ -63,7 +72,7 @@ export class NodeBase implements IContainerNode
 
 	public isVisible():boolean
 	{
-		return true;
+		return this._entity._iIsVisible();
 	}
 
 	/**
@@ -93,16 +102,6 @@ export class NodeBase implements IContainerNode
 	public isCastingShadow():boolean
 	{
 		return true;
-	}
-
-
-	/**
-	 *
-	 * @returns {boolean}
-	 */
-	public isMask():boolean
-	{
-		return false;
 	}
 
 	public dispose():void

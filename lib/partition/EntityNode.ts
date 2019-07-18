@@ -34,6 +34,15 @@ export class EntityNode extends AbstractionBase implements INode
 	{
 		return (<IPartitionEntity> this._asset).boundsVisible;
 	}
+	
+	/**
+	 *
+	 * @returns {number}
+	 */
+	public get maskId():number
+	{
+		return (<IPartitionEntity> this._asset).maskId;
+	}
 
 	public getBoundsPrimitive(pickGroup:PickGroup):IPartitionEntity
 	{
@@ -52,15 +61,6 @@ export class EntityNode extends AbstractionBase implements INode
 	public isCastingShadow():boolean
 	{
 		return (<IPartitionEntity> this._asset).castsShadows;
-	}
-
-	/**
-	 *
-	 * @returns {boolean}
-	 */
-	public isMask():boolean
-	{
-		return (<IPartitionEntity> this._asset).maskMode;
 	}
 
 	public onClear(event:AssetEvent):void
