@@ -45,7 +45,8 @@ export class PickGroup implements IAbstractionPool
 			if(inst){
 				for(var key2 in inst._entityPool){
 					if(inst._entityPool[key2] && inst._entityPool[key2].entity){
-						inst._entityPool[key2].entity.dispose();
+						if(!inst._entityPool[key2].entity.isStage)
+							inst._entityPool[key2].entity.dispose();
 					}
 					if(inst._entityPool[key2])
 						delete inst._entityPool[key2];
