@@ -340,7 +340,7 @@ export class View extends AssetBase
         this._stage.setRenderTarget(this._target, enableDepthAndStencil, surfaceSelector);
 
         //TODO: make scissor compatible with image targets
-        this._stage.context.setScissorRectangle((this._target == null)? this._rect : null);
+        this._stage.setScissor((this._target == null)? this._rect : null);
 
         if (enableBackground)
             this._stage.clear(this._backgroundRed, this._backgroundGreen, this._backgroundBlue, this.backgroundAlpha, this.backgroundDepth, this.backgroundStencil, clearMask);
