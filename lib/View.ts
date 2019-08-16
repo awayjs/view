@@ -307,7 +307,7 @@ export class View extends AssetBase
 		return this._inverseViewMatrix3D;
     }
     
-    constructor(projection:ProjectionBase = null, stage:Stage = null, forceSoftware:boolean = false, profile:ContextGLProfile = ContextGLProfile.BASELINE, mode:ContextMode = ContextMode.AUTO)
+    constructor(projection:ProjectionBase = null, stage:Stage = null, forceSoftware:boolean = false, profile:ContextGLProfile = ContextGLProfile.BASELINE, mode:ContextMode = ContextMode.AUTO, alpha:boolean = false)
     {
         super();
 
@@ -324,7 +324,7 @@ export class View extends AssetBase
         if (stage)
             this._shareContext = true;
 
-        this._stage = stage || StageManager.getInstance().getFreeStage(forceSoftware, profile, mode);
+        this._stage = stage || StageManager.getInstance().getFreeStage(forceSoftware, profile, mode, alpha);
 
         this._stage.addEventListener(StageEvent.INVALIDATE_SIZE, this._onInvalidateSizeDelegate);
 
