@@ -2,56 +2,16 @@
 # yarn lockfile v1
 
 
-"@awayjs/core@^0.7.0":
-  version "0.7.12"
-  resolved "https://registry.yarnpkg.com/@awayjs/core/-/core-0.7.12.tgz#bebb283b35d287426b379f0f979fc9de1f7d1229"
+"@awayjs/core@^0.8.0":
+  version "0.8.9"
+  resolved "https://registry.yarnpkg.com/@awayjs/core/-/core-0.8.9.tgz#a55f1b090a8b9588f104ac6629fd5f984c593ca8"
   dependencies:
-    tslib "github:microsoft/tslib"
-
-"@awayjs/graphics@^0.2.0":
-  version "0.2.22"
-  resolved "https://registry.yarnpkg.com/@awayjs/graphics/-/graphics-0.2.22.tgz#de2346d403279f782b88e0d8031b42b348475cdf"
-  dependencies:
-    "@awayjs/core" "^0.7.0"
-    "@awayjs/renderer" "^0.9.0"
-    "@awayjs/stage" "^0.9.0"
-    tess2 "^1.0.0"
+    fs "0.0.1-security"
     tslib "^1.9.0"
 
-"@awayjs/materials@^0.4.0":
-  version "0.4.7"
-  resolved "https://registry.yarnpkg.com/@awayjs/materials/-/materials-0.4.7.tgz#af6ad098bcc306d019799c82a9b3d36aa6026a82"
-  dependencies:
-    "@awayjs/core" "^0.7.0"
-    "@awayjs/renderer" "^0.9.0"
-    "@awayjs/stage" "^0.9.0"
-    tslib "github:microsoft/tslib"
-
-"@awayjs/renderer@^0.9.0":
-  version "0.9.9"
-  resolved "https://registry.yarnpkg.com/@awayjs/renderer/-/renderer-0.9.9.tgz#119fb6ea98e21d002b5b788de8b0002aa961042d"
-  dependencies:
-    "@awayjs/core" "^0.7.0"
-    "@awayjs/stage" "^0.9.0"
-    tslib "github:microsoft/tslib"
-
-"@awayjs/scene@^0.9.0":
-  version "0.9.39"
-  resolved "https://registry.yarnpkg.com/@awayjs/scene/-/scene-0.9.39.tgz#2ecd63976d11783779efbd48c17a217ef0fcf0fb"
-  dependencies:
-    "@awayjs/core" "^0.7.0"
-    "@awayjs/graphics" "^0.2.0"
-    "@awayjs/materials" "^0.4.0"
-    "@awayjs/renderer" "^0.9.0"
-    "@awayjs/stage" "^0.9.0"
-    tslib "github:microsoft/tslib"
-
-"@awayjs/stage@^0.9.0":
-  version "0.9.7"
-  resolved "https://registry.yarnpkg.com/@awayjs/stage/-/stage-0.9.7.tgz#6fac40c6c9d9d081185782c8166842cf4900cf76"
-  dependencies:
-    "@awayjs/core" "^0.7.0"
-    tslib "github:microsoft/tslib"
+"@awayjs/stage@^0.10.0":
+  version "0.10.14"
+  resolved "https://registry.yarnpkg.com/@awayjs/stage/-/stage-0.10.14.tgz#d352c340366c6a679894b2ff2feeea2360d958d7"
 
 balanced-match@^1.0.0:
   version "1.0.0"
@@ -75,6 +35,10 @@ concat-map@0.0.1:
 fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
+
+fs@0.0.1-security:
+  version "0.0.1-security"
+  resolved "https://registry.yarnpkg.com/fs/-/fs-0.0.1-security.tgz#8a7bd37186b6dddf3813f23858b57ecaaf5e41d4"
 
 glob@^7.0.5:
   version "7.1.2"
@@ -144,17 +108,13 @@ source-map@~0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
 
-tess2@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/tess2/-/tess2-1.0.0.tgz#2e2eb21822294061b83d46cbaefdd09d86ddf593"
-
-tslib@^1.9.0, "tslib@github:microsoft/tslib":
+tslib@^1.9.0:
   version "1.9.0"
   resolved "https://codeload.github.com/microsoft/tslib/tar.gz/3d0f4d4823605e6e82cf250b509d9a685c42ad41"
 
-typescript@^2.6.1:
-  version "2.8.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.8.3.tgz#5d817f9b6f31bb871835f4edf0089f21abe6c170"
+typescript@^3.7.3:
+  version "3.7.3"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.7.3.tgz#b36840668a16458a7025b9eabfad11b66ab85c69"
 
 uglify-js@^3.0.15:
   version "3.3.24"
