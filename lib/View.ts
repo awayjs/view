@@ -335,15 +335,15 @@ export class View extends AssetBase
         this._updatePixelRatio();
     }
 
-    public clear(enableBackground:boolean = true, enableDepthAndStencil:boolean = true, surfaceSelector:number = 0, clearMask:ContextGLClearMask = ContextGLClearMask.ALL):void
+    public clear(enableClear:boolean = true, enableDepthAndStencil:boolean = true, surfaceSelector:number = 0, mipmapSelector:number = 0, clearMaskSelector:ContextGLClearMask = ContextGLClearMask.ALL):void
     {
-        this._stage.setRenderTarget(this._target, enableDepthAndStencil, surfaceSelector);
+        this._stage.setRenderTarget(this._target, enableDepthAndStencil, surfaceSelector, mipmapSelector);
 
         //TODO: make scissor compatible with image targets
         this._stage.setScissor((this._target == null)? this._rect : null);
 
-        if (enableBackground)
-            this._stage.clear(this._backgroundRed, this._backgroundGreen, this._backgroundBlue, this.backgroundAlpha, this.backgroundDepth, this.backgroundStencil, clearMask);
+        if (enableClear)
+            this._stage.clear(this._backgroundRed, this._backgroundGreen, this._backgroundBlue, this.backgroundAlpha, this.backgroundDepth, this.backgroundStencil, clearMaskSelector);
     }
 
     public present():void
