@@ -36,7 +36,7 @@ export class PickingCollision
 	/**
 	 * The local normal vector at the position of the collision.
 	 */
-	public normal:Vector3D;
+	public normal:Vector3D = new Vector3D();
 
 	/**
 	 * The uv coordinate at the position of the collision.
@@ -51,12 +51,12 @@ export class PickingCollision
 	/**
 	 * The starting position of the colliding ray in local coordinates.
 	 */
-	public rayPosition:Vector3D;
+	public rayPosition:Vector3D = new Vector3D();
 
 	/**
 	 * The direction of the colliding ray in local coordinates.
 	 */
-	public rayDirection:Vector3D;
+	public rayDirection:Vector3D = new Vector3D();
 
 	/**
 	 * The starting position of the colliding ray in scene coordinates.

@@ -204,9 +204,9 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	 */
 	public _isIntersectingRayInternal(rootEntity:IPartitionEntity, globalRayPosition:Vector3D, globalRayDirection:Vector3D):boolean
 	{
-		this._pickingCollision.rayPosition = this._entity.transform.inverseConcatenatedMatrix3D.transformVector(globalRayPosition, this._pickingCollision.rayPosition);
-		this._pickingCollision.rayDirection = this._entity.transform.inverseConcatenatedMatrix3D.deltaTransformVector(globalRayDirection, this._pickingCollision.rayDirection);
-		this._pickingCollision.normal = this._pickingCollision.normal || new Vector3D();
+		var invMatrix:Matrix3D = this._entity.transform.inverseConcatenatedMatrix3D;
+		invMatrix.transformVector(globalRayPosition, this._pickingCollision.rayPosition);
+		invMatrix.deltaTransformVector(globalRayDirection, this._pickingCollision.rayDirection);
 
 		//early out for bounds test
 		var rayEntryDistance:number = this.getBoundingVolume().rayIntersection(this._pickingCollision.rayPosition, this._pickingCollision.rayDirection, this._pickingCollision.normal);
