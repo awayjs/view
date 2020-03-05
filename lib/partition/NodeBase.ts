@@ -65,7 +65,7 @@ export class NodeBase implements IContainerNode
 	 * @returns {boolean}
 	 * @internal
 	 */
-	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
+	public isInFrustum(rootEntity:IPartitionEntity, planes:Array<Plane3D>, numPlanes:number, pickGroup:PickGroup):boolean
 	{
 		return true;
 	}

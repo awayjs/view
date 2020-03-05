@@ -28,7 +28,7 @@ export interface INode
 
 	_collectionMark:number;
 
-	isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean;
+	isInFrustum(rootEntity:IPartitionEntity, planes:Array<Plane3D>, numPlanes:number, pickGroup:PickGroup):boolean;
 	
 	isRenderable():boolean;
 
