@@ -1,4 +1,4 @@
-import {IAssetClass, IAbstractionPool, Matrix3D, Box, Vector3D, Sphere, AbstractionBase, Point, AssetEvent} from "@awayjs/core";
+import {IAssetClass, IAbstractionPool, Matrix3D, Box, Vector3D, Sphere, AbstractionBase, Point, AssetEvent, Plane3D} from "@awayjs/core";
 
 import { ITraversable } from './ITraversable';
 import { PickGroup } from '../PickGroup';
@@ -88,7 +88,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	}
 
 	
-	public getBoundingVolume(targetCoordinateSpace:IPickingEntity = null, boundingVolumeType:BoundingVolumeType = null):BoundingVolumeBase
+	public getBoundingVolume(targetCoordinateSpace:IPartitionEntity = null, boundingVolumeType:BoundingVolumeType = null):BoundingVolumeBase
 	{
 		if (boundingVolumeType == null)
 			boundingVolumeType = this._entity.defaultBoundingVolume;
@@ -189,6 +189,16 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		}
 
 		return true;
+	}
+
+	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
+	{
+		return this._isInFrustumInternal(this._entity, planes, numPlanes);
+	}
+
+	public _isInFrustumInternal(rootEntity:IPartitionEntity, planes:Array<Plane3D>, numPlanes:number):boolean
+	{
+		return this.getBoundingVolume(rootEntity).isInFrustum(planes, numPlanes);
 	}
 
 	/**
