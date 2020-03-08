@@ -365,6 +365,10 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 			this._boundingVolumePools[key].dispose();
 			delete this._boundingVolumePools[key];
 		}
+
+		//clear all pickables associated with this pick entity
+		for (var key in this._pickablePool)
+			(this._pickablePool[key] as _Pick_PickableBase).onClear(null);
 	}
 	
 	/**
