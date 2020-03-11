@@ -67,7 +67,11 @@ export class NodeBase implements IContainerNode
 	 */
 	public isInFrustum(rootEntity:IPartitionEntity, planes:Array<Plane3D>, numPlanes:number, pickGroup:PickGroup):boolean
 	{
+		if (!this._entity._iIsVisible())
+			return false;
+
 		return true;
+		return this._partition.isUpdated || pickGroup.getBoundsPicker(this._partition)._isInFrustumInternal(rootEntity, planes, numPlanes);
 	}
 
 	public isVisible():boolean

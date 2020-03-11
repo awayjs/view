@@ -367,13 +367,15 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	 * @param numPlanes
 	 * @returns {boolean}
 	 */
+
 	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
 	{
-		if (!this._entity._iIsVisible())
-			return false;
+		return this._isInFrustumInternal(this._entity, planes, numPlanes);
+	}
 
-		return true; // todo: hack for 2d. attention. might break stuff in 3d.
-		//return this._bounds.isInFrustum(planes, numPlanes);
+	public _isInFrustumInternal(rootEntity:IPartitionEntity, planes:Array<Plane3D>, numPlanes:number):boolean
+	{
+		return this.getBoundingVolume(rootEntity).isInFrustum(planes, numPlanes);
 	}
 
 	public onClear(event:AssetEvent):void

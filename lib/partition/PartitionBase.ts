@@ -26,6 +26,8 @@ export class PartitionBase extends AssetBase implements IAbstractionPool
 	protected _rootNode:IContainerNode;
 	protected _parent:PartitionBase;
 
+	public isUpdated:boolean = false;
+
 	public get parent():PartitionBase
 	{
 		return this._parent;
@@ -102,6 +104,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool
 
 	public traverse(traverser:IPartitionTraverser):void
 	{
+		this.isUpdated = this._invalid;
 		this._invalid = false;
 
 		this._rootNode.acceptTraverser(traverser);

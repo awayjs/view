@@ -88,6 +88,7 @@ export class EntityNode extends AbstractionBase implements INode
 		if (!(<IPartitionEntity> this._asset)._iIsVisible())
 			return false;
 
+		return true;
 		return pickGroup.getAbstraction(<IPickingEntity> this._asset)._isInFrustumInternal(rootEntity, planes, numPlanes);
 	}
 
