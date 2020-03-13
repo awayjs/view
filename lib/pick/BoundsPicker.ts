@@ -275,20 +275,26 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	public hitTestObject(obj:BoundsPicker):boolean
 	{
 		//TODO: getBoxBounds should be using the root partition root
-		var objBox:Box = obj.getBoxBounds(this._entity, true);
+
+		//first do a fast box comparision
+		var objBox:Box = obj.getBoxBounds(this._entity, true, true);
 
 		if(objBox == null)
 			return false;
 		
-		var box:Box = this.getBoxBounds(this._entity, true);
+		var box:Box = this.getBoxBounds(this._entity, true, true);
 
 		if(box == null)
 			return false;
 
-		if (objBox.intersects(box))
-			return true;
-		
-		return false;
+		if (!objBox.intersects(box))
+			return false;
+
+		//if the fast box passes, do the slow test
+		if (!obj.getBoxBounds(this._entity, true).intersects(this.getBoxBounds(this._entity, true)))
+			return false;
+
+		return true;
 	}
 
 	public _getBoxBoundsInternal(matrix3D:Matrix3D = null, strokeFlag:boolean = true, fastFlag:boolean = true, cache:Box = null, target:Box = null):Box
