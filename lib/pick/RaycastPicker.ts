@@ -125,22 +125,6 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return  node.isIntersectingRay(this._rootEntity, this._globalRayPosition, this._globalRayDirection, this._pickGroup)
 	}
 
-		/**
-	 *
-	 * @param planes
-	 * @param numPlanes
-	 * @returns {boolean}
-	 */
-	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
-	{
-		if (!this._entity._iIsVisible())
-			return false;
-
-		return true; // todo: hack for 2d. attention. might break stuff in 3d.
-		//return this._bounds.isInFrustum(planes, numPlanes);
-	}
-
-
 	/**
 	 * @inheritDoc
 	 */
