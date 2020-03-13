@@ -38,25 +38,29 @@ export class PickGroup implements IAbstractionPool
 		this._boundsPickerPool = new BoundsPickerPool(this);
 		this._tabPickerPool = PickGroup._tabPickerPool || (PickGroup._tabPickerPool = new TabPickerPool());
 	}
-	public static clearAllInstances()
+
+	public static clearAllInstances():void
 	{
 		for(var key in this._instancePool){
-			var inst=this._instancePool[key];
-			if(inst){
-				for(var key2 in inst._entityPool){
-					if(inst._entityPool[key2])
-						delete inst._entityPool[key2];
-				}
-				inst._entityPool=null;
-
-			}
+			(this._instancePool[key] as PickGroup).clearAll();
 			delete this._instancePool[key];
 		}
-
 	}
+
 	public static getInstance(view:View):PickGroup
 	{
 		return this._instancePool[view.id] || (this._instancePool[view.id] = new PickGroup(view));
+	}
+	
+	public static clearInstance(view:View):void
+	{
+		var pickGroup:PickGroup = this._instancePool[view.id];
+
+		if (pickGroup) {
+			pickGroup.clearAll();
+
+			delete this._instancePool[view.id];
+		}
 	}
 
 	public getAbstraction(entity:IPickingEntity):PickEntity
@@ -71,6 +75,20 @@ export class PickGroup implements IAbstractionPool
 	public clearAbstraction(entity:IPickingEntity):void
 	{
 		delete this._entityPool[entity.id];
+	}
+
+	/**
+	 * Clears the resources used by the PickGroup.
+	 */
+	public clearAll():void
+	{
+		//clear all entities associated with this pick group
+		for (var key in this._entityPool)
+			(this._entityPool[key] as PickEntity).onClear(null);
+
+		this._raycastPickerPool.clearAll();
+		this._boundsPickerPool.clearAll();
+		this._tabPickerPool.clearAll();
 	}
 
 	public getRaycastPicker(partition:PartitionBase):RaycastPicker
@@ -118,6 +136,16 @@ class RaycastPickerPool implements IAbstractionPool
 	{
 		delete this._abstractionPool[partition.id];
 	}
+
+	/**
+	 * Clears the resources used by the RaycastPickerPool.
+	 */
+	public clearAll():void
+	{
+		//clear all raycastpickers associated with this pool
+		for (var key in this._abstractionPool)
+			(this._abstractionPool[key] as RaycastPicker).onClear(null);
+	}
 }
 
 
@@ -150,6 +178,16 @@ class BoundsPickerPool implements IAbstractionPool
 	{
 		delete this._abstractionPool[partition.id];
 	}
+
+	/**
+	 * Clears the resources used by the BoundsPickerPool.
+	 */
+	public clearAll():void
+	{
+		//clear all boundspickers associated with this pool
+		for (var key in this._abstractionPool)
+			(this._abstractionPool[key] as BoundsPicker).onClear(null);
+	}
 }
 
 
@@ -179,5 +217,15 @@ class TabPickerPool implements IAbstractionPool
 	public clearAbstraction(partition:PartitionBase):void
 	{
 		delete this._abstractionPool[partition.id];
+	}
+	
+	/**
+	 * Clears the resources used by the TabPickerPool.
+	 */
+	public clearAll():void
+	{
+		//clear all tabpickers associated with this pool
+		for (var key in this._abstractionPool)
+			(this._abstractionPool[key] as TabPicker).onClear(null);
 	}
 }
