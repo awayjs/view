@@ -24,9 +24,9 @@ export class PickingCollision
 	public entity:IPartitionEntity;
 
 	/**
-	 * The pickable associated with a collision.
+	 * The traversable associated with a collision.
 	 */
-	public pickable:ITraversable;
+	public traversable:ITraversable;
 
 	/**
 	 * The local position of the collision on the renderable's surface.

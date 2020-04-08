@@ -338,10 +338,10 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		return target;
 	}
 	
-	public applyTraversable(pickable:ITraversable):void
+	public applyTraversable(traversable:ITraversable):void
 	{
-		//is the pickable a mask?
-		this._pickables.push(this.getAbstraction(pickable));
+		//is the traversable a mask?
+		this._pickables.push(this.getAbstraction(traversable));
 	}
 	
 	public onInvalidate(event:AssetEvent):void
@@ -377,18 +377,18 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	 * @param renderable
 	 * @returns IRenderState
 	 */
-	public getAbstraction(pickable:ITraversable):_Pick_PickableBase
+	public getAbstraction(traversable:ITraversable):_Pick_PickableBase
 	{
-		return this._pickablePool[pickable.id] || (this._pickablePool[pickable.id] = new (<_IPick_PickableClass> PickEntity._pickPickableClassPool[pickable.assetType])(pickable, this));
+		return this._pickablePool[traversable.id] || (this._pickablePool[traversable.id] = new (<_IPick_PickableClass> PickEntity._pickPickableClassPool[traversable.assetType])(traversable, this));
 	}
 	
 	/**
 	 *
 	 * @param renderable
 	 */
-	public clearAbstraction(pickable:ITraversable):void
+	public clearAbstraction(traversable:ITraversable):void
 	{
-		delete this._pickablePool[pickable.id];
+		delete this._pickablePool[traversable.id];
 		
 		this.onInvalidate(null);
 	}
