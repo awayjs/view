@@ -1,4 +1,4 @@
-console.debug("AwayJS - View - 0.6.1");
+console.debug("AwayJS - View - 0.6.2");
 
 
 
