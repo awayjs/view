@@ -19,7 +19,13 @@ export class ManagedMap<T> {
 	/**
 	 * @description Minimal ammout for running clean
 	 */
-	public minAmmount = 50;
+	public minSize = 50;
+		/**
+	 * @description Maximal ammout for running clean
+	 */
+
+	public maxSize = 100;
+
 	/**
 	 * @description Max alive time of cached element before running clean 
 	 */
@@ -33,7 +39,7 @@ export class ManagedMap<T> {
 
 	runClean() {
 		if(this._olderId === -1) return;
-		if(this._count < this.minAmmount) return;
+		if(this._count < this.minSize) return;
 
 		let keys: string[];
 		let entry = this._store[this._olderId];
@@ -49,7 +55,7 @@ export class ManagedMap<T> {
 			needSort = false;
 		}
 
-		if(performance.now() - entry.lastUse < this.maxWaitTime) {
+		if(this._count < this.maxSize && performance.now() - entry.lastUse < this.maxWaitTime) {
 			return;
 		}
 
@@ -147,7 +153,8 @@ export class ManagedMap<T> {
  */
 export class PickGroup implements IAbstractionPool
 {
-	public static MAX_POOL_SIZE = 100;
+	public static MIN_POOL_SIZE = 100;
+	public static MAX_POOL_SIZE = 500;
 
 	private static _instancePool = new ManagedMap<PickGroup>("PickGroup");
 	/*public static get instancePool() { 
@@ -173,11 +180,15 @@ export class PickGroup implements IAbstractionPool
 		this._boundsPickerPool = new BoundsPickerPool(this);
 		this._tabPickerPool = PickGroup._tabPickerPool || (PickGroup._tabPickerPool = new TabPickerPool(this));
 
-		this._raycastPickerPool.pool.minAmmount = PickGroup.MAX_POOL_SIZE;
-		this._boundsPickerPool.pool.minAmmount = PickGroup.MAX_POOL_SIZE;
-		this._tabPickerPool.pool.minAmmount = PickGroup.MAX_POOL_SIZE;
-		this._entityPool.minAmmount = PickGroup.MAX_POOL_SIZE;
+		this._raycastPickerPool.pool.minSize = PickGroup.MIN_POOL_SIZE;
+		this._boundsPickerPool.pool.minSize = PickGroup.MIN_POOL_SIZE;
+		this._tabPickerPool.pool.minSize = PickGroup.MIN_POOL_SIZE;
+		this._entityPool.minSize = PickGroup.MIN_POOL_SIZE;
 
+		this._raycastPickerPool.pool.maxSize = PickGroup.MAX_POOL_SIZE;
+		this._boundsPickerPool.pool.maxSize = PickGroup.MAX_POOL_SIZE;
+		this._tabPickerPool.pool.maxSize = PickGroup.MAX_POOL_SIZE;
+		this._entityPool.maxSize = PickGroup.MAX_POOL_SIZE;
 	}
 
 	public static clearAllInstances():void
