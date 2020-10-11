@@ -1,4 +1,4 @@
-import {IAbstractionPool} from "@awayjs/core";
+import {AbstractionBase, IAbstractionPool, IAsset} from "@awayjs/core";
 
 
 
@@ -11,17 +11,152 @@ import { TabPicker } from './pick/TabPicker';
 
 import { View } from './View';
 
+export class ManagedMap<T> {
+	_store: NumberMap<{entity: T, lastUse: number, id: number}> = {};
+	_olderId = -1;
+	_count = 0;
+
+	/**
+	 * @description Minimal ammout for running clean
+	 */
+	public minAmmount = 50;
+	/**
+	 * @description Max alive time of cached element before running clean 
+	 */
+	public maxWaitTime = 5000;
+	/**
+	 * @description How much drop when clean process is ruuned
+	 */
+	public dropAmmout = 0.5;
+
+	constructor(public name: string = ""){};
+
+	runClean() {
+		if(this._olderId === -1) return;
+		if(this._count < this.minAmmount) return;
+
+		let keys: string[];
+		let entry = this._store[this._olderId];
+		let needSort = true;
+
+		if(!entry) {
+			keys = Object.keys(this._store);
+			keys.sort((a, b) =>{
+				return this._store[a].lastUse - this._store[b].lastUse;
+			});
+			
+			entry = this._store[keys[0]];
+			needSort = false;
+		}
+
+		if(performance.now() - entry.lastUse < this.maxWaitTime) {
+			return;
+		}
+
+		if(needSort) {
+			keys = Object.keys(this._store);
+			keys.sort((a, b) =>{
+				return this._store[a].lastUse - this._store[b].lastUse;
+			});
+		}
+
+		const end = (keys.length * this.dropAmmout | 0);
+
+		for(let i = 0; i < end; i ++) {
+			delete this._store[keys[i]];
+			this._count --;
+		}
+
+		this._olderId = +keys[end] || -1;
+
+		console.debug(`[ManagedMap:${this.name}] Collect items: ${end + 1}`);
+	}
+
+	set(key: number, value:T ): T {		
+		let t = performance.now();
+		let entry = this._store[key];
+
+		if(!entry) {
+			entry = this._store[key] = {
+				lastUse: t,
+				entity: value,
+				id: key
+			};
+
+			this._count ++;
+		}
+
+		entry.lastUse = t;
+
+		if(this._olderId === -1) {
+			this._olderId = key;
+		}
+
+		this.runClean();
+
+		return value;
+	}
+
+	get(key: number): T | null {
+		const entry = this._store[key];
+
+		if (!entry) { return null };
+
+		entry.lastUse = performance.now();
+		
+		if (this._olderId === key) {
+			this._olderId = -1;
+			this.runClean();
+		}
+
+		return entry.entity;
+	}
+
+	delete(key: number): T | null {
+		if(!this._store[key]) return null;
+
+		
+		const value = this._store[key];
+
+		delete this._store[key];
+		this._count --;
+		
+		if(this._olderId === key) {
+			this._olderId = -1;
+			this.runClean();
+		}
+
+		return value.entity;
+	}
+
+	clear(callback: (e: T) => void = null) {
+		if (callback) {
+			for(let k in this._store) {
+				callback(this._store[k].entity);
+			}
+		}
+
+		this._olderId = -1;
+		this._store = {};
+		this._count = 0;
+	}
+}
+
 /**
  * @class away.pool.PickGroup
  */
 export class PickGroup implements IAbstractionPool
 {
-	private static _instancePool:Object = new Object();
-	public static get instancePool():Object {return PickGroup._instancePool};
-	
+	public static MAX_POOL_SIZE = 100;
+
+	private static _instancePool = new ManagedMap<PickGroup>("PickGroup");
+	/*public static get instancePool() { 
+		return PickGroup._instancePool
+	};*/
+
 	private static _tabPickerPool:TabPickerPool;
 	private _view:View;
-	private _entityPool:Object = new Object();
+	private _entityPool = new ManagedMap<PickEntity>("PickEntity");
 	private _raycastPickerPool:RaycastPickerPool;
 	private _boundsPickerPool:BoundsPickerPool;
 	private _tabPickerPool:TabPickerPool;
@@ -36,36 +171,37 @@ export class PickGroup implements IAbstractionPool
 		this._view = view;
 		this._raycastPickerPool = new RaycastPickerPool(this);
 		this._boundsPickerPool = new BoundsPickerPool(this);
-		this._tabPickerPool = PickGroup._tabPickerPool || (PickGroup._tabPickerPool = new TabPickerPool());
+		this._tabPickerPool = PickGroup._tabPickerPool || (PickGroup._tabPickerPool = new TabPickerPool(this));
+
+		this._raycastPickerPool.pool.minAmmount = PickGroup.MAX_POOL_SIZE;
+		this._boundsPickerPool.pool.minAmmount = PickGroup.MAX_POOL_SIZE;
+		this._tabPickerPool.pool.minAmmount = PickGroup.MAX_POOL_SIZE;
+		this._entityPool.minAmmount = PickGroup.MAX_POOL_SIZE;
+
 	}
 
 	public static clearAllInstances():void
 	{
-		for(var key in this._instancePool){
-			(this._instancePool[key] as PickGroup).clearAll();
-			delete this._instancePool[key];
-		}
+		this._instancePool.clear((e)=> e && e.clearAll());
 	}
 
 	public static getInstance(view:View):PickGroup
 	{
-		return this._instancePool[view.id] || (this._instancePool[view.id] = new PickGroup(view));
+		return this._instancePool.get(view.id) || this._instancePool.set(view.id, new PickGroup(view));
 	}
-	
+
 	public static clearInstance(view:View):void
 	{
-		var pickGroup:PickGroup = this._instancePool[view.id];
+		var pickGroup:PickGroup = this._instancePool.delete(view.id);
 
 		if (pickGroup) {
 			pickGroup.clearAll();
-
-			delete this._instancePool[view.id];
 		}
 	}
 
 	public getAbstraction(entity:IPickingEntity):PickEntity
 	{
-		return this._entityPool[entity.id] || (this._entityPool[entity.id] = new PickEntity(this._view, entity, this));
+		return this._entityPool.get(entity.id) || this._entityPool.set(entity.id, new PickEntity(this._view, entity, this));
 	}
 
 	/**
@@ -74,7 +210,7 @@ export class PickGroup implements IAbstractionPool
 	 */
 	public clearAbstraction(entity:IPickingEntity):void
 	{
-		delete this._entityPool[entity.id];
+		this._entityPool.delete(entity.id);
 	}
 
 	/**
@@ -83,9 +219,8 @@ export class PickGroup implements IAbstractionPool
 	public clearAll():void
 	{
 		//clear all entities associated with this pick group
-		for (var key in this._entityPool)
-			(this._entityPool[key] as PickEntity).onClear(null);
-
+		this._entityPool.clear((e) => e && e.onClear(null));
+		
 		this._raycastPickerPool.clearAll();
 		this._boundsPickerPool.clearAll();
 		this._tabPickerPool.clearAll();
@@ -107,34 +242,29 @@ export class PickGroup implements IAbstractionPool
 	}
 }
 
-class RaycastPickerPool implements IAbstractionPool
-{
-	private _abstractionPool:Object = new Object();
-	private _pickGroup:PickGroup;
+class GenericPool<T extends AbstractionBase> implements IAbstractionPool {
+	pool: ManagedMap<T>;
 
-	constructor(pickGroup:PickGroup)
-	{
-		this._pickGroup = pickGroup;
+	constructor(protected _pickGroup: PickGroup, protected _poolCtr: {new(...args): T, name?: string}) {
+		//@ts-ignore
+		this.pool = new ManagedMap(_poolCtr.name || this.constructor.name);
 	}
 
-	/**
-	 * //TODO
-	 *
-	 * @param entity
-	 * @returns EntityNode
-	 */
-	public getAbstraction(partition:PartitionBase):RaycastPicker
-	{
-		return (this._abstractionPool[partition.id] || (this._abstractionPool[partition.id] = new RaycastPicker(this._pickGroup, partition, this)));
+	protected createEntry(asset: IAsset): T {
+		return new this._poolCtr();
+	}
+
+	getAbstraction(asset: IAsset): T {
+		return this.pool.get(asset.id) || this.pool.set(asset.id, this.createEntry(asset));
 	}
 
 	/**
 	 *
 	 * @param entity
 	 */
-	public clearAbstraction(partition:PartitionBase):void
+	public clearAbstraction(asset:IAsset):void
 	{
-		delete this._abstractionPool[partition.id];
+		this.pool.delete(asset.id);
 	}
 
 	/**
@@ -143,89 +273,45 @@ class RaycastPickerPool implements IAbstractionPool
 	public clearAll():void
 	{
 		//clear all raycastpickers associated with this pool
-		for (var key in this._abstractionPool)
-			(this._abstractionPool[key] as RaycastPicker).onClear(null);
+		this.pool.clear((e) => e && e.onClear && e.onClear(null));
 	}
 }
 
-
-class BoundsPickerPool implements IAbstractionPool
+class RaycastPickerPool extends GenericPool<RaycastPicker>
 {
-	private _abstractionPool:Object = new Object();
-	private _pickGroup:PickGroup;
-
 	constructor(pickGroup:PickGroup)
 	{
-		this._pickGroup = pickGroup;
+		super(pickGroup, RaycastPicker)
 	}
 
-	/**
-	 * //TODO
-	 *
-	 * @param entity
-	 * @returns EntityNode
-	 */
-	public getAbstraction(partition:PartitionBase):BoundsPicker
-	{
-		return (this._abstractionPool[partition.id] || (this._abstractionPool[partition.id] = new BoundsPicker(this._pickGroup, partition, this)));
+	createEntry(asset: PartitionBase) {
+		return new RaycastPicker(this._pickGroup, asset, this)
 	}
 
-	/**
-	 *
-	 * @param entity
-	 */
-	public clearAbstraction(partition:PartitionBase):void
-	{
-		delete this._abstractionPool[partition.id];
-	}
-
-	/**
-	 * Clears the resources used by the BoundsPickerPool.
-	 */
-	public clearAll():void
-	{
-		//clear all boundspickers associated with this pool
-		for (var key in this._abstractionPool)
-			(this._abstractionPool[key] as BoundsPicker).onClear(null);
-	}
 }
 
-
-class TabPickerPool implements IAbstractionPool
+class BoundsPickerPool extends GenericPool<BoundsPicker>
 {
-	private _abstractionPool:Object = new Object();
-
-	constructor()
+	constructor(pickGroup:PickGroup)
 	{
+		super(pickGroup, BoundsPicker)
 	}
 
-	/**
-	 * //TODO
-	 *
-	 * @param entity
-	 * @returns EntityNode
-	 */
-	public getAbstraction(partition:PartitionBase):TabPicker
-	{
-		return (this._abstractionPool[partition.id] || (this._abstractionPool[partition.id] = new TabPicker(partition, this)));
+	createEntry(asset: PartitionBase) {
+		return new BoundsPicker(this._pickGroup, asset, this)
 	}
 
-	/**
-	 *
-	 * @param entity
-	 */
-	public clearAbstraction(partition:PartitionBase):void
+}
+
+class TabPickerPool extends GenericPool<TabPicker>
+{
+	constructor(pickGroup:PickGroup)
 	{
-		delete this._abstractionPool[partition.id];
+		super(pickGroup, TabPicker)
 	}
-	
-	/**
-	 * Clears the resources used by the TabPickerPool.
-	 */
-	public clearAll():void
-	{
-		//clear all tabpickers associated with this pool
-		for (var key in this._abstractionPool)
-			(this._abstractionPool[key] as TabPicker).onClear(null);
+
+	createEntry(asset: PartitionBase) {
+		return new TabPicker(asset, this)
 	}
+
 }
