@@ -1,4 +1,4 @@
-import {Transform, ColorTransform, Matrix3D, Vector3D, IAsset, Point} from "@awayjs/core";
+import { Transform, ColorTransform, Matrix3D, Vector3D, IAsset, Point } from '@awayjs/core';
 
 import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
@@ -6,69 +6,68 @@ import { PartitionBase } from '../partition/PartitionBase';
 import { PickGroup } from '../PickGroup';
 import { IEntityTraverser } from './IEntityTraverser';
 
-
 export interface IPartitionEntity extends IAsset
 {
-	parent:IPartitionEntity;
+	parent: IPartitionEntity;
 
-	isAncestor(entity:IPartitionEntity):boolean;
+	isAncestor(entity: IPartitionEntity): boolean;
 
-	isDescendant(entity:IPartitionEntity):boolean;
+	isDescendant(entity: IPartitionEntity): boolean;
 
-	_iInternalUpdate():void;
-	
-	maskId:number;
+	_iInternalUpdate(): void;
 
-	_iAssignedColorTransform():ColorTransform;
+	maskId: number;
 
-	maskOwners:Array<IPartitionEntity>;
+	_iAssignedColorTransform(): ColorTransform;
 
-	maskMode:boolean;
+	maskOwners: Array<IPartitionEntity>;
 
-	_registrationMatrix3D:Matrix3D;
+	maskMode: boolean;
 
-	transform:Transform;
+	_registrationMatrix3D: Matrix3D;
 
-	masks:Array<IPartitionEntity>;
-	
-	partition:PartitionBase;
-		
-	/**
-	 * 
-	 */
-	defaultBoundingVolume:BoundingVolumeType;
-	
-	pickObject:IPartitionEntity;
+	transform: Transform;
+
+	masks: Array<IPartitionEntity>;
+
+	partition: PartitionBase;
 
 	/**
 	 *
 	 */
-	boundsVisible:boolean;
+	defaultBoundingVolume: BoundingVolumeType;
 
-	/**
-	 * 
-	 */
-	getBoundsPrimitive(pickGroup:PickGroup):IPartitionEntity;
-	
+	pickObject: IPartitionEntity;
+
 	/**
 	 *
 	 */
-	castsShadows:boolean;
+	boundsVisible: boolean;
+
+	/**
+	 *
+	 */
+	getBoundsPrimitive(pickGroup: PickGroup): IPartitionEntity;
+
+	/**
+	 *
+	 */
+	castsShadows: boolean;
 
 	/**
 	 * @internal
 	 */
-	_iIsMouseEnabled():boolean;
+	_iIsMouseEnabled(): boolean;
 
 	/**
 	 * @internal
 	 */
-	_iIsVisible():boolean;
+	_iIsVisible(): boolean;
 
 	/**
 	 *
 	 * @param renderer
 	 * @private
 	 */
-	_acceptTraverser(traverser:IEntityTraverser);
+	_acceptTraverser(traverser: IEntityTraverser);
 }

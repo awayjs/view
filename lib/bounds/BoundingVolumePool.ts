@@ -8,9 +8,8 @@ import { BoundingSphere } from './BoundingSphere';
 import { NullBounds } from './NullBounds';
 import { IBoundsPicker } from '../pick/IBoundsPicker';
 
-export class BoundingVolumePool implements IAbstractionPool
-{
-	private static _strokeDict:Object = {
+export class BoundingVolumePool implements IAbstractionPool {
+	private static _strokeDict: Object = {
 		[BoundingVolumeType.BOX] : false,
 		[BoundingVolumeType.BOX_FAST] : false,
 		[BoundingVolumeType.BOX_BOUNDS] : true,
@@ -22,7 +21,7 @@ export class BoundingVolumePool implements IAbstractionPool
 		[BoundingVolumeType.NULL] : false
 	}
 
-	private static _fastDict:Object = {
+	private static _fastDict: Object = {
 		[BoundingVolumeType.BOX] : false,
 		[BoundingVolumeType.BOX_FAST] : true,
 		[BoundingVolumeType.BOX_BOUNDS] : false,
@@ -33,8 +32,8 @@ export class BoundingVolumePool implements IAbstractionPool
 		[BoundingVolumeType.SPHERE_FAST] : true,
 		[BoundingVolumeType.NULL] : false
 	}
-	
-	private static _boundsDict:Object = {
+
+	private static _boundsDict: Object = {
 		[BoundingVolumeType.BOX] : BoundingBox,
 		[BoundingVolumeType.BOX_FAST] : BoundingBox,
 		[BoundingVolumeType.BOX_BOUNDS] : BoundingBox,
@@ -46,49 +45,42 @@ export class BoundingVolumePool implements IAbstractionPool
 		[BoundingVolumeType.NULL] : NullBounds
 	}
 
-	private _boundingVolumePool:Object = new Object();
-	private _picker:IBoundsPicker;
-	private _strokeFlag:boolean;
-	private _fastFlag:boolean;
-	private _boundingVolumeClass:IAbstractionClass;
+	private _boundingVolumePool: Object = new Object();
+	private _picker: IBoundsPicker;
+	private _strokeFlag: boolean;
+	private _fastFlag: boolean;
+	private _boundingVolumeClass: IAbstractionClass;
 
-	public get picker():IBoundsPicker
-	{
+	public get picker(): IBoundsPicker {
 		return this._picker;
 	}
 
-	public get strokeFlag():boolean
-	{
+	public get strokeFlag(): boolean {
 		return this._strokeFlag;
 	}
-	
-	public get fastFlag():boolean
-	{
+
+	public get fastFlag(): boolean {
 		return this._fastFlag;
 	}
 
-	constructor(picker:IBoundsPicker, boundingVolumeType:BoundingVolumeType)
-	{
+	constructor(picker: IBoundsPicker, boundingVolumeType: BoundingVolumeType) {
 		this._picker = picker;
 		this._strokeFlag = BoundingVolumePool._strokeDict[boundingVolumeType];
 		this._fastFlag = BoundingVolumePool._fastDict[boundingVolumeType];
 		this._boundingVolumeClass = BoundingVolumePool._boundsDict[boundingVolumeType];
 	}
 
-	public getAbstraction(entity:IPartitionEntity):BoundingVolumeBase
-	{
-		var id:number = entity? entity.id : -1;
+	public getAbstraction(entity: IPartitionEntity): BoundingVolumeBase {
+		const id: number = entity ? entity.id : -1;
 		return (this._boundingVolumePool[id] || (this._boundingVolumePool[id] = new (<IAbstractionClass> this._boundingVolumeClass)(entity, this)));
 	}
 
-	public clearAbstraction(entity:IPartitionEntity):void
-	{
-		delete this._boundingVolumePool[entity? entity.id : -1];
+	public clearAbstraction(entity: IPartitionEntity): void {
+		delete this._boundingVolumePool[entity ? entity.id : -1];
 	}
 
-	public dispose():void
-	{
-		for (var key in this._boundingVolumePool)
+	public dispose(): void {
+		for (const key in this._boundingVolumePool)
 			this._boundingVolumePool[key].onClear(null);
 	}
 }

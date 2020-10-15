@@ -10,7 +10,7 @@ import { ITraversable } from './ITraversable';
 export interface IEntityTraverser
 {
 	/**
-	 * 
+	 *
 	 */
-	applyTraversable(traversable:ITraversable):void
+	applyTraversable(traversable: ITraversable): void
 }

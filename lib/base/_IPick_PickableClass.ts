@@ -13,5 +13,5 @@ export interface _IPick_PickableClass
 	/**
 	 *
 	 */
-	new(traversable:ITraversable, pickEntity:PickEntity):_Pick_PickableBase;
+	new(traversable: ITraversable, pickEntity: PickEntity): _Pick_PickableBase;
 }

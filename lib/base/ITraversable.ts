@@ -1,4 +1,4 @@
-import {IAsset} from "@awayjs/core";
+import { IAsset } from '@awayjs/core';
 
 /**
  * ITraversable provides an interface for objects that can use materials.

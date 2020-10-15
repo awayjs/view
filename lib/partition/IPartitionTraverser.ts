@@ -1,5 +1,5 @@
-import {IPartitionEntity} from "../base/IPartitionEntity";
-import {INode} from "./INode";
+import { IPartitionEntity } from '../base/IPartitionEntity';
+import { INode } from './INode';
 import { PartitionBase } from './PartitionBase';
 
 /**
@@ -11,20 +11,20 @@ import { PartitionBase } from './PartitionBase';
  */
 export interface IPartitionTraverser
 {
-	partition:PartitionBase;
+	partition: PartitionBase;
 
-	getTraverser(partition:PartitionBase):IPartitionTraverser;
+	getTraverser(partition: PartitionBase): IPartitionTraverser;
 
 	/**
 	 * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
 	 *
 	 * @param node The Partition3DNode object to frustum-test.
 	 */
-	enterNode(node:INode):boolean;
+	enterNode(node: INode): boolean;
 
 	/**
 	 *
 	 * @param entity
 	 */
-	applyEntity(entity:IPartitionEntity):void;
+	applyEntity(entity: IPartitionEntity): void;
 }

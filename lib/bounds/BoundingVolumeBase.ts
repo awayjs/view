@@ -1,4 +1,4 @@
-import {Plane3D, Vector3D, AbstractMethodError, AbstractionBase, AssetEvent, TransformEvent} from "@awayjs/core";
+import { Plane3D, Vector3D, AbstractMethodError, AbstractionBase, AssetEvent, TransformEvent } from '@awayjs/core';
 
 import { BoundsPickerEvent } from '../events/BoundsPickerEvent';
 
@@ -6,19 +6,17 @@ import { BoundingVolumePool } from './BoundingVolumePool';
 import { IBoundsPicker } from '../pick/IBoundsPicker';
 import { IPartitionEntity } from '../base/IPartitionEntity';
 
-export class BoundingVolumeBase extends AbstractionBase
-{
-	private _onInvalidateBoundsDelegate:(event:BoundsPickerEvent) => void;
-	private _onInvalidateMatrix3DDelegate:(event:TransformEvent) => void;
+export class BoundingVolumeBase extends AbstractionBase {
+	private _onInvalidateBoundsDelegate: (event: BoundsPickerEvent) => void;
+	private _onInvalidateMatrix3DDelegate: (event: TransformEvent) => void;
 
-	protected _targetCoordinateSpace:IPartitionEntity;
-	protected _picker:IBoundsPicker;
-	protected _strokeFlag:boolean;
-	protected _fastFlag:boolean;
+	protected _targetCoordinateSpace: IPartitionEntity;
+	protected _picker: IBoundsPicker;
+	protected _strokeFlag: boolean;
+	protected _fastFlag: boolean;
 	//protected _boundsPrimitive:Sprite;
 
-	constructor(asset:IPartitionEntity, pool:BoundingVolumePool)
-	{
+	constructor(asset: IPartitionEntity, pool: BoundingVolumePool) {
 		super(asset, pool);
 
 		this._targetCoordinateSpace = asset;
@@ -26,13 +24,13 @@ export class BoundingVolumeBase extends AbstractionBase
 		this._strokeFlag = pool.strokeFlag;
 		this._fastFlag = pool.fastFlag;
 
-		this._onInvalidateBoundsDelegate = (event:BoundsPickerEvent) => this._onInvalidateBounds(event);
-		this._onInvalidateMatrix3DDelegate = (event:TransformEvent) => this._onInvalidateMatrix3D(event);
+		this._onInvalidateBoundsDelegate = (event: BoundsPickerEvent) => this._onInvalidateBounds(event);
+		this._onInvalidateMatrix3DDelegate = (event: TransformEvent) => this._onInvalidateMatrix3D(event);
 
 		this._picker.addEventListener(BoundsPickerEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
 
 		if (this._targetCoordinateSpace) {
-			var targetEntity:IPartitionEntity = this._picker.entity;
+			let targetEntity: IPartitionEntity = this._picker.entity;
 			//for scene targets, use concatenated matrix listeners
 			if (!this._targetCoordinateSpace.parent) {
 				targetEntity.transform.addEventListener(TransformEvent.INVALIDATE_CONCATENATED_MATRIX3D, this._onInvalidateMatrix3DDelegate);
@@ -48,24 +46,21 @@ export class BoundingVolumeBase extends AbstractionBase
 		}
 	}
 
-	public _onInvalidateBounds(event:BoundsPickerEvent):void
-	{
+	public _onInvalidateBounds(event: BoundsPickerEvent): void {
 		this._invalid = true;
 	}
-	
-	public _onInvalidateMatrix3D(event:TransformEvent):void
-	{
+
+	public _onInvalidateMatrix3D(event: TransformEvent): void {
 		this._invalid = true;
 	}
-	
-	public onClear(event:AssetEvent):void
-	{
+
+	public onClear(event: AssetEvent): void {
 		super.onClear(event);
 
 		this._picker.addEventListener(BoundsPickerEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
-		
+
 		if (this._targetCoordinateSpace) {
-			var targetEntity:IPartitionEntity = this._picker.entity;
+			let targetEntity: IPartitionEntity = this._picker.entity;
 			if (!this._targetCoordinateSpace.parent) {
 				targetEntity.transform.removeEventListener(TransformEvent.INVALIDATE_CONCATENATED_MATRIX3D, this._onInvalidateMatrix3DDelegate);
 			} else {
@@ -78,7 +73,7 @@ export class BoundingVolumeBase extends AbstractionBase
 					this._targetCoordinateSpace.transform.removeEventListener(TransformEvent.INVALIDATE_CONCATENATED_MATRIX3D, this._onInvalidateMatrix3DDelegate);
 			}
 		}
-		
+
 		this._targetCoordinateSpace = null;
 		this._picker = null;
 		//this._boundsPrimitive = null;
@@ -96,37 +91,31 @@ export class BoundingVolumeBase extends AbstractionBase
 	// 		this._update();
 
 	// 	this._boundsPrimitive.transform.matrix3D = this._boundingEntity.transform.concatenatedMatrix3D;
-		
+
 	// 	return this._boundsPrimitive;
 	// }
 
-	public nullify():void
-	{
+	public nullify(): void {
 		throw new AbstractMethodError();
 	}
 
-	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
-	{
+	public isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean {
 		throw new AbstractMethodError();
 	}
 
-	public clone():BoundingVolumeBase
-	{
+	public clone(): BoundingVolumeBase {
 		throw new AbstractMethodError();
 	}
 
-	public rayIntersection(position:Vector3D, direction:Vector3D, targetNormal:Vector3D):number
-	{
+	public rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number {
 		return -1;
 	}
 
-	public classifyToPlane(plane:Plane3D):number
-	{
+	public classifyToPlane(plane: Plane3D): number {
 		throw new AbstractMethodError();
 	}
 
-	public _update():void
-	{
+	public _update(): void {
 		this._invalid = false;
 	}
 

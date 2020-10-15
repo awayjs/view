@@ -1,6 +1,6 @@
-import {AssetEvent, AbstractionBase, Matrix3D, Vector3D, AbstractMethodError, Sphere, Box} from "@awayjs/core";
+import { AssetEvent, AbstractionBase, Matrix3D, Vector3D, AbstractMethodError, Sphere, Box } from '@awayjs/core';
 
-import {IPartitionEntity} from "./IPartitionEntity";
+import { IPartitionEntity } from './IPartitionEntity';
 import { ITraversable } from './ITraversable';
 import { PickEntity } from './PickEntity';
 import { PickGroup } from '../PickGroup';
@@ -11,15 +11,14 @@ import { View } from '../View';
 /**
  * @class RenderableListItem
  */
-export class _Pick_PickableBase extends AbstractionBase
-{
-    protected _view:View;
-    protected _pickGroup:PickGroup;
+export class _Pick_PickableBase extends AbstractionBase {
+	protected _view: View;
+	protected _pickGroup: PickGroup;
 
 	/**
 	 *
 	 */
-	public sourceEntity:IPartitionEntity;
+	public sourceEntity: IPartitionEntity;
 
 	/**
 	 *
@@ -28,41 +27,35 @@ export class _Pick_PickableBase extends AbstractionBase
 	 * @param surface
 	 * @param renderer
 	 */
-	constructor(traversable:ITraversable, pickEntity:PickEntity)
-	{
-        super(traversable, pickEntity);
+	constructor(traversable: ITraversable, pickEntity: PickEntity) {
+		super(traversable, pickEntity);
 
-        //store references
+		//store references
 		this.sourceEntity = pickEntity.entity;
-        this._view = pickEntity.view;
-        this._pickGroup = pickEntity.pickGroup;
-    }
+		this._view = pickEntity.view;
+		this._pickGroup = pickEntity.pickGroup;
+	}
 
-	public onClear(event:AssetEvent):void
-	{
+	public onClear(event: AssetEvent): void {
 		super.onClear(event);
 
 		//this.sourceEntity = null;
 		this._view = null;
-    }
-
-    public hitTestPoint(x:number, y:number, z:number):boolean
-	{
-        throw new AbstractMethodError();
 	}
 
-	public getBoxBounds(matrix3D:Matrix3D = null, strokeFlag:boolean = true, cache:Box = null, target:Box = null):Box
-	{
+	public hitTestPoint(x: number, y: number, z: number): boolean {
+		throw new AbstractMethodError();
+	}
+
+	public getBoxBounds(matrix3D: Matrix3D = null, strokeFlag: boolean = true, cache: Box = null, target: Box = null): Box {
 		return target;
 	}
 
-	public getSphereBounds(center:Vector3D, matrix3D:Matrix3D = null, strokeFlag:boolean = true, cache:Sphere = null, target:Sphere = null):Sphere
-	{
+	public getSphereBounds(center: Vector3D, matrix3D: Matrix3D = null, strokeFlag: boolean = true, cache: Sphere = null, target: Sphere = null): Sphere {
 		return target;
 	}
 
-	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
-	{
-        throw new AbstractMethodError();
-    }
+	public testCollision(collision: PickingCollision, closestFlag: boolean): boolean {
+		throw new AbstractMethodError();
+	}
 }

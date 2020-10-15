@@ -1,7 +1,7 @@
-import {IPartitionEntity} from "../base/IPartitionEntity";
+import { IPartitionEntity } from '../base/IPartitionEntity';
 
-import {EntityNode} from "./EntityNode";
-import {PartitionBase} from "./PartitionBase";
+import { EntityNode } from './EntityNode';
+import { PartitionBase } from './PartitionBase';
 
 /**
  * IPartitionEntityNodeClass is an interface for the constructable class definition EntityNode that is used to
@@ -14,5 +14,5 @@ export interface IEntityNodeClass
 	/**
 	 *
 	 */
-	new(entity:IPartitionEntity, pool:PartitionBase):EntityNode;
+	new(entity: IPartitionEntity, pool: PartitionBase): EntityNode;
 }

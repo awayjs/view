@@ -1,63 +1,57 @@
-import {Plane3D, Vector3D, AbstractMethodError} from "@awayjs/core";
+import { Plane3D, Vector3D, AbstractMethodError } from '@awayjs/core';
 
-import {IPartitionEntity} from "../base/IPartitionEntity";
+import { IPartitionEntity } from '../base/IPartitionEntity';
 
-import {IPartitionTraverser} from "./IPartitionTraverser";
-import {INode} from "./INode";
-import {IContainerNode} from "./IContainerNode";
+import { IPartitionTraverser } from './IPartitionTraverser';
+import { INode } from './INode';
+import { IContainerNode } from './IContainerNode';
 import { PartitionBase } from './PartitionBase';
 import { PickGroup } from '../PickGroup';
 
 /**
  * @class away.partition.NodeBase
  */
-export class NodeBase implements IContainerNode
-{
-	protected _entity:IPartitionEntity;
-	protected _partition:PartitionBase;
-	protected _childNodes:Array<INode> = new Array<INode>();
-	protected _numChildNodes:number = 0;
+export class NodeBase implements IContainerNode {
+	protected _entity: IPartitionEntity;
+	protected _partition: PartitionBase;
+	protected _childNodes: Array<INode> = new Array<INode>();
+	protected _numChildNodes: number = 0;
 
-	protected _debugEntity:IPartitionEntity;
+	protected _debugEntity: IPartitionEntity;
 
-	public _collectionMark:number;// = 0;
+	public _collectionMark: number;// = 0;
 
-	public parent:IContainerNode;
+	public parent: IContainerNode;
 
-	public get entity():IPartitionEntity
-	{
+	public get entity(): IPartitionEntity {
 		return this._entity;
 	}
 
-	public get pickObject():IPartitionEntity
-	{
+	public get pickObject(): IPartitionEntity {
 		return this._entity.pickObject;
 	}
 
-	public get boundsVisible():boolean
-	{
+	public get boundsVisible(): boolean {
 		return false;
 	}
-	
+
 	/**
 	 *
 	 * @returns {number}
 	 */
-	public get maskId():number
-	{
+	public get maskId(): number {
 		return this._entity.maskId;
 	}
 
-	public getBoundsPrimitive(pickGroup:PickGroup):IPartitionEntity
-	{
+	public getBoundsPrimitive(pickGroup: PickGroup): IPartitionEntity {
 		throw new AbstractMethodError();
 	}
 
-	constructor(entity:IPartitionEntity, partition:PartitionBase)
-	{
+	constructor(entity: IPartitionEntity, partition: PartitionBase) {
 		this._entity = entity;
 		this._partition = partition;
 	}
+
 	/**
 	 *
 	 * @param planes
@@ -65,8 +59,7 @@ export class NodeBase implements IContainerNode
 	 * @returns {boolean}
 	 * @internal
 	 */
-	public isInFrustum(rootEntity:IPartitionEntity, planes:Array<Plane3D>, numPlanes:number, pickGroup:PickGroup):boolean
-	{
+	public isInFrustum(rootEntity: IPartitionEntity, planes: Array<Plane3D>, numPlanes: number, pickGroup: PickGroup): boolean {
 		if (!this._entity._iIsVisible())
 			return false;
 
@@ -74,8 +67,7 @@ export class NodeBase implements IContainerNode
 		return this._partition.isUpdated || pickGroup.getBoundsPicker(this._partition)._isInFrustumInternal(rootEntity, planes, numPlanes);
 	}
 
-	public isVisible():boolean
-	{
+	public isVisible(): boolean {
 		return this._entity._iIsVisible();
 	}
 
@@ -85,8 +77,7 @@ export class NodeBase implements IContainerNode
 	 * @param rayDirection
 	 * @returns {boolean}
 	 */
-	public isIntersectingRay(rootEntity:IPartitionEntity, rayPosition:Vector3D, rayDirection:Vector3D, pickGroup:PickGroup):boolean
-	{
+	public isIntersectingRay(rootEntity: IPartitionEntity, rayPosition: Vector3D, rayDirection: Vector3D, pickGroup: PickGroup): boolean {
 		return true;
 	}
 
@@ -94,22 +85,19 @@ export class NodeBase implements IContainerNode
 	 *
 	 * @returns {boolean}
 	 */
-	public isRenderable():boolean
-	{
+	public isRenderable(): boolean {
 		return true;
 	}
-	
+
 	/**
 	 *
 	 * @returns {boolean}
 	 */
-	public isCastingShadow():boolean
-	{
+	public isCastingShadow(): boolean {
 		return true;
 	}
 
-	public dispose():void
-	{
+	public dispose(): void {
 		this.parent = null;
 		this._childNodes = null;
 	}
@@ -118,8 +106,7 @@ export class NodeBase implements IContainerNode
 	 *
 	 * @param traverser
 	 */
-	public acceptTraverser(traverser:IPartitionTraverser):void
-	{
+	public acceptTraverser(traverser: IPartitionTraverser): void {
 		if (this._partition.root == this._entity)
 			this._partition.updateEntities();
 
@@ -128,7 +115,7 @@ export class NodeBase implements IContainerNode
 			return;
 
 		if (traverser.enterNode(this)) {
-			for (var i:number = 0; i < this._numChildNodes; i++)
+			for (let i: number = 0; i < this._numChildNodes; i++)
 				this._childNodes[i].acceptTraverser(traverser);
 		}
 	}
@@ -138,10 +125,9 @@ export class NodeBase implements IContainerNode
 	 * @param node
 	 * @internal
 	 */
-	public iAddNode(node:INode):void
-	{
+	public iAddNode(node: INode): void {
 		node.parent = this;
-		
+
 		this._childNodes[ this._numChildNodes++ ] = node;
 	}
 
@@ -150,9 +136,8 @@ export class NodeBase implements IContainerNode
 	 * @param node
 	 * @internal
 	 */
-	public iRemoveNode(node:INode):void
-	{
-		var index:number = this._childNodes.indexOf(node);
+	public iRemoveNode(node: INode): void {
+		const index: number = this._childNodes.indexOf(node);
 		this._childNodes[index] = this._childNodes[--this._numChildNodes];
 		this._childNodes.pop();
 	}

@@ -1,4 +1,4 @@
-import {INode} from "./INode";
+import { INode } from './INode';
 
 /**
  * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
@@ -8,7 +8,7 @@ import {INode} from "./INode";
  */
 export interface IContainerNode extends INode
 {
-	iAddNode(node:INode);
+	iAddNode(node: INode);
 
-	iRemoveNode(node:INode);
+	iRemoveNode(node: INode);
 }

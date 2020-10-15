@@ -1,9 +1,9 @@
-import {Vector3D, Matrix3D, Box, Sphere, AbstractionBase, AssetEvent, Plane3D, Point, IAbstractionPool} from "@awayjs/core";
+import { Vector3D, Matrix3D, Box, Sphere, AbstractionBase, AssetEvent, Plane3D, Point, IAbstractionPool } from '@awayjs/core';
 
-import {IPartitionEntity} from "../base/IPartitionEntity";
-import {PartitionBase} from "../partition/PartitionBase";
-import {IPartitionTraverser} from "../partition/IPartitionTraverser";
-import {INode} from "../partition/INode";
+import { IPartitionEntity } from '../base/IPartitionEntity';
+import { PartitionBase } from '../partition/PartitionBase';
+import { IPartitionTraverser } from '../partition/IPartitionTraverser';
+import { INode } from '../partition/INode';
 
 import { PickGroup } from '../PickGroup';
 import { BoundingVolumePool } from '../bounds/BoundingVolumePool';
@@ -23,33 +23,28 @@ import { IPickingEntity } from '../base/IPickingEntity';
  *
  * @class away.pick.RaycastPicker
  */
-export class BoundsPicker extends AbstractionBase implements IPartitionTraverser, IBoundsPicker
-{
-	protected _partition:PartitionBase;
-	protected _entity:IPartitionEntity;
+export class BoundsPicker extends AbstractionBase implements IPartitionTraverser, IBoundsPicker {
+	protected _partition: PartitionBase;
+	protected _entity: IPartitionEntity;
 
-	private _boundingVolumePools:Object = new Object();
+	private _boundingVolumePools: Object = new Object();
 
-
-	public get partition():PartitionBase
-	{
+	public get partition(): PartitionBase {
 		return this._partition;
 	}
 
-    /**
+	/**
      *
      * @returns {IPartitionEntity}
      */
-    public get entity():IPartitionEntity
-    {
-        return this._entity;
+	public get entity(): IPartitionEntity {
+		return this._entity;
 	}
 
-	private _pickGroup:PickGroup;
+	private _pickGroup: PickGroup;
 
-	private _boundsPickers:IBoundsPicker[] = [];
+	private _boundsPickers: IBoundsPicker[] = [];
 
-	
 	/**
 	 * Indicates the width of the display object, in pixels. The width is
 	 * calculated based on the bounds of the content of the display object. When
@@ -60,9 +55,8 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	 * content(such as an empty sprite) has a width of 0, even if you try to set
 	 * <code>width</code> to a different value.</p>
 	 */
-	public get width():number
-	{
-		var box:Box = this.getBoxBounds();
+	public get width(): number {
+		const box: Box = this.getBoxBounds();
 
 		if (box == null)
 			return 0;
@@ -70,12 +64,11 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		// if (this._entity._registrationMatrix3D)
 		// 	return box.width*this._entity.scaleX*this._entity._registrationMatrix3D._rawData[0];
 
-		return box.width*this._entity.transform.scale.x;
+		return box.width * this._entity.transform.scale.x;
 	}
 
-	public set width(val:number)
-	{
-		var box:Box = this.getBoxBounds();
+	public set width(val: number) {
+		const box: Box = this.getBoxBounds();
 
 		//return if box is empty ie setting width for no content is impossible
 		if (box == null || box.width == 0)
@@ -83,10 +76,9 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 		//this._updateAbsoluteDimension();
 
-		this._entity.transform.scaleTo(val/box.width, this._entity.transform.scale.y, this._entity.transform.scale.z);
+		this._entity.transform.scaleTo(val / box.width, this._entity.transform.scale.y, this._entity.transform.scale.z);
 	}
 
-	
 	/**
 	 * Indicates the height of the display object, in pixels. The height is
 	 * calculated based on the bounds of the content of the display object. When
@@ -97,9 +89,8 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	 * content (such as an empty sprite) has a height of 0, even if you try to
 	 * set <code>height</code> to a different value.</p>
 	 */
-	public get height():number
-	{
-		var box:Box = this.getBoxBounds();
+	public get height(): number {
+		const box: Box = this.getBoxBounds();
 
 		if (box == null)
 			return 0;
@@ -107,12 +98,11 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		// if (this._entity._registrationMatrix3D)
 		// 	return box.height*this._entity.scaleY*this._entity._registrationMatrix3D._rawData[5];
 
-		return box.height*this._entity.transform.scale.y;
+		return box.height * this._entity.transform.scale.y;
 	}
 
-	public set height(val:number)
-	{
-		var box:Box = this.getBoxBounds();
+	public set height(val: number) {
+		const box: Box = this.getBoxBounds();
 
 		//return if box is empty ie setting height for no content is impossible
 		if (box == null || box.height == 0)
@@ -120,9 +110,9 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 		//this._updateAbsoluteDimension();
 
-		this._entity.transform.scaleTo(this._entity.transform.scale.x, val/box.height, this._entity.transform.scale.z);
+		this._entity.transform.scaleTo(this._entity.transform.scale.x, val / box.height, this._entity.transform.scale.z);
 	}
-	
+
 	/**
 	 * Indicates the depth of the display object, in pixels. The depth is
 	 * calculated based on the bounds of the content of the display object. When
@@ -133,9 +123,8 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	 * content (such as an empty sprite) has a depth of 0, even if you try to
 	 * set <code>depth</code> to a different value.</p>
 	 */
-	public get depth():number
-	{
-		var box:Box = this.getBoxBounds();
+	public get depth(): number {
+		const box: Box = this.getBoxBounds();
 
 		if (box == null)
 			return 0;
@@ -143,20 +132,19 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		// if (this._entity._registrationMatrix3D)
 		// 	return  box.depth*this._entity.scaleZ*this._entity._registrationMatrix3D._rawData[10];
 
-		return box.depth*this._entity.transform.scale.z;
+		return box.depth * this._entity.transform.scale.z;
 	}
 
-	public set depth(val:number)
-	{
-		var box:Box = this.getBoxBounds();
+	public set depth(val: number) {
+		const box: Box = this.getBoxBounds();
 
 		//return if box is empty ie setting depth for no content is impossible
 		if (box == null || box.depth == 0)
 			return;
 
 		//this._updateAbsoluteDimension();
-		
-		this._entity.transform.scaleTo(this._entity.transform.scale.x, this._entity.transform.scale.y, val/box.depth);
+
+		this._entity.transform.scaleTo(this._entity.transform.scale.x, this._entity.transform.scale.y, val / box.depth);
 	}
 
 	/**
@@ -165,34 +153,30 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	 * @param findClosestCollision Determines whether the picker searches for the closest bounds collision along the ray,
 	 * or simply returns the first collision encountered. Defaults to false.
 	 */
-	constructor(pickGroup:PickGroup, partition:PartitionBase, pool:IAbstractionPool)
-	{
+	constructor(pickGroup: PickGroup, partition: PartitionBase, pool: IAbstractionPool) {
 		super(partition, pool);
-		
+
 		this._pickGroup = pickGroup;
 		this._partition = partition;
 		this._entity = <IPartitionEntity> partition.root;
 	}
 
-	public onInvalidate(event:AssetEvent):void
-	{
+	public onInvalidate(event: AssetEvent): void {
 		super.onInvalidate(event);
 
 		this.dispatchEvent(new BoundsPickerEvent(BoundsPickerEvent.INVALIDATE_BOUNDS, this));
 	}
 
-	public traverse():void
-	{
+	public traverse(): void {
 		this._boundsPickers.length = 0;
 		this._partition.traverse(this);
 
 		this._invalid = false;
 	}
 
-	public getTraverser(partition:PartitionBase):IPartitionTraverser
-	{
-		var traverser:BoundsPicker = this._pickGroup.getBoundsPicker(partition);
-		 
+	public getTraverser(partition: PartitionBase): IPartitionTraverser {
+		const traverser: BoundsPicker = this._pickGroup.getBoundsPicker(partition);
+
 		if (this._invalid)
 			this._boundsPickers.push(traverser);
 
@@ -204,66 +188,59 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	 *
 	 * @param node The Partition3DNode object to frustum-test.
 	 */
-	public enterNode(node:INode):boolean
-	{
+	public enterNode(node: INode): boolean {
 		return true;
 	}
 
-	public getBoundingVolume(targetCoordinateSpace:IPartitionEntity = null, boundingVolumeType:BoundingVolumeType = null):BoundingVolumeBase
-	{
+	public getBoundingVolume(targetCoordinateSpace: IPartitionEntity = null, boundingVolumeType: BoundingVolumeType = null): BoundingVolumeBase {
 		if (boundingVolumeType == null)
 			boundingVolumeType = this._entity.defaultBoundingVolume;
-			
-		var pool:BoundingVolumePool = (this._boundingVolumePools[boundingVolumeType] || (this._boundingVolumePools[boundingVolumeType] = new BoundingVolumePool(this, boundingVolumeType)));
-	
+
+		const pool: BoundingVolumePool = (this._boundingVolumePools[boundingVolumeType] || (this._boundingVolumePools[boundingVolumeType] = new BoundingVolumePool(this, boundingVolumeType)));
+
 		return <BoundingVolumeBase> pool.getAbstraction(targetCoordinateSpace);
 	}
-	
-	public getBoxBounds(targetCoordinateSpace:IPartitionEntity = null, strokeFlag:boolean = false, fastFlag:boolean = false):Box
-	{
-		return (<BoundingBox> this.getBoundingVolume(targetCoordinateSpace, strokeFlag? (fastFlag? BoundingVolumeType.BOX_BOUNDS_FAST : BoundingVolumeType.BOX_BOUNDS) : (fastFlag? BoundingVolumeType.BOX_FAST : BoundingVolumeType.BOX))).getBox();
+
+	public getBoxBounds(targetCoordinateSpace: IPartitionEntity = null, strokeFlag: boolean = false, fastFlag: boolean = false): Box {
+		return (<BoundingBox> this.getBoundingVolume(targetCoordinateSpace, strokeFlag ? (fastFlag ? BoundingVolumeType.BOX_BOUNDS_FAST : BoundingVolumeType.BOX_BOUNDS) : (fastFlag ? BoundingVolumeType.BOX_FAST : BoundingVolumeType.BOX))).getBox();
 	}
 
-	public getSphereBounds(targetCoordinateSpace:IPartitionEntity = null, strokeFlag:boolean = false, fastFlag:boolean = false):Sphere
-	{
-		return (<BoundingSphere> this.getBoundingVolume(targetCoordinateSpace, strokeFlag? (fastFlag? BoundingVolumeType.SPHERE_BOUNDS_FAST : BoundingVolumeType.SPHERE_BOUNDS) : (fastFlag? BoundingVolumeType.SPHERE_FAST :BoundingVolumeType.SPHERE))).getSphere();
+	public getSphereBounds(targetCoordinateSpace: IPartitionEntity = null, strokeFlag: boolean = false, fastFlag: boolean = false): Sphere {
+		return (<BoundingSphere> this.getBoundingVolume(targetCoordinateSpace, strokeFlag ? (fastFlag ? BoundingVolumeType.SPHERE_BOUNDS_FAST : BoundingVolumeType.SPHERE_BOUNDS) : (fastFlag ? BoundingVolumeType.SPHERE_FAST : BoundingVolumeType.SPHERE))).getSphere();
 	}
 
-	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false):boolean
-	{
+	public hitTestPoint(x: number, y: number, shapeFlag: boolean = false): boolean {
 		return this._hitTestPointInternal(this._entity, x, y, shapeFlag, false);
 	}
 
-	public _hitTestPointInternal(rootEntity:IPartitionEntity, x:number, y:number, shapeFlag:boolean = false, maskFlag:boolean = false):boolean
-	{
-		if(this._entity.maskId != -1 && (!maskFlag || !shapeFlag))//allow masks for bounds hit tests
+	public _hitTestPointInternal(rootEntity: IPartitionEntity, x: number, y: number, shapeFlag: boolean = false, maskFlag: boolean = false): boolean {
+		if (this._entity.maskId != -1 && (!maskFlag || !shapeFlag))//allow masks for bounds hit tests
 			return false;
 
 		if (this._invalid)
 			this.traverse();
 
 		//set local tempPoint for later reference
-		var tempPoint:Point = new Point(x, y);
+		const tempPoint: Point = new Point(x, y);
 		this._entity.transform.globalToLocal(tempPoint, tempPoint);
 
 		//early out for box test
-		var box:Box = this.getBoxBounds(null, false, true);
+		const box: Box = this.getBoxBounds(null, false, true);
 
-		if(box == null || !box.contains(tempPoint.x, tempPoint.y, 0))
+		if (box == null || !box.contains(tempPoint.x, tempPoint.y, 0))
 			return false;
 
 		//early out for non-shape tests
-		if (!shapeFlag || this._entity.assetType=="[asset TextField]" || this._entity.assetType=="[asset Billboard]")
+		if (!shapeFlag || this._entity.assetType == '[asset TextField]' || this._entity.assetType == '[asset Billboard]')
 			return true;
 
-		var numPickers:number = this._boundsPickers.length;
+		const numPickers: number = this._boundsPickers.length;
 		if (numPickers)
-			for (var i:number = 0; i < numPickers; ++i)
+			for (let i: number = 0; i < numPickers; ++i)
 				if (this._boundsPickers[i]._hitTestPointInternal(rootEntity, x, y, shapeFlag, maskFlag))
 					return true;
 	}
 
-	
 	/**
 	 * Evaluates the bounding box of the display object to see if it overlaps or
 	 * intersects with the bounding box of the <code>obj</code> display object.
@@ -272,19 +249,18 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	 * @return <code>true</code> if the bounding boxes of the display objects
 	 *         intersect; <code>false</code> if not.
 	 */
-	public hitTestObject(obj:BoundsPicker):boolean
-	{
+	public hitTestObject(obj: BoundsPicker): boolean {
 		//TODO: getBoxBounds should be using the root partition root
 
 		//first do a fast box comparision
-		var objBox:Box = obj.getBoxBounds(this._entity, true, true);
+		const objBox: Box = obj.getBoxBounds(this._entity, true, true);
 
-		if(objBox == null)
+		if (objBox == null)
 			return false;
-		
-		var box:Box = this.getBoxBounds(this._entity, true, true);
 
-		if(box == null)
+		const box: Box = this.getBoxBounds(this._entity, true, true);
+
+		if (box == null)
 			return false;
 
 		if (!objBox.intersects(box))
@@ -297,15 +273,14 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		return true;
 	}
 
-	public _getBoxBoundsInternal(matrix3D:Matrix3D = null, strokeFlag:boolean = true, fastFlag:boolean = true, cache:Box = null, target:Box = null):Box
-	{
+	public _getBoxBoundsInternal(matrix3D: Matrix3D = null, strokeFlag: boolean = true, fastFlag: boolean = true, cache: Box = null, target: Box = null): Box {
 		if (this._invalid)
 			this.traverse();
 
-		var numPickers:number = this._boundsPickers.length;
+		const numPickers: number = this._boundsPickers.length;
 		if (numPickers > 0) {
-			var m:Matrix3D = new Matrix3D();
-			for (var i:number = 0; i < numPickers; ++i) {
+			const m: Matrix3D = new Matrix3D();
+			for (let i: number = 0; i < numPickers; ++i) {
 				if (this._boundsPickers[i].entity != this._entity) {
 					if (matrix3D)
 						m.copyFrom(matrix3D);
@@ -315,7 +290,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 					m.prepend(this._boundsPickers[i].entity.transform.matrix3D);
 					if (this._boundsPickers[i].entity._registrationMatrix3D)
 						m.prepend(this._boundsPickers[i].entity._registrationMatrix3D);
-				
+
 					target = this._boundsPickers[i]._getBoxBoundsInternal(m, strokeFlag, fastFlag, cache, target);
 				} else {
 					target = this._boundsPickers[i]._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, target);
@@ -326,27 +301,26 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		return target;
 	}
 
-	public _getSphereBoundsInternal(center:Vector3D = null, matrix3D:Matrix3D = null, strokeFlag:boolean = true, fastFlag:boolean = true, cache:Sphere = null, target:Sphere = null):Sphere
-	{
+	public _getSphereBoundsInternal(center: Vector3D = null, matrix3D: Matrix3D = null, strokeFlag: boolean = true, fastFlag: boolean = true, cache: Sphere = null, target: Sphere = null): Sphere {
 		if (this._invalid)
 			this.traverse();
 
-		var box:Box = this._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag);
+		const box: Box = this._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag);
 
 		if (box == null)
 			return;
 
 		if (!center) {
 			center = new Vector3D();
-			center.x = box.x + box.width/2;
-			center.y = box.y + box.height/2;
-			center.z = box.z + box.depth/2;
+			center.x = box.x + box.width / 2;
+			center.y = box.y + box.height / 2;
+			center.z = box.z + box.depth / 2;
 		}
-		
-		var numPickers:number = this._boundsPickers.length;
+
+		const numPickers: number = this._boundsPickers.length;
 		if (numPickers > 0) {
-			var m:Matrix3D = new Matrix3D();
-			for (var i:number = 0; i < numPickers; ++i) {
+			const m: Matrix3D = new Matrix3D();
+			for (let i: number = 0; i < numPickers; ++i) {
 				if (this._boundsPickers[i].entity != this._entity) {
 					if (matrix3D)
 						m.copyFrom(matrix3D);
@@ -356,7 +330,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 					m.prepend(this._boundsPickers[i].entity.transform.matrix3D);
 					if (this._boundsPickers[i].entity._registrationMatrix3D)
 						m.prepend(this._boundsPickers[i].entity._registrationMatrix3D);
-					
+
 					target = this._boundsPickers[i]._getSphereBoundsInternal(center, m, strokeFlag, fastFlag, cache, target);
 				} else {
 					target = this._boundsPickers[i]._getSphereBoundsInternal(center, matrix3D, strokeFlag, fastFlag, cache, target);
@@ -367,35 +341,31 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		return target;
 	}
 
-		/**
+	/**
 	 *
 	 * @param planes
 	 * @param numPlanes
 	 * @returns {boolean}
 	 */
 
-	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
-	{
+	public isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean {
 		return this._isInFrustumInternal(this._entity, planes, numPlanes);
 	}
 
-	public _isInFrustumInternal(rootEntity:IPartitionEntity, planes:Array<Plane3D>, numPlanes:number):boolean
-	{
+	public _isInFrustumInternal(rootEntity: IPartitionEntity, planes: Array<Plane3D>, numPlanes: number): boolean {
 		return this.getBoundingVolume(rootEntity).isInFrustum(planes, numPlanes);
 	}
 
-	public onClear(event:AssetEvent):void
-	{
+	public onClear(event: AssetEvent): void {
 		super.onClear(event);
 
-		for (var key in this._boundingVolumePools) {
+		for (const key in this._boundingVolumePools) {
 			this._boundingVolumePools[key].dispose();
 			delete this._boundingVolumePools[key];
 		}
 	}
 
-	public dispose():void
-	{
+	public dispose(): void {
 		//TODO
 	}
 
@@ -403,8 +373,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	 *
 	 * @param entity
 	 */
-	public applyEntity(entity:IPartitionEntity):void
-	{
+	public applyEntity(entity: IPartitionEntity): void {
 		this._boundsPickers.push(this._pickGroup.getAbstraction(<IPickingEntity> entity));
 	}
 }

@@ -1,33 +1,31 @@
-import {Box, Matrix3D, PlaneClassification, Plane3D, Vector3D} from "@awayjs/core";
+import { Box, Matrix3D, PlaneClassification, Plane3D, Vector3D } from '@awayjs/core';
 
-import {BoundingVolumeBase} from "./BoundingVolumeBase";
+import { BoundingVolumeBase } from './BoundingVolumeBase';
 
 /**
  * BoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.
  * This is useful for most sprites.
  */
-export class BoundingBox extends BoundingVolumeBase
-{
-	private _matrix3D:Matrix3D;
-	private _box:Box;
-	private _x:number = 0;
-	private _y:number = 0;
-	private _z:number = 0;
-	private _width:number = 0;
-	private _height:number = 0;
-	private _depth:number = 0;
-	private _centerX:number = 0;
-	private _centerY:number = 0;
-	private _centerZ:number = 0;
-	private _halfExtentsX:number = 0;
-	private _halfExtentsY:number = 0;
-	private _halfExtentsZ:number = 0;
+export class BoundingBox extends BoundingVolumeBase {
+	private _matrix3D: Matrix3D;
+	private _box: Box;
+	private _x: number = 0;
+	private _y: number = 0;
+	private _z: number = 0;
+	private _width: number = 0;
+	private _height: number = 0;
+	private _depth: number = 0;
+	private _centerX: number = 0;
+	private _centerY: number = 0;
+	private _centerZ: number = 0;
+	private _halfExtentsX: number = 0;
+	private _halfExtentsY: number = 0;
+	private _halfExtentsZ: number = 0;
 
 	/**
 	 * @inheritDoc
 	 */
-	public nullify():void
-	{
+	public nullify(): void {
 		this._x = this._y = this._z = 0;
 		this._width = this._height = this._depth = 0;
 		this._centerX = this._centerY = this._centerZ = 0;
@@ -37,24 +35,23 @@ export class BoundingBox extends BoundingVolumeBase
 	/**
 	 * @inheritDoc
 	 */
-	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
-	{
-		if(this._invalid)
+	public isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean {
+		if (this._invalid)
 			this._update();
 
 		if (this._box == null)
 			return;
 
-		for (var i:number = 0; i < numPlanes; ++i) {
+		for (let i: number = 0; i < numPlanes; ++i) {
 
-			var plane:Plane3D = planes[i];
-			var a:number = plane.a;
-			var b:number = plane.b;
-			var c:number = plane.c;
-			var flippedExtentX:number = a < 0? -this._halfExtentsX : this._halfExtentsX;
-			var flippedExtentY:number = b < 0? -this._halfExtentsY : this._halfExtentsY;
-			var flippedExtentZ:number = c < 0? -this._halfExtentsZ : this._halfExtentsZ;
-			var projDist:number = a*(this._centerX + flippedExtentX) + b*(this._centerY + flippedExtentY) + c*(this._centerZ + flippedExtentZ) - plane.d;
+			const plane: Plane3D = planes[i];
+			const a: number = plane.a;
+			const b: number = plane.b;
+			const c: number = plane.c;
+			const flippedExtentX: number = a < 0 ? -this._halfExtentsX : this._halfExtentsX;
+			const flippedExtentY: number = b < 0 ? -this._halfExtentsY : this._halfExtentsY;
+			const flippedExtentZ: number = c < 0 ? -this._halfExtentsZ : this._halfExtentsZ;
+			const projDist: number = a * (this._centerX + flippedExtentX) + b * (this._centerY + flippedExtentY) + c * (this._centerZ + flippedExtentZ) - plane.d;
 
 			if (projDist < 0)
 				return false;
@@ -63,9 +60,8 @@ export class BoundingBox extends BoundingVolumeBase
 		return true;
 	}
 
-	public rayIntersection(position:Vector3D, direction:Vector3D, targetNormal:Vector3D):number
-	{
-		if(this._invalid)
+	public rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number {
+		if (this._invalid)
 			this._update();
 
 		if (this._box == null)
@@ -74,21 +70,18 @@ export class BoundingBox extends BoundingVolumeBase
 		return this._box.rayIntersection(position, direction, targetNormal);
 	}
 
-	public getBox():Box
-	{
-		if(this._invalid)
+	public getBox(): Box {
+		if (this._invalid)
 			this._update();
 
 		return this._box;
 	}
 
-
-	public classifyToPlane(plane:Plane3D):number
-	{
-		var a:number = plane.a;
-		var b:number = plane.b;
-		var c:number = plane.c;
-		var centerDistance:number = a*this._centerX + b*this._centerY + c*this._centerZ - plane.d;
+	public classifyToPlane(plane: Plane3D): number {
+		let a: number = plane.a;
+		let b: number = plane.b;
+		let c: number = plane.c;
+		const centerDistance: number = a * this._centerX + b * this._centerY + c * this._centerZ - plane.d;
 
 		if (a < 0)
 			a = -a;
@@ -99,17 +92,15 @@ export class BoundingBox extends BoundingVolumeBase
 		if (c < 0)
 			c = -c;
 
-		var boundOffset:number = a*this._halfExtentsX + b*this._halfExtentsY + c*this._halfExtentsZ;
+		const boundOffset: number = a * this._halfExtentsX + b * this._halfExtentsY + c * this._halfExtentsZ;
 
-		return centerDistance > boundOffset? PlaneClassification.FRONT : centerDistance < -boundOffset? PlaneClassification.BACK : PlaneClassification.INTERSECT;
+		return centerDistance > boundOffset ? PlaneClassification.FRONT : centerDistance < -boundOffset ? PlaneClassification.BACK : PlaneClassification.INTERSECT;
 	}
 
-	public _update():void
-	{
+	public _update(): void {
 		super._update();
 
-		
-		var matrix3D:Matrix3D;
+		let matrix3D: Matrix3D;
 		if (this._targetCoordinateSpace) {
 			if (this._targetCoordinateSpace == this._picker.entity) {
 				matrix3D = this._picker.entity.transform.matrix3D;
@@ -126,9 +117,9 @@ export class BoundingBox extends BoundingVolumeBase
 		if (this._box == null)
 			return;
 
-		this._halfExtentsX = this._box.width/2;
-		this._halfExtentsY = this._box.height/2;
-		this._halfExtentsZ = this._box.depth/2;
+		this._halfExtentsX = this._box.width / 2;
+		this._halfExtentsY = this._box.height / 2;
+		this._halfExtentsZ = this._box.depth / 2;
 		this._centerX = this._box.x + this._halfExtentsX;
 		this._centerY = this._box.y + this._halfExtentsY;
 		this._centerZ = this._box.z + this._halfExtentsZ;

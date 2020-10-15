@@ -8,12 +8,12 @@ import { IPartitionEntity } from '../base/IPartitionEntity';
  */
 export interface IBoundsPicker extends IEventDispatcher
 {
-	entity:IPartitionEntity;
+	entity: IPartitionEntity;
 
-	_hitTestPointInternal(rootEntity:IPartitionEntity, x:number, y:number, shapeFlag?:boolean, maskFlag?:boolean):boolean
+	_hitTestPointInternal(rootEntity: IPartitionEntity, x: number, y: number, shapeFlag?: boolean, maskFlag?: boolean): boolean
 
-	_getBoxBoundsInternal(matrix3D?:Matrix3D, strokeFlag?:boolean, fastFlag?:boolean, cache?:Box, target?:Box):Box
+	_getBoxBoundsInternal(matrix3D?: Matrix3D, strokeFlag?: boolean, fastFlag?: boolean, cache?: Box, target?: Box): Box
 
-	_getSphereBoundsInternal(center?:Vector3D, matrix3D?:Matrix3D, strokeFlag?:boolean, fastFlag?:boolean, cache?:Sphere, target?:Sphere):Sphere
+	_getSphereBoundsInternal(center?: Vector3D, matrix3D?: Matrix3D, strokeFlag?: boolean, fastFlag?: boolean, cache?: Sphere, target?: Sphere): Sphere
 
 }

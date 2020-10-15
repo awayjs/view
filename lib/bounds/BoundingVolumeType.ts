@@ -2,12 +2,12 @@
  *
  */
 export enum BoundingVolumeType
-{
+	{
 	/**
 	 *
 	 */
 	SPHERE,
-		/**
+	/**
 	 *
 	 */
 	SPHERE_FAST,
@@ -26,7 +26,7 @@ export enum BoundingVolumeType
 	 *
 	 */
 	BOX,
-	
+
 	/**
 	 *
 	 */
@@ -36,7 +36,7 @@ export enum BoundingVolumeType
 	 *
 	 */
 	BOX_BOUNDS,
-	
+
 	/**
 	 *
 	 */

@@ -1,9 +1,8 @@
 import { IPartitionEntity } from './IPartitionEntity';
 
-
 export interface ITabEntity extends IPartitionEntity
 {
-	tabEnabled:boolean;
+	tabEnabled: boolean;
 
-	tabIndex:number;
+	tabIndex: number;
 }

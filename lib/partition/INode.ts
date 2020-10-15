@@ -1,8 +1,8 @@
-import {Plane3D, Vector3D} from "@awayjs/core";
+import { Plane3D, Vector3D } from '@awayjs/core';
 
-import {IContainerNode} from "./IContainerNode";
+import { IContainerNode } from './IContainerNode';
 
-import {IPartitionTraverser} from "./IPartitionTraverser";
+import { IPartitionTraverser } from './IPartitionTraverser';
 import { IPartitionEntity } from '../base/IPartitionEntity';
 import { PickGroup } from '../PickGroup';
 
@@ -16,27 +16,27 @@ export interface INode
 {
 	//bounds:BoundingVolumeBase;
 
-	pickObject:IPartitionEntity;
+	pickObject: IPartitionEntity;
 
-	boundsVisible:boolean;
+	boundsVisible: boolean;
 
-	maskId:number;
+	maskId: number;
 
-	getBoundsPrimitive(pickGroup:PickGroup):IPartitionEntity;
+	getBoundsPrimitive(pickGroup: PickGroup): IPartitionEntity;
 
-	parent:IContainerNode;
+	parent: IContainerNode;
 
-	_collectionMark:number;
+	_collectionMark: number;
 
-	isInFrustum(rootEntity:IPartitionEntity, planes:Array<Plane3D>, numPlanes:number, pickGroup:PickGroup):boolean;
-	
-	isRenderable():boolean;
+	isInFrustum(rootEntity: IPartitionEntity, planes: Array<Plane3D>, numPlanes: number, pickGroup: PickGroup): boolean;
 
-	isVisible():boolean;
-	
-	isIntersectingRay(rootEntity:IPartitionEntity, rayPosition:Vector3D, rayDirection:Vector3D, pickGroup:PickGroup):boolean;
+	isRenderable(): boolean;
 
-	acceptTraverser(traverser:IPartitionTraverser);
+	isVisible(): boolean;
 
-	isCastingShadow():boolean;
+	isIntersectingRay(rootEntity: IPartitionEntity, rayPosition: Vector3D, rayDirection: Vector3D, pickGroup: PickGroup): boolean;
+
+	acceptTraverser(traverser: IPartitionTraverser);
+
+	isCastingShadow(): boolean;
 }
