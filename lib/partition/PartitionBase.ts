@@ -1,4 +1,4 @@
-import { IAssetClass, IAbstractionPool, ProjectionEvent, AssetBase, AssetEvent } from '@awayjs/core';
+import { IAssetClass, IAbstractionPool, AssetBase, AssetEvent } from '@awayjs/core';
 
 import { IPartitionEntity } from '../base/IPartitionEntity';
 
