@@ -1,7 +1,6 @@
-import { Transform, ColorTransform, Matrix3D, Vector3D, IAsset, Point } from '@awayjs/core';
+import { Transform, ColorTransform, Matrix3D, IAsset } from '@awayjs/core';
 
 import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
-import { IPartitionTraverser } from '../partition/IPartitionTraverser';
 import { PartitionBase } from '../partition/PartitionBase';
 import { PickGroup } from '../PickGroup';
 import { IEntityTraverser } from './IEntityTraverser';

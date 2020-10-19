@@ -1,4 +1,4 @@
-import { AbstractionBase, Plane3D, Vector3D, AssetEvent, Box } from '@awayjs/core';
+import { AbstractionBase, Plane3D, Vector3D, AssetEvent } from '@awayjs/core';
 
 import { IPartitionEntity } from '../base/IPartitionEntity';
 

@@ -1,5 +1,4 @@
 import { IPartitionEntity } from './IPartitionEntity';
-import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
 
 export interface IPickingEntity extends IPartitionEntity
 {

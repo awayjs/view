@@ -1,4 +1,4 @@
-import { Vector3D, AbstractionBase, Plane3D, IAbstractionPool } from '@awayjs/core';
+import { Vector3D, AbstractionBase, IAbstractionPool } from '@awayjs/core';
 
 import { PartitionBase } from '../partition/PartitionBase';
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';

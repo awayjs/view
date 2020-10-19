@@ -1,4 +1,15 @@
-import { IAssetClass, IAbstractionPool, Matrix3D, Box, Vector3D, Sphere, AbstractionBase, Point, AssetEvent, Plane3D } from '@awayjs/core';
+import {
+	IAssetClass,
+	IAbstractionPool,
+	Matrix3D,
+	Box,
+	Vector3D,
+	Sphere,
+	AbstractionBase,
+	Point,
+	AssetEvent,
+	Plane3D
+} from '@awayjs/core';
 
 import { ITraversable } from './ITraversable';
 import { PickGroup } from '../PickGroup';
@@ -251,18 +262,19 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 				if (this._orientedBoxBoundsDirty[strokeIndex]) {
 					this._orientedBoxBoundsDirty[strokeIndex] = false;
 
-					for (var i: number = 0; i < numPickables; i++)
+					for (let i = 0; i < numPickables; i++) {
 						obb = this._pickables[i].getBoxBounds(null, strokeFlag, this._orientedBoxBounds[strokeIndex], obb);
+					}
 
 					this._orientedBoxBounds[strokeIndex] = obb;
 				} else {
-				 	obb = this._orientedBoxBounds[strokeIndex];
+					obb = this._orientedBoxBounds[strokeIndex];
 				}
 
 				if (obb != null)
 					target = (matrix3D) ? matrix3D.transformBox(obb).union(target, target || cache) : obb.union(target, target || cache);
 			} else {
-				for (var i: number = 0; i < numPickables; i++)
+				for (let i = 0; i < numPickables; i++)
 					target = this._pickables[i].getBoxBounds(matrix3D, strokeFlag, cache, target);
 			}
 		}
@@ -300,7 +312,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 				if (this._orientedSphereBoundsDirty[strokeIndex]) {
 					this._orientedSphereBoundsDirty[strokeIndex] = false;
 
-					for (var i: number = 0; i < numPickables; i++)
+					for (let i = 0; i < numPickables; i++)
 						osb = this._pickables[i].getSphereBounds(center, null, strokeFlag, this._orientedSphereBounds[strokeIndex], osb);
 
 					this._orientedSphereBounds[strokeIndex] = osb;
@@ -311,7 +323,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 				if (osb != null)
 					target = (matrix3D) ? matrix3D.transformSphere(osb).union(target, target || cache) : osb.union(target, target || cache);
 			} else {
-				for (var i: number = 0; i < numPickables; i++)
+				for (let i = 0; i < numPickables; i++)
 					target = this._pickables[i].getSphereBounds(center, matrix3D, strokeFlag, cache, target);
 			}
 		}
@@ -339,13 +351,13 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	public onClear(event: AssetEvent): void {
 		super.onClear(event);
 
-		for (var key in this._boundingVolumePools) {
+		for (const key in this._boundingVolumePools) {
 			this._boundingVolumePools[key].dispose();
 			delete this._boundingVolumePools[key];
 		}
 
 		//clear all pickables associated with this pick entity
-		for (var key in this._pickablePool)
+		for (const key in this._pickablePool)
 			(this._pickablePool[key] as _Pick_PickableBase).onClear(null);
 	}
 

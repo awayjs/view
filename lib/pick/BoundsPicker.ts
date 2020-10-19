@@ -1,4 +1,13 @@
-import { Vector3D, Matrix3D, Box, Sphere, AbstractionBase, AssetEvent, Plane3D, Point, IAbstractionPool } from '@awayjs/core';
+import {
+	Vector3D,
+	Matrix3D,
+	Box, Sphere,
+	AbstractionBase,
+	AssetEvent,
+	Plane3D,
+	Point,
+	IAbstractionPool
+} from '@awayjs/core';
 
 import { IPartitionEntity } from '../base/IPartitionEntity';
 import { PartitionBase } from '../partition/PartitionBase';
@@ -13,13 +22,14 @@ import { BoundingBox } from '../bounds/BoundingBox';
 import { BoundingSphere } from '../bounds/BoundingSphere';
 import { IBoundsPicker } from './IBoundsPicker';
 import { BoundsPickerEvent } from '../events/BoundsPickerEvent';
-import { ITraversable } from '../base/ITraversable';
 import { IPickingEntity } from '../base/IPickingEntity';
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.
- * Performs an initial coarse boundary calculation to return a subset of entities whose bounding volumes intersect with the specified ray,
- * then triggers an optional picking collider on individual renderable objects to further determine the precise values of the picking ray collision.
+ * Performs an initial coarse boundary calculation to return a subset
+ * of entities whose bounding volumes intersect with the specified ray,
+ * then triggers an optional picking collider on individual renderable
+ * objects to further determine the precise values of the picking ray collision.
  *
  * @class away.pick.RaycastPicker
  */
@@ -110,7 +120,8 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 		//this._updateAbsoluteDimension();
 
-		this._entity.transform.scaleTo(this._entity.transform.scale.x, val / box.height, this._entity.transform.scale.z);
+		const scale = this._entity.transform.scale;
+		this._entity.transform.scaleTo(scale.x, val / box.height, scale.z);
 	}
 
 	/**
@@ -147,12 +158,6 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		this._entity.transform.scaleTo(this._entity.transform.scale.x, this._entity.transform.scale.y, val / box.depth);
 	}
 
-	/**
-	 * Creates a new <code>RaycastPicker</code> object.
-	 *
-	 * @param findClosestCollision Determines whether the picker searches for the closest bounds collision along the ray,
-	 * or simply returns the first collision encountered. Defaults to false.
-	 */
 	constructor(pickGroup: PickGroup, partition: PartitionBase, pool: IAbstractionPool) {
 		super(partition, pool);
 
@@ -184,7 +189,8 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	}
 
 	/**
-	 * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
+	 * Returns true if the current node is at least partly in the frustum.
+	 * If so, the partition node knows to pass on the traverser to its children.
 	 *
 	 * @param node The Partition3DNode object to frustum-test.
 	 */

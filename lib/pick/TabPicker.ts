@@ -1,4 +1,4 @@
-import { Vector3D, AbstractionBase, Plane3D, IAbstractionPool } from '@awayjs/core';
+import { Vector3D, AbstractionBase, IAbstractionPool } from '@awayjs/core';
 
 import { IPartitionEntity } from '../base/IPartitionEntity';
 import { PartitionBase } from '../partition/PartitionBase';
@@ -53,7 +53,6 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser {
 
 		const snapGridY: number = 10;
 		let len: number = 0;
-		const len2: number = 0;
 		const orderedOnY: IPartitionEntity[][] = [];
 		let i: number = 0;
 		let e: number = 0;
