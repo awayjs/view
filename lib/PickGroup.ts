@@ -150,7 +150,7 @@ export class ManagedMap<T> {
  */
 export class PickGroup implements IAbstractionPool {
 	public static MIN_POOL_SIZE = 100;
-	public static MAX_POOL_SIZE = 500;
+	public static MAX_POOL_SIZE = 1000;
 
 	private static _instancePool = new ManagedMap<PickGroup>('PickGroup');
 	/*public static get instancePool() {
