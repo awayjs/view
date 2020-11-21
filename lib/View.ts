@@ -1,6 +1,26 @@
-import { ProjectionBase, Vector3D, ProjectionEvent, Matrix3D, Rectangle, AssetEvent, PerspectiveProjection, ErrorBase, AssetBase } from '@awayjs/core';
+import {
+	ProjectionBase,
+	Vector3D,
+	ProjectionEvent,
+	Matrix3D,
+	Rectangle,
+	AssetEvent,
+	PerspectiveProjection,
+	ErrorBase,
+	AssetBase,
+} from '@awayjs/core';
 
-import { Stage, StageEvent, ImageBase, Image2D, ImageCube, ContextGLClearMask, ContextGLProfile, ContextMode, StageManager } from '@awayjs/stage';
+import {
+	Stage,
+	StageEvent,
+	ImageBase,
+	Image2D,
+	ImageCube,
+	ContextGLClearMask,
+	ContextGLProfile,
+	ContextMode,
+	StageManager,
+} from '@awayjs/stage';
 
 import { ViewEvent } from './events/ViewEvent';
 
@@ -228,11 +248,17 @@ export class View extends AssetBase {
 		if (this._projection == value)
 			return;
 
-		this._projection.removeEventListener(ProjectionEvent.INVALIDATE_VIEW_MATRIX3D, this._onInvalidateViewMatrix3DDelegate);
+		this._projection.removeEventListener(
+			ProjectionEvent.INVALIDATE_VIEW_MATRIX3D,
+			this._onInvalidateViewMatrix3DDelegate
+		);
 
 		this._projection = value;
 
-		this._projection.addEventListener(ProjectionEvent.INVALIDATE_VIEW_MATRIX3D, this._onInvalidateViewMatrix3DDelegate);
+		this._projection.addEventListener(
+			ProjectionEvent.INVALIDATE_VIEW_MATRIX3D,
+			this._onInvalidateViewMatrix3DDelegate
+		);
 
 		this._invalidateViewMatrix3D();
 	}
@@ -282,7 +308,14 @@ export class View extends AssetBase {
 		return this._inverseViewMatrix3D;
 	}
 
-	constructor(projection: ProjectionBase = null, stage: Stage = null, forceSoftware: boolean = false, profile: ContextGLProfile = ContextGLProfile.BASELINE, mode: ContextMode = ContextMode.AUTO, alpha: boolean = false) {
+	constructor(
+		projection: ProjectionBase = null,
+		stage: Stage = null,
+		forceSoftware: boolean = false,
+		profile: ContextGLProfile = ContextGLProfile.BASELINE,
+		mode: ContextMode = ContextMode.AUTO,
+		alpha: boolean = false) {
+
 		super();
 
 		this._components[0] = this._offset;
@@ -293,7 +326,9 @@ export class View extends AssetBase {
 
 		this._projection = projection || new PerspectiveProjection();
 
-		this._projection.addEventListener(ProjectionEvent.INVALIDATE_VIEW_MATRIX3D, this._onInvalidateViewMatrix3DDelegate);
+		this._projection.addEventListener(
+			ProjectionEvent.INVALIDATE_VIEW_MATRIX3D,
+			this._onInvalidateViewMatrix3DDelegate);
 
 		if (stage)
 			this._shareContext = true;
@@ -309,14 +344,28 @@ export class View extends AssetBase {
 		this._updatePixelRatio();
 	}
 
-	public clear(enableClear: boolean = true, enableDepthAndStencil: boolean = true, surfaceSelector: number = 0, mipmapSelector: number = 0, clearMaskSelector: ContextGLClearMask = ContextGLClearMask.ALL): void {
+	public clear(
+		enableClear = true,
+		enableDepthAndStencil = true,
+		surfaceSelector = 0,
+		mipmapSelector = 0,
+		clearMaskSelector: ContextGLClearMask = ContextGLClearMask.ALL): void {
+
 		this._stage.setRenderTarget(this._target, enableDepthAndStencil, surfaceSelector, mipmapSelector);
 
 		//TODO: make scissor compatible with image targets
 		this._stage.setScissor((this._target == null) ? this._rect : null);
 
-		if (enableClear)
-			this._stage.clear(this._backgroundRed, this._backgroundGreen, this._backgroundBlue, this.backgroundAlpha, this.backgroundDepth, this.backgroundStencil, clearMaskSelector);
+		if (enableClear) {
+			this._stage.clear(
+				this._backgroundRed,
+				this._backgroundGreen,
+				this._backgroundBlue,
+				this.backgroundAlpha,
+				this.backgroundDepth,
+				this.backgroundStencil,
+				clearMaskSelector);
+		}
 	}
 
 	public present(): void {
@@ -354,7 +403,9 @@ export class View extends AssetBase {
 		}
 
 		if (this._projection) {
-			this._projection.removeEventListener(ProjectionEvent.INVALIDATE_VIEW_MATRIX3D, this._onInvalidateViewMatrix3DDelegate);
+			this._projection.removeEventListener(
+				ProjectionEvent.INVALIDATE_VIEW_MATRIX3D,
+				this._onInvalidateViewMatrix3DDelegate);
 			this._projection = null;
 		}
 	}
