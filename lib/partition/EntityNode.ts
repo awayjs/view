@@ -8,6 +8,7 @@ import { IContainerNode } from './IContainerNode';
 import { PartitionBase } from './PartitionBase';
 import { PickGroup } from '../PickGroup';
 import { IPickingEntity } from '../base/IPickingEntity';
+import { PickEntity } from '../base/PickEntity';
 
 /**
  * @class away.partition.EntityNode
@@ -79,7 +80,7 @@ export class EntityNode extends AbstractionBase implements INode {
 			return false;
 
 		return true;
-		return pickGroup.getAbstraction(<IPickingEntity> this._asset)._isInFrustumInternal(rootEntity, planes, numPlanes);
+		return (<PickEntity> this._asset.getAbstraction(pickGroup, PickEntity))._isInFrustumInternal(rootEntity, planes, numPlanes);
 	}
 
 	public isVisible(): boolean {
@@ -101,7 +102,7 @@ export class EntityNode extends AbstractionBase implements INode {
 		// if (box.rayIntersection((<IPartitionEntity> this._asset).transform.inverseConcatenatedMatrix3D.transformVector(globalRayPosition), (<IPartitionEntity> this._asset).transform.inverseConcatenatedMatrix3D.deltaTransformVector(globalRayDirection)) < 0)
 		// 	return false;
 
-		return pickGroup.getAbstraction(<IPickingEntity> this._asset)._isIntersectingRayInternal(rootEntity, globalRayPosition, globalRayDirection);
+		return (<PickEntity> this._asset.getAbstraction(pickGroup, PickEntity))._isIntersectingRayInternal(rootEntity, globalRayPosition, globalRayDirection);
 	}
 
 	/**

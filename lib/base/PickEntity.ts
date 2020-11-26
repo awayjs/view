@@ -78,15 +78,17 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 	public shapeFlag: boolean = false;
 
+	public readonly id:number;
+
 	/**
 	 * //TODO
 	 *
 	 * @param materialClassGL
 	 */
-	constructor(view: View, entity: IPickingEntity, pickGroup: PickGroup) {
+	constructor(entity: IPickingEntity, pickGroup: PickGroup) {
 		super(entity, pickGroup);
 
-		this._view = view;
+		this._view = pickGroup.view;
 		this._entity = entity;
 		this._pickGroup = pickGroup;
 		this._pickingCollision = new PickingCollision(this._entity);

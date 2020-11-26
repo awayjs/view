@@ -14,7 +14,7 @@ import { PartitionBase } from '../partition/PartitionBase';
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
 import { INode } from '../partition/INode';
 
-import { PickGroup } from '../PickGroup';
+import { BoundsPickerPool, PickGroup } from '../PickGroup';
 import { BoundingVolumePool } from '../bounds/BoundingVolumePool';
 import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
 import { BoundingVolumeBase } from '../bounds/BoundingVolumeBase';
@@ -23,6 +23,7 @@ import { BoundingSphere } from '../bounds/BoundingSphere';
 import { IBoundsPicker } from './IBoundsPicker';
 import { BoundsPickerEvent } from '../events/BoundsPickerEvent';
 import { IPickingEntity } from '../base/IPickingEntity';
+import { PickEntity } from '../base/PickEntity';
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.
@@ -158,10 +159,10 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		this._entity.transform.scaleTo(this._entity.transform.scale.x, this._entity.transform.scale.y, val / box.depth);
 	}
 
-	constructor(pickGroup: PickGroup, partition: PartitionBase, pool: IAbstractionPool) {
+	constructor(partition: PartitionBase, pool: BoundsPickerPool) {
 		super(partition, pool);
 
-		this._pickGroup = pickGroup;
+		this._pickGroup = pool.pickGroup;
 		this._partition = partition;
 		this._entity = <IPartitionEntity> partition.root;
 	}
@@ -380,6 +381,6 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	 * @param entity
 	 */
 	public applyEntity(entity: IPartitionEntity): void {
-		this._boundsPickers.push(this._pickGroup.getAbstraction(<IPickingEntity> entity));
+		this._boundsPickers.push(<PickEntity> entity.getAbstraction(this._pickGroup, PickEntity));
 	}
 }

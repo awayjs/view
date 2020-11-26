@@ -1,4 +1,4 @@
-import { IAbstractionPool, IAbstractionClass } from '@awayjs/core';
+import { IAbstractionPool, IAbstractionClass, AbstractionBase } from '@awayjs/core';
 
 import { IPartitionEntity } from '../base/IPartitionEntity';
 import { BoundingVolumeBase } from './BoundingVolumeBase';
@@ -49,7 +49,7 @@ export class BoundingVolumePool implements IAbstractionPool {
 	private _picker: IBoundsPicker;
 	private _strokeFlag: boolean;
 	private _fastFlag: boolean;
-	private _boundingVolumeClass: IAbstractionClass;
+	public readonly boundingVolumeClass: IAbstractionClass;
 
 	public get picker(): IBoundsPicker {
 		return this._picker;
@@ -63,16 +63,19 @@ export class BoundingVolumePool implements IAbstractionPool {
 		return this._fastFlag;
 	}
 
+	public readonly id:number;
+
 	constructor(picker: IBoundsPicker, boundingVolumeType: BoundingVolumeType) {
+		this.id = AbstractionBase.ID_COUNT++;
 		this._picker = picker;
 		this._strokeFlag = BoundingVolumePool._strokeDict[boundingVolumeType];
 		this._fastFlag = BoundingVolumePool._fastDict[boundingVolumeType];
-		this._boundingVolumeClass = BoundingVolumePool._boundsDict[boundingVolumeType];
+		this.boundingVolumeClass = BoundingVolumePool._boundsDict[boundingVolumeType];
 	}
 
 	public getAbstraction(entity: IPartitionEntity): BoundingVolumeBase {
 		const id: number = entity ? entity.id : -1;
-		return (this._boundingVolumePool[id] || (this._boundingVolumePool[id] = new (<IAbstractionClass> this._boundingVolumeClass)(entity, this)));
+		return (this._boundingVolumePool[id] || (this._boundingVolumePool[id] = new (<IAbstractionClass> this.boundingVolumeClass)(entity, this)));
 	}
 
 	public clearAbstraction(entity: IPartitionEntity): void {

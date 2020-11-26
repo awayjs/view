@@ -55,9 +55,16 @@ export class BoundingVolumeBase extends AbstractionBase {
 	}
 
 	public onClear(event: AssetEvent): void {
-		super.onClear(event);
+		if (this._asset) {
+			this._asset.removeEventListener(AssetEvent.CLEAR, this._onClearDelegate);
+			this._asset.removeEventListener(AssetEvent.INVALIDATE, this._onInvalidateDelegate);
+		}
 
-		this._picker.addEventListener(BoundsPickerEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
+		(<BoundingVolumePool> this._pool).clearAbstraction(<IPartitionEntity> this._asset);
+		this._pool = null;
+		this._asset = null;
+
+		this._picker.removeEventListener(BoundsPickerEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
 
 		if (this._targetCoordinateSpace) {
 			let targetEntity: IPartitionEntity = this._picker.entity;
