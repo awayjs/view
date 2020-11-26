@@ -22,8 +22,8 @@ export class PickGroup extends EventDispatcher implements IAbstractionPool {
 	private _boundsPickerPool: BoundsPickerPool;
 	private _tabPickerPool: TabPickerPool;
 
-	public readonly id:number;
-	
+	public readonly id: number;
+
 	/**
 	 * //TODO
 	 *
@@ -85,7 +85,7 @@ export class PickGroup extends EventDispatcher implements IAbstractionPool {
 export class RaycastPickerPool implements IAbstractionPool {
 	public readonly pickGroup: PickGroup;
 
-	public readonly id:number;
+	public readonly id: number;
 
 	constructor(pickGroup: PickGroup) {
 		this.id = AbstractionBase.ID_COUNT++;
@@ -102,7 +102,7 @@ export class RaycastPickerPool implements IAbstractionPool {
 export class BoundsPickerPool implements IAbstractionPool {
 	public readonly pickGroup: PickGroup;
 
-	public readonly id:number;
+	public readonly id: number;
 
 	constructor(pickGroup: PickGroup) {
 		this.id = AbstractionBase.ID_COUNT++;
@@ -118,7 +118,7 @@ export class BoundsPickerPool implements IAbstractionPool {
 
 class TabPickerPool implements IAbstractionPool {
 
-	public readonly id:number;
+	public readonly id: number;
 
 	constructor() {
 		this.id = AbstractionBase.ID_COUNT++;

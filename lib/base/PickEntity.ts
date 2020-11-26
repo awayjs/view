@@ -78,7 +78,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 	public shapeFlag: boolean = false;
 
-	public readonly id:number;
+	public readonly id: number;
 
 	/**
 	 * //TODO

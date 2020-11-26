@@ -63,7 +63,7 @@ export class BoundingVolumePool implements IAbstractionPool {
 		return this._fastFlag;
 	}
 
-	public readonly id:number;
+	public readonly id: number;
 
 	constructor(picker: IBoundsPicker, boundingVolumeType: BoundingVolumeType) {
 		this.id = AbstractionBase.ID_COUNT++;
