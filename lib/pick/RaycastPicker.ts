@@ -6,7 +6,7 @@ import { INode } from '../partition/INode';
 
 import { PickingCollision } from './PickingCollision';
 import { PickEntity } from '../base/PickEntity';
-import { PickGroup } from '../PickGroup';
+import { PickGroup, RaycastPickerPool } from '../PickGroup';
 import { IPickingEntity } from '../base/IPickingEntity';
 
 /**
@@ -55,10 +55,10 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	 * @param findClosestCollision Determines whether the picker searches for the closest bounds collision along the ray,
 	 * or simply returns the first collision encountered. Defaults to false.
 	 */
-	constructor(pickGroup: PickGroup, partition: PartitionBase, pool: IAbstractionPool) {
+	constructor(partition: PartitionBase, pool: RaycastPickerPool) {
 		super(partition, pool);
 
-		this._pickGroup = pickGroup;
+		this._pickGroup = pool.pickGroup;
 		this._partition = partition;
 		this._entity = <IPickingEntity> partition.root;
 	}
@@ -340,7 +340,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	 */
 	public applyEntity(entity: IPickingEntity): void {
 		if (!this.isIgnored(entity)) {
-			const pickEntity: PickEntity = this._pickGroup.getAbstraction(entity);
+			const pickEntity: PickEntity = <PickEntity> entity.getAbstraction(this._pickGroup, PickEntity);
 			this._entities.push(pickEntity);
 		}
 	}

@@ -16,7 +16,6 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 
 	private _invalid: boolean;
 	private _children: Array<PartitionBase> = new Array<PartitionBase>();
-	private _abstractionPool: Object = new Object();
 	private _updateQueue: Object = {};
 
 	private _scene: IPartitionEntity;
@@ -71,20 +70,8 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 		return this._children.splice(this._children.indexOf(child), 1)[0];
 	}
 
-	public getAbstraction(entity: IPartitionEntity): EntityNode {
-		return (this._abstractionPool[entity.id] || (this._abstractionPool[entity.id] = new (<IEntityNodeClass> PartitionBase._abstractionClassPool[entity.assetType])(entity, this)));
-	}
-
 	public getPartition(entity: IPartitionEntity): PartitionBase {
 		return null;
-	}
-
-	/**
-	 *
-	 * @param image
-	 */
-	public clearAbstraction(entity: IPartitionEntity): void {
-		delete this._abstractionPool[entity.id];
 	}
 
 	public traverse(traverser: IPartitionTraverser): void {
@@ -106,7 +93,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 		//required for controllers with autoUpdate set to true and queued events
 		entity._iInternalUpdate();
 
-		this.updateNode(this.getAbstraction(entity));
+		this.updateNode(<EntityNode> entity.getAbstraction(this, PartitionBase._abstractionClassPool[entity.assetType]));
 	}
 
 	public updateNode(node: INode): void {
@@ -125,7 +112,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 
 		delete this._updateQueue[entity.id];
 
-		this.clearNode(this.getAbstraction(entity));
+		this.clearNode(<EntityNode> entity.getAbstraction(this, PartitionBase._abstractionClassPool[entity.assetType]));
 	}
 
 	public clearNode(node: INode) {
@@ -162,8 +149,6 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	}
 
 	public dispose(): void {
-		for (const key in this._abstractionPool)
-			this._abstractionPool[key].onClear(null);
 	}
 
 	public _setParent(parent: PartitionBase): void {
@@ -195,8 +180,6 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 
 	public _onRootClear(event: AssetEvent): void {
 		this.clear();
-
-		this._abstractionPool;
 	}
 
 	/**
