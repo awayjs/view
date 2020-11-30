@@ -1,4 +1,5 @@
 import { Vector3D, AbstractionBase, IAbstractionPool } from '@awayjs/core';
+import { DisplayObject } from '@awayjs/scene';
 
 import { PartitionBase } from '../partition/PartitionBase';
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
@@ -196,6 +197,23 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return collision;
 	}
 
+	public getObjectsUnderPoint(rayPosition: Vector3D, rayDirection: Vector3D): DisplayObject[] {
+		
+		if (!this._isIntersectingRayInternal(this._entity, rayPosition, rayDirection, true))
+			return [];
+
+		//collect pickers
+		this._collectEntities(this._collectedEntities, this._dragEntity);
+
+		//console.log("entities: ", this._entities)
+		const colliders: DisplayObject[] = this._getColliders();
+
+		//discard collected pickers
+		this._collectedEntities.length = 0;
+
+		return colliders;
+	}
+
 	public _collectEntities(collectedEntities: PickEntity[], dragEntity: IPickingEntity): void {
 		const len: number = this._pickers.length;
 		let picker: RaycastPicker;
@@ -318,7 +336,19 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 
 		return bestCollision;
 	}
+	private _getColliders(): DisplayObject[] {
 
+		let colliders: DisplayObject[] = [];
+		let entity: PickEntity;
+		const len: number = this._collectedEntities.length;
+		for (let i: number = 0; i < len; i++) {
+			entity = this._collectedEntities[i];
+			entity.pickingCollision.rayEntryDistance = Number.MAX_VALUE;
+			if (entity.isIntersectingShape(false))
+				colliders.push(<DisplayObject><any>entity.entity);
+		}
+		return colliders;
+	}
 	private updatePosition(pickingCollision: PickingCollision): void {
 		const collisionPos: Vector3D = pickingCollision.position || (pickingCollision.position = new Vector3D());
 
