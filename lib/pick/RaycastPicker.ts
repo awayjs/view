@@ -1,5 +1,4 @@
-import { Vector3D, AbstractionBase, IAbstractionPool } from '@awayjs/core';
-import { DisplayObject } from '@awayjs/scene';
+import { Vector3D, AbstractionBase } from '@awayjs/core';
 
 import { PartitionBase } from '../partition/PartitionBase';
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
@@ -9,6 +8,7 @@ import { PickingCollision } from './PickingCollision';
 import { PickEntity } from '../base/PickEntity';
 import { PickGroup, RaycastPickerPool } from '../PickGroup';
 import { IPickingEntity } from '../base/IPickingEntity';
+import { IPartitionEntity } from '../base/IPartitionEntity';
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.
@@ -197,7 +197,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return collision;
 	}
 
-	public getObjectsUnderPoint(rayPosition: Vector3D, rayDirection: Vector3D): DisplayObject[] {
+	public getObjectsUnderPoint(rayPosition: Vector3D, rayDirection: Vector3D): IPartitionEntity[] {
 
 		if (!this._isIntersectingRayInternal(this._entity, rayPosition, rayDirection, true))
 			return [];
@@ -206,7 +206,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		this._collectEntities(this._collectedEntities, this._dragEntity);
 
 		//console.log("entities: ", this._entities)
-		const colliders: DisplayObject[] = this._getColliders();
+		const colliders: IPartitionEntity[] = this._getColliders();
 
 		//discard collected pickers
 		this._collectedEntities.length = 0;
@@ -337,16 +337,16 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return bestCollision;
 	}
 
-	private _getColliders(): DisplayObject[] {
+	private _getColliders(): IPartitionEntity[] {
 
-		const colliders: DisplayObject[] = [];
+		const colliders: IPartitionEntity[] = [];
 		let entity: PickEntity;
 		const len: number = this._collectedEntities.length;
 		for (let i: number = 0; i < len; i++) {
 			entity = this._collectedEntities[i];
 			entity.pickingCollision.rayEntryDistance = Number.MAX_VALUE;
 			if (entity.isIntersectingShape(false))
-				colliders.push(<DisplayObject><any>entity.entity);
+				colliders.push(entity.entity);
 		}
 		return colliders;
 	}
