@@ -381,6 +381,6 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	 * @param entity
 	 */
 	public applyEntity(entity: IPartitionEntity): void {
-		this._boundsPickers.push(<PickEntity> entity.getAbstraction(this._pickGroup, PickEntity));
+		this._boundsPickers.push(entity.getAbstraction<PickEntity>(this._pickGroup));
 	}
 }

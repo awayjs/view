@@ -370,7 +370,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	 */
 	public applyEntity(entity: IPickingEntity): void {
 		if (!this.isIgnored(entity)) {
-			const pickEntity: PickEntity = <PickEntity> entity.getAbstraction(this._pickGroup, PickEntity);
+			const pickEntity: PickEntity = entity.getAbstraction<PickEntity>(this._pickGroup);
 			this._entities.push(pickEntity);
 		}
 	}
