@@ -1,4 +1,4 @@
-import { IAbstractionPool, IAbstractionClass, AbstractionBase } from '@awayjs/core';
+import { IAbstractionPool, IAbstractionClass, AbstractionBase, IAsset } from '@awayjs/core';
 
 import { IPartitionEntity } from '../base/IPartitionEntity';
 import { BoundingVolumeBase } from './BoundingVolumeBase';
@@ -71,6 +71,11 @@ export class BoundingVolumePool implements IAbstractionPool {
 		this._strokeFlag = BoundingVolumePool._strokeDict[boundingVolumeType];
 		this._fastFlag = BoundingVolumePool._fastDict[boundingVolumeType];
 		this.boundingVolumeClass = BoundingVolumePool._boundsDict[boundingVolumeType];
+	}
+	
+	public requestAbstraction(asset: IAsset): IAbstractionClass
+	{
+		return null;
 	}
 
 	public getAbstraction(entity: IPartitionEntity): BoundingVolumeBase {

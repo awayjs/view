@@ -1,4 +1,4 @@
-import { IAssetClass, IAbstractionPool, AssetBase, AssetEvent } from '@awayjs/core';
+import { IAssetClass, IAbstractionPool, AssetBase, AssetEvent, IAbstractionClass, IAsset } from '@awayjs/core';
 
 import { IPartitionEntity } from '../base/IPartitionEntity';
 
@@ -93,7 +93,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 		//required for controllers with autoUpdate set to true and queued events
 		entity._iInternalUpdate();
 
-		this.updateNode(<EntityNode> entity.getAbstraction(this, PartitionBase._abstractionClassPool[entity.assetType]));
+		this.updateNode(entity.getAbstraction<EntityNode>(this));
 	}
 
 	public updateNode(node: INode): void {
@@ -112,7 +112,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 
 		delete this._updateQueue[entity.id];
 
-		this.clearNode(<EntityNode> entity.getAbstraction(this, PartitionBase._abstractionClassPool[entity.assetType]));
+		this.clearNode(entity.getAbstraction<EntityNode>(this));
 	}
 
 	public clearNode(node: INode) {
@@ -180,6 +180,11 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 
 	public _onRootClear(event: AssetEvent): void {
 		this.clear();
+	}
+	
+	public requestAbstraction(asset: IAsset): IAbstractionClass
+	{
+		return PartitionBase._abstractionClassPool[asset.assetType];
 	}
 
 	/**

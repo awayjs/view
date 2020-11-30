@@ -1,4 +1,4 @@
-import { AbstractionBase, EventDispatcher, IAbstractionPool } from '@awayjs/core';
+import { AbstractionBase, EventDispatcher, IAbstractionClass, IAbstractionPool, IAsset, IAssetClass } from '@awayjs/core';
 
 import { IPickingEntity } from './base/IPickingEntity';
 import { PickEntity } from './base/PickEntity';
@@ -39,10 +39,8 @@ export class PickGroup extends EventDispatcher implements IAbstractionPool {
 	}
 
 	public static clearAllInstances(): void {
-		for (const key in this._instancePool) {
-			(this._instancePool[key] as PickGroup).clearAll();
+		for (const key in this._instancePool)
 			delete this._instancePool[key];
-		}
 	}
 
 	public static getInstance(view: View): PickGroup {
@@ -50,35 +48,24 @@ export class PickGroup extends EventDispatcher implements IAbstractionPool {
 	}
 
 	public static clearInstance(view: View): void {
-		const pickGroup: PickGroup = this._instancePool[view.id];
-
-		if (pickGroup) {
-			pickGroup.clearAll();
-
-			delete this._instancePool[view.id];
-		}
+		delete this._instancePool[view.id];
 	}
 
-	/**
-	 * Clears the resources used by the PickGroup.
-	 */
-	public clearAll(): void {
-
-		this._raycastPickerPool.clearAll();
-		this._boundsPickerPool.clearAll();
-		this._tabPickerPool.clearAll();
+	public requestAbstraction(asset: IAsset): IAbstractionClass
+	{
+		return PickEntity;
 	}
 
 	public getRaycastPicker(partition: PartitionBase): RaycastPicker {
-		return <RaycastPicker> partition.getAbstraction(this._raycastPickerPool, RaycastPicker);
+		return partition.getAbstraction<RaycastPicker>(this._raycastPickerPool);
 	}
 
 	public getBoundsPicker(partition: PartitionBase): BoundsPicker {
-		return <BoundsPicker> partition.getAbstraction(this._boundsPickerPool, BoundsPicker);
+		return partition.getAbstraction<BoundsPicker>(this._boundsPickerPool);
 	}
 
 	public getTabPicker(partition: PartitionBase): TabPicker {
-		return <TabPicker> partition.getAbstraction(this._tabPickerPool, TabPicker);
+		return partition.getAbstraction<TabPicker>(this._tabPickerPool);
 	}
 }
 
@@ -92,10 +79,9 @@ export class RaycastPickerPool implements IAbstractionPool {
 		this.pickGroup = pickGroup;
 	}
 
-	/**
-	 * Clears the resources used by the RaycastPickerPool.
-	 */
-	public clearAll(): void {
+	public requestAbstraction(assetClass: IAssetClass): IAbstractionClass
+	{
+		return RaycastPicker;
 	}
 }
 
@@ -109,10 +95,9 @@ export class BoundsPickerPool implements IAbstractionPool {
 		this.pickGroup = pickGroup;
 	}
 
-	/**
-	 * Clears the resources used by the BoundsPickerPool.
-	 */
-	public clearAll(): void {
+	public requestAbstraction(assetClass: IAssetClass): IAbstractionClass
+	{
+		return BoundsPicker;
 	}
 }
 
@@ -124,9 +109,8 @@ class TabPickerPool implements IAbstractionPool {
 		this.id = AbstractionBase.ID_COUNT++;
 	}
 
-	/**
-	 * Clears the resources used by the TabPickerPool.
-	 */
-	public clearAll(): void {
+	public requestAbstraction(assetClass: IAssetClass): IAbstractionClass
+	{
+		return TabPicker;
 	}
 }

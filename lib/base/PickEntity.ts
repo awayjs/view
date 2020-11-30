@@ -8,7 +8,9 @@ import {
 	AbstractionBase,
 	Point,
 	AssetEvent,
-	Plane3D
+	Plane3D,
+	IAsset,
+	IAbstractionClass
 } from '@awayjs/core';
 
 import { ITraversable } from './ITraversable';
@@ -361,6 +363,11 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		//clear all pickables associated with this pick entity
 		for (const key in this._pickablePool)
 			(this._pickablePool[key] as _Pick_PickableBase).onClear(null);
+	}
+	
+	public requestAbstraction(asset: IAsset): IAbstractionClass
+	{
+		return null;
 	}
 
 	/**
