@@ -198,7 +198,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	}
 
 	public getObjectsUnderPoint(rayPosition: Vector3D, rayDirection: Vector3D): DisplayObject[] {
-		
+
 		if (!this._isIntersectingRayInternal(this._entity, rayPosition, rayDirection, true))
 			return [];
 
@@ -336,9 +336,10 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 
 		return bestCollision;
 	}
+
 	private _getColliders(): DisplayObject[] {
 
-		let colliders: DisplayObject[] = [];
+		const colliders: DisplayObject[] = [];
 		let entity: PickEntity;
 		const len: number = this._collectedEntities.length;
 		for (let i: number = 0; i < len; i++) {
@@ -349,6 +350,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		}
 		return colliders;
 	}
+
 	private updatePosition(pickingCollision: PickingCollision): void {
 		const collisionPos: Vector3D = pickingCollision.position || (pickingCollision.position = new Vector3D());
 
