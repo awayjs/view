@@ -1,6 +1,5 @@
 import { AbstractionBase, EventDispatcher, IAbstractionClass, IAbstractionPool, IAsset, IAssetClass } from '@awayjs/core';
 
-import { IPickingEntity } from './base/IPickingEntity';
 import { PickEntity } from './base/PickEntity';
 import { RaycastPicker } from './pick/RaycastPicker';
 import { PartitionBase } from './partition/PartitionBase';
