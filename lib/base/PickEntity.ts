@@ -364,9 +364,8 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		for (const key in this._pickablePool)
 			(this._pickablePool[key] as _Pick_PickableBase).onClear(null);
 	}
-	
-	public requestAbstraction(asset: IAsset): IAbstractionClass
-	{
+
+	public requestAbstraction(asset: IAsset): IAbstractionClass {
 		return null;
 	}
 

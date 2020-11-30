@@ -72,9 +72,8 @@ export class BoundingVolumePool implements IAbstractionPool {
 		this._fastFlag = BoundingVolumePool._fastDict[boundingVolumeType];
 		this.boundingVolumeClass = BoundingVolumePool._boundsDict[boundingVolumeType];
 	}
-	
-	public requestAbstraction(asset: IAsset): IAbstractionClass
-	{
+
+	public requestAbstraction(asset: IAsset): IAbstractionClass {
 		return null;
 	}
 

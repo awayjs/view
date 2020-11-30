@@ -51,8 +51,7 @@ export class PickGroup extends EventDispatcher implements IAbstractionPool {
 		delete this._instancePool[view.id];
 	}
 
-	public requestAbstraction(asset: IAsset): IAbstractionClass
-	{
+	public requestAbstraction(asset: IAsset): IAbstractionClass {
 		return PickEntity;
 	}
 
@@ -79,8 +78,7 @@ export class RaycastPickerPool implements IAbstractionPool {
 		this.pickGroup = pickGroup;
 	}
 
-	public requestAbstraction(assetClass: IAssetClass): IAbstractionClass
-	{
+	public requestAbstraction(assetClass: IAssetClass): IAbstractionClass {
 		return RaycastPicker;
 	}
 }
@@ -95,8 +93,7 @@ export class BoundsPickerPool implements IAbstractionPool {
 		this.pickGroup = pickGroup;
 	}
 
-	public requestAbstraction(assetClass: IAssetClass): IAbstractionClass
-	{
+	public requestAbstraction(assetClass: IAssetClass): IAbstractionClass {
 		return BoundsPicker;
 	}
 }
@@ -109,8 +106,7 @@ class TabPickerPool implements IAbstractionPool {
 		this.id = AbstractionBase.ID_COUNT++;
 	}
 
-	public requestAbstraction(assetClass: IAssetClass): IAbstractionClass
-	{
+	public requestAbstraction(assetClass: IAssetClass): IAbstractionClass {
 		return TabPicker;
 	}
 }

@@ -181,9 +181,8 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	public _onRootClear(event: AssetEvent): void {
 		this.clear();
 	}
-	
-	public requestAbstraction(asset: IAsset): IAbstractionClass
-	{
+
+	public requestAbstraction(asset: IAsset): IAbstractionClass {
 		return PartitionBase._abstractionClassPool[asset.assetType];
 	}
 
