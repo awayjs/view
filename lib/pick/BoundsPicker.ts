@@ -198,6 +198,9 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	}
 
 	public getBoundingVolume(targetCoordinateSpace: IPartitionEntity = null, boundingVolumeType: BoundingVolumeType = null): BoundingVolumeBase {
+		if (targetCoordinateSpace == null)
+			targetCoordinateSpace = this._entity;
+
 		if (boundingVolumeType == null)
 			boundingVolumeType = this._entity.defaultBoundingVolume;
 

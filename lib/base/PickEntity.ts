@@ -97,6 +97,9 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	}
 
 	public getBoundingVolume(targetCoordinateSpace: IPartitionEntity = null, boundingVolumeType: BoundingVolumeType = null): BoundingVolumeBase {
+		if (targetCoordinateSpace == null)
+			targetCoordinateSpace = this._entity;
+
 		if (boundingVolumeType == null)
 			boundingVolumeType = this._entity.defaultBoundingVolume;
 
