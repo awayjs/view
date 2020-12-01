@@ -5,8 +5,7 @@ import {
 	AbstractionBase,
 	AssetEvent,
 	Plane3D,
-	Point,
-	IAbstractionPool
+	Point
 } from '@awayjs/core';
 
 import { IPartitionEntity } from '../base/IPartitionEntity';
@@ -22,7 +21,6 @@ import { BoundingBox } from '../bounds/BoundingBox';
 import { BoundingSphere } from '../bounds/BoundingSphere';
 import { IBoundsPicker } from './IBoundsPicker';
 import { BoundsPickerEvent } from '../events/BoundsPickerEvent';
-import { IPickingEntity } from '../base/IPickingEntity';
 import { PickEntity } from '../base/PickEntity';
 
 /**
@@ -381,6 +379,6 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	 * @param entity
 	 */
 	public applyEntity(entity: IPartitionEntity): void {
-		this._boundsPickers.push(<PickEntity> entity.getAbstraction(this._pickGroup, PickEntity));
+		this._boundsPickers.push(entity.getAbstraction<PickEntity>(this._pickGroup));
 	}
 }

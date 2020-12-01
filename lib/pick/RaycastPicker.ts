@@ -1,4 +1,4 @@
-import { Vector3D, AbstractionBase, IAbstractionPool } from '@awayjs/core';
+import { Vector3D, AbstractionBase } from '@awayjs/core';
 
 import { PartitionBase } from '../partition/PartitionBase';
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
@@ -8,6 +8,7 @@ import { PickingCollision } from './PickingCollision';
 import { PickEntity } from '../base/PickEntity';
 import { PickGroup, RaycastPickerPool } from '../PickGroup';
 import { IPickingEntity } from '../base/IPickingEntity';
+import { IPartitionEntity } from '../base/IPartitionEntity';
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.
@@ -196,6 +197,23 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return collision;
 	}
 
+	public getObjectsUnderPoint(rayPosition: Vector3D, rayDirection: Vector3D): IPartitionEntity[] {
+
+		if (!this._isIntersectingRayInternal(this._entity, rayPosition, rayDirection, true))
+			return [];
+
+		//collect pickers
+		this._collectEntities(this._collectedEntities, this._dragEntity);
+
+		//console.log("entities: ", this._entities)
+		const colliders: IPartitionEntity[] = this._getColliders();
+
+		//discard collected pickers
+		this._collectedEntities.length = 0;
+
+		return colliders;
+	}
+
 	public _collectEntities(collectedEntities: PickEntity[], dragEntity: IPickingEntity): void {
 		const len: number = this._pickers.length;
 		let picker: RaycastPicker;
@@ -319,6 +337,20 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return bestCollision;
 	}
 
+	private _getColliders(): IPartitionEntity[] {
+
+		const colliders: IPartitionEntity[] = [];
+		let entity: PickEntity;
+		const len: number = this._collectedEntities.length;
+		for (let i: number = 0; i < len; i++) {
+			entity = this._collectedEntities[i];
+			entity.pickingCollision.rayEntryDistance = Number.MAX_VALUE;
+			if (entity.isIntersectingShape(false))
+				colliders.push(entity.entity);
+		}
+		return colliders;
+	}
+
 	private updatePosition(pickingCollision: PickingCollision): void {
 		const collisionPos: Vector3D = pickingCollision.position || (pickingCollision.position = new Vector3D());
 
@@ -340,7 +372,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	 */
 	public applyEntity(entity: IPickingEntity): void {
 		if (!this.isIgnored(entity)) {
-			const pickEntity: PickEntity = <PickEntity> entity.getAbstraction(this._pickGroup, PickEntity);
+			const pickEntity: PickEntity = entity.getAbstraction<PickEntity>(this._pickGroup);
 			this._entities.push(pickEntity);
 		}
 	}
