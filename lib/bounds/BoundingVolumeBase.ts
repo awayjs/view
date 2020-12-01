@@ -29,20 +29,17 @@ export class BoundingVolumeBase extends AbstractionBase {
 
 		this._picker.addEventListener(BoundsPickerEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
 
-		if (this._targetCoordinateSpace) {
+		if (this._targetCoordinateSpace != this._picker.entity) {
 			let targetEntity: IPartitionEntity = this._picker.entity;
-			//for scene targets, use concatenated matrix listeners
-			if (!this._targetCoordinateSpace.parent) {
-				targetEntity.transform.addEventListener(TransformEvent.INVALIDATE_CONCATENATED_MATRIX3D, this._onInvalidateMatrix3DDelegate);
-			} else {
-				while (targetEntity && targetEntity != this._targetCoordinateSpace.parent) {
-					targetEntity.transform.addEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
-					targetEntity = targetEntity.parent;
-				}
 
-				if (!targetEntity) //case when targetCoordinateSpace is not part of the same displaylist ancestry
-					this._targetCoordinateSpace.transform.addEventListener(TransformEvent.INVALIDATE_CONCATENATED_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+			while (targetEntity && targetEntity != this._targetCoordinateSpace) {
+				targetEntity.transform.addEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+				targetEntity = targetEntity.parent;
 			}
+
+			if (!targetEntity) //case when targetCoordinateSpace is not part of the same displaylist ancestry
+				this._targetCoordinateSpace.transform.addEventListener(TransformEvent.INVALIDATE_CONCATENATED_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+
 		}
 	}
 
@@ -66,19 +63,16 @@ export class BoundingVolumeBase extends AbstractionBase {
 
 		this._picker.removeEventListener(BoundsPickerEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
 
-		if (this._targetCoordinateSpace) {
+		if (this._targetCoordinateSpace != this._picker.entity) {
 			let targetEntity: IPartitionEntity = this._picker.entity;
-			if (!this._targetCoordinateSpace.parent) {
-				targetEntity.transform.removeEventListener(TransformEvent.INVALIDATE_CONCATENATED_MATRIX3D, this._onInvalidateMatrix3DDelegate);
-			} else {
-				while (targetEntity && targetEntity != this._targetCoordinateSpace.parent) {
-					targetEntity.transform.removeEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
-					targetEntity = targetEntity.parent;
-				}
 
-				if (!targetEntity) //case when targetCoordinateSpace is not part of the same displaylist ancestry
-					this._targetCoordinateSpace.transform.removeEventListener(TransformEvent.INVALIDATE_CONCATENATED_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+			while (targetEntity && targetEntity != this._targetCoordinateSpace) {
+				targetEntity.transform.removeEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+				targetEntity = targetEntity.parent;
 			}
+
+			if (!targetEntity) //case when targetCoordinateSpace is not part of the same displaylist ancestry
+				this._targetCoordinateSpace.transform.removeEventListener(TransformEvent.INVALIDATE_CONCATENATED_MATRIX3D, this._onInvalidateMatrix3DDelegate);
 		}
 
 		this._targetCoordinateSpace = null;

@@ -78,12 +78,11 @@ export class BoundingVolumePool implements IAbstractionPool {
 	}
 
 	public getAbstraction(entity: IPartitionEntity): BoundingVolumeBase {
-		const id: number = entity ? entity.id : -1;
-		return (this._boundingVolumePool[id] || (this._boundingVolumePool[id] = new (<IAbstractionClass> this.boundingVolumeClass)(entity, this)));
+		return (this._boundingVolumePool[entity.id] || (this._boundingVolumePool[entity.id] = new (<IAbstractionClass> this.boundingVolumeClass)(entity, this)));
 	}
 
 	public clearAbstraction(entity: IPartitionEntity): void {
-		delete this._boundingVolumePool[entity ? entity.id : -1];
+		delete this._boundingVolumePool[entity.id];
 	}
 
 	public dispose(): void {
