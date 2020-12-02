@@ -44,7 +44,6 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 	private static _pickPickableClassPool: Object = new Object();
 
-	private _pickablePool: Object = new Object();
 	private _pickables: _Pick_PickableBase[] = [];
 	private _view: View;
 	private _entity: IPickingEntity;
@@ -90,6 +89,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	constructor(entity: IPickingEntity, pickGroup: PickGroup) {
 		super(entity, pickGroup);
 
+		this.id = AbstractionBase.ID_COUNT++;
 		this._view = pickGroup.view;
 		this._entity = entity;
 		this._pickGroup = pickGroup;
@@ -340,7 +340,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 	public applyTraversable(traversable: ITraversable): void {
 		//is the traversable a mask?
-		this._pickables.push(this.getAbstraction(traversable));
+		this._pickables.push(traversable.getAbstraction(this));
 	}
 
 	public onInvalidate(event: AssetEvent): void {
@@ -362,34 +362,10 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 			this._boundingVolumePools[key].dispose();
 			delete this._boundingVolumePools[key];
 		}
-
-		//clear all pickables associated with this pick entity
-		for (const key in this._pickablePool)
-			(this._pickablePool[key] as _Pick_PickableBase).onClear(null);
 	}
 
 	public requestAbstraction(asset: IAsset): IAbstractionClass {
-		return null;
-	}
-
-	/**
-	 * //TODO
-	 *
-	 * @param renderable
-	 * @returns IRenderState
-	 */
-	public getAbstraction(traversable: ITraversable): _Pick_PickableBase {
-		return this._pickablePool[traversable.id] || (this._pickablePool[traversable.id] = new (<_IPick_PickableClass> PickEntity._pickPickableClassPool[traversable.assetType])(traversable, this));
-	}
-
-	/**
-	 *
-	 * @param renderable
-	 */
-	public clearAbstraction(traversable: ITraversable): void {
-		delete this._pickablePool[traversable.id];
-
-		this.onInvalidate(null);
+		return PickEntity._pickPickableClassPool[asset.assetType];
 	}
 
 	/**

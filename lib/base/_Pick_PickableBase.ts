@@ -37,14 +37,7 @@ export class _Pick_PickableBase extends AbstractionBase {
 	}
 
 	public onClear(event: AssetEvent): void {
-		if (this._asset) {
-			this._asset.removeEventListener(AssetEvent.CLEAR, this._onClearDelegate);
-			this._asset.removeEventListener(AssetEvent.INVALIDATE, this._onInvalidateDelegate);
-		}
-
-		(<PickEntity> this._pool).clearAbstraction(this._asset);
-		this._pool = null;
-		this._asset = null;
+		super.onClear(event);
 
 		//this.sourceEntity = null;
 		this._view = null;
