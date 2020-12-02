@@ -52,14 +52,7 @@ export class BoundingVolumeBase extends AbstractionBase {
 	}
 
 	public onClear(event: AssetEvent): void {
-		if (this._asset) {
-			this._asset.removeEventListener(AssetEvent.CLEAR, this._onClearDelegate);
-			this._asset.removeEventListener(AssetEvent.INVALIDATE, this._onInvalidateDelegate);
-		}
-
-		(<BoundingVolumePool> this._pool).clearAbstraction(<IPartitionEntity> this._asset);
-		this._pool = null;
-		this._asset = null;
+		super.onClear(event);
 
 		this._picker.removeEventListener(BoundsPickerEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
 

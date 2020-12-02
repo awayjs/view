@@ -96,16 +96,17 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		this._pickingCollision = new PickingCollision(this._entity);
 	}
 
-	public getBoundingVolume(targetCoordinateSpace: IPartitionEntity = null, boundingVolumeType: BoundingVolumeType = null): BoundingVolumeBase {
-		if (targetCoordinateSpace == null)
-			targetCoordinateSpace = this._entity;
+	public getBoundingVolume(target: IPartitionEntity = null, type: BoundingVolumeType = null): BoundingVolumeBase {
+		if (target == null)
+			target = this._entity;
 
-		if (boundingVolumeType == null)
-			boundingVolumeType = this._entity.defaultBoundingVolume;
+		if (type == null)
+			type = this._entity.defaultBoundingVolume;
 
-		const pool: BoundingVolumePool = (this._boundingVolumePools[boundingVolumeType] || (this._boundingVolumePools[boundingVolumeType] = new BoundingVolumePool(this, boundingVolumeType)));
+		const pool: BoundingVolumePool = this._boundingVolumePools[type]
+									|| (this._boundingVolumePools[type] = new BoundingVolumePool(this, type));
 
-		return <BoundingVolumeBase> pool.getAbstraction(targetCoordinateSpace);
+		return <BoundingVolumeBase> target.getAbstraction(pool);
 	}
 
 	/**
