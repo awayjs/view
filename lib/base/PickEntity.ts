@@ -224,7 +224,8 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		invMatrix.deltaTransformVector(globalRayDirection, this._pickingCollision.rayDirection);
 
 		//early out for bounds test
-		const rayEntryDistance: number = this.getBoundingVolume().rayIntersection(this._pickingCollision.rayPosition, this._pickingCollision.rayDirection, this._pickingCollision.normal);
+		const boundVolume = this.getBoundingVolume();
+		const rayEntryDistance: number = boundVolume.rayIntersection(this._pickingCollision.rayPosition, this._pickingCollision.rayDirection, this._pickingCollision.normal);
 
 		//check masks
 		if (rayEntryDistance < 0 || !this._isIntersectingMasks(rootEntity, globalRayPosition, globalRayDirection))
