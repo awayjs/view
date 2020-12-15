@@ -3,6 +3,7 @@ import { Point, Vector3D } from '@awayjs/core';
 import { IPickingEntity } from '../base/IPickingEntity';
 import { ITraversable } from '../base/ITraversable';
 import { IPartitionEntity } from '../base/IPartitionEntity';
+import { PickGroup } from '../PickGroup';
 
 /**
  * Value object ___ for a picking collision returned by a picking collider. Created as unique objects on display objects
@@ -21,6 +22,11 @@ export class PickingCollision {
 	 * The entity to which this collision object belongs.
 	 */
 	public entity: IPartitionEntity;
+
+	/**
+	 * The pickGroup to which this collision object belongs.
+	 */
+	public pickGroup: PickGroup;
 
 	/**
 	 * The traversable associated with a collision.
@@ -82,7 +88,8 @@ export class PickingCollision {
 	 *
 	 * @param entity The entity to which this collision object belongs.
 	 */
-	constructor(entity: IPartitionEntity) {
+	constructor(entity: IPartitionEntity, pickGroup:PickGroup) {
 		this.entity = entity;
+		this.pickGroup = pickGroup;
 	}
 }
