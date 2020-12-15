@@ -93,7 +93,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		this._view = pickGroup.view;
 		this._entity = entity;
 		this._pickGroup = pickGroup;
-		this._pickingCollision = new PickingCollision(this._entity);
+		this._pickingCollision = new PickingCollision(entity, pickGroup);
 	}
 
 	public getBoundingVolume(target: IPartitionEntity = null, type: BoundingVolumeType = null): BoundingVolumeBase {
@@ -467,7 +467,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 					if (entity
 							&& this._pickGroup
 								.getRaycastPicker(entity.partition)
-								._getCollisionInternal(globalRayPosition, globalRayDirection, true, true)) {
+								._getCollisionInternal(globalRayPosition, globalRayDirection, true, true, null)) {
 						maskHit = true;
 						break;
 					}

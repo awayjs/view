@@ -19,26 +19,21 @@ import { IPartitionEntity } from '../base/IPartitionEntity';
  */
 export class RaycastPicker extends AbstractionBase implements IPartitionTraverser {
 	private _dragEntity: IPickingEntity;
-	protected _partition: PartitionBase;
-	protected _entity: IPickingEntity;
 
-	public get partition(): PartitionBase {
-		return this._partition;
-	}
+	public readonly partition: PartitionBase;
 
-	/**
-     *
-     * @returns {IPickingEntity}
-     */
-	public get entity(): IPickingEntity {
-		return this._entity;
-	}
+	public readonly entity: IPickingEntity;
+
+	public readonly pickGroup: PickGroup;
 
 	public shapeFlag: boolean = false;
 
 	public findClosestCollision: boolean = false;
 
-	private _pickGroup: PickGroup;
+	/**
+	 * 
+	 */
+	public layeredView: boolean; //TODO: something to enable this correctly
 
 	private _rootEntity: IPickingEntity;
 	private _shapeFlag: boolean;
@@ -59,20 +54,20 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	constructor(partition: PartitionBase, pool: RaycastPickerPool) {
 		super(partition, pool);
 
-		this._pickGroup = pool.pickGroup;
-		this._partition = partition;
-		this._entity = <IPickingEntity> partition.root;
+		this.pickGroup = pool.pickGroup;
+		this.partition = partition;
+		this.entity = <IPickingEntity> partition.root;
 	}
 
 	public traverse(): void {
 		this._entities.length = 0;
 		this._pickers.length = 0;
-		this._partition.traverse(this);
+		this.partition.traverse(this);
 	}
 
 	public getTraverser(partition: PartitionBase): IPartitionTraverser {
 		if (partition.root._iIsMouseEnabled() || (<IPickingEntity> partition.root).isDragEntity()) {
-			const traverser: RaycastPicker = this._pickGroup.getRaycastPicker(partition);
+			const traverser: RaycastPicker = this.pickGroup.getRaycastPicker(partition);
 
 			if (traverser._isIntersectingRayInternal(this._rootEntity, this._globalRayPosition, this._globalRayDirection, this._shapeFlag))
 				this._pickers.push(traverser);
@@ -114,14 +109,14 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 			return false;
 		}
 
-		return  node.isIntersectingRay(this._rootEntity, this._globalRayPosition, this._globalRayDirection, this._pickGroup);
+		return  node.isIntersectingRay(this._rootEntity, this._globalRayPosition, this._globalRayDirection, this.pickGroup);
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	public isIntersectingRay(globalRayPosition: Vector3D, globalRayDirection: Vector3D, shapeFlag: boolean = false): boolean {
-		return this._isIntersectingRayInternal(this._entity, globalRayPosition, globalRayDirection, shapeFlag);
+		return this._isIntersectingRayInternal(this.entity, globalRayPosition, globalRayDirection, shapeFlag);
 	}
 
 	/**
@@ -176,20 +171,28 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	/**
 	 * @inheritDoc
 	 */
-	public getCollision(rayPosition: Vector3D, rayDirection: Vector3D, shapeFlag: boolean = false): PickingCollision {
-		return this._getCollisionInternal(rayPosition, rayDirection, shapeFlag, false);
+	public getCollision(rayPosition: Vector3D, rayDirection: Vector3D, shapeFlag: boolean = false, startingCollision: PickingCollision = null): PickingCollision {
+		return this._getCollisionInternal(rayPosition, rayDirection, shapeFlag, false, startingCollision);
 	}
 
-	public _getCollisionInternal(rayPosition: Vector3D, rayDirection: Vector3D, shapeFlag: boolean, maskFlag: boolean) {
+	public getViewCollision(x: number, y: number, shapeFlag: boolean = false, startingCollision: PickingCollision = null) {
+		//update ray
+		const rayPosition: Vector3D = this.pickGroup.view.unproject(x, y, 0);
+		const rayDirection: Vector3D = this.pickGroup.view.unproject(x, y, 1).subtract(rayPosition);
+		
+		return this._getCollisionInternal(rayPosition, rayDirection, shapeFlag, false, startingCollision);
+	}
+
+	public _getCollisionInternal(rayPosition: Vector3D, rayDirection: Vector3D, shapeFlag: boolean, maskFlag: boolean, startingCollision: PickingCollision) {
 		//early out if no collisions detected
-		if (!this._isIntersectingRayInternal(this._entity, rayPosition, rayDirection, shapeFlag))
+		if (!this._isIntersectingRayInternal(this.entity, rayPosition, rayDirection, shapeFlag))
 			return null;
 
 		//collect pickers
 		this._collectEntities(this._collectedEntities, this._dragEntity);
 
 		//console.log("entities: ", this._entities)
-		const collision: PickingCollision = this._getPickingCollision();
+		const collision: PickingCollision = this._getPickingCollision(startingCollision);
 
 		//discard collected pickers
 		this._collectedEntities.length = 0;
@@ -199,7 +202,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 
 	public getObjectsUnderPoint(rayPosition: Vector3D, rayDirection: Vector3D): IPartitionEntity[] {
 
-		if (!this._isIntersectingRayInternal(this._entity, rayPosition, rayDirection, true))
+		if (!this._isIntersectingRayInternal(this.entity, rayPosition, rayDirection, true))
 			return [];
 
 		//collect pickers
@@ -224,7 +227,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		//ensures that raycastPicker entities are always added last, for correct 2D picking
 		let entity: PickEntity;
 		for (var i: number = 0; i < this._entities.length; ++i) {
-			(entity = this._entities[i]).pickingCollision.pickerEntity = this._entity;
+			(entity = this._entities[i]).pickingCollision.pickerEntity = this.entity;
 			collectedEntities.push(entity);
 		}
 		// //need to re-calculate the rayEntryDistance for only those entities inside the picker
@@ -286,7 +289,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return entity1.pickingCollision.rayEntryDistance > entity2.pickingCollision.rayEntryDistance ? 1 : entity1.pickingCollision.rayEntryDistance < entity2.pickingCollision.rayEntryDistance ? -1 : 0;
 	}
 
-	private _getPickingCollision(): PickingCollision {
+	private _getPickingCollision(bestCollision:PickingCollision = null): PickingCollision {
 		// Sort pickers from closest to furthest to reduce tests.
 		this._collectedEntities = this._collectedEntities.sort(this.sortOnNearT); // TODO - test sort filter in JS
 
@@ -297,7 +300,6 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 
 		let entity: PickEntity;
 		let testCollision: PickingCollision;
-		let bestCollision: PickingCollision;
 		const len: number = this._collectedEntities.length;
 		for (let i: number = 0; i < len; i++) {
 			entity = this._collectedEntities[i];
@@ -372,7 +374,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	 */
 	public applyEntity(entity: IPickingEntity): void {
 		if (!this.isIgnored(entity)) {
-			const pickEntity: PickEntity = entity.getAbstraction<PickEntity>(this._pickGroup);
+			const pickEntity: PickEntity = entity.getAbstraction<PickEntity>(this.pickGroup);
 			this._entities.push(pickEntity);
 		}
 	}
