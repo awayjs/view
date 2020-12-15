@@ -2,11 +2,11 @@ import { IPartitionEntity } from './IPartitionEntity';
 
 export interface IPickingEntity extends IPartitionEntity
 {
-	isAVMScene:boolean;
+	isAVMScene: boolean;
 
-	getMouseCursor():string;
+	getMouseCursor(): string;
 
-	tabEnabled:boolean;
+	tabEnabled: boolean;
 
 	_startDrag(): void;
 

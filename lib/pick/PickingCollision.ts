@@ -88,7 +88,7 @@ export class PickingCollision {
 	 *
 	 * @param entity The entity to which this collision object belongs.
 	 */
-	constructor(entity: IPartitionEntity, pickGroup:PickGroup) {
+	constructor(entity: IPartitionEntity, pickGroup: PickGroup) {
 		this.entity = entity;
 		this.pickGroup = pickGroup;
 	}

@@ -31,7 +31,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	public findClosestCollision: boolean = false;
 
 	/**
-	 * 
+	 *
 	 */
 	public layeredView: boolean; //TODO: something to enable this correctly
 
@@ -179,7 +179,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		//update ray
 		const rayPosition: Vector3D = this.pickGroup.view.unproject(x, y, 0);
 		const rayDirection: Vector3D = this.pickGroup.view.unproject(x, y, 1).subtract(rayPosition);
-		
+
 		return this._getCollisionInternal(rayPosition, rayDirection, shapeFlag, false, startingCollision);
 	}
 
@@ -289,7 +289,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return entity1.pickingCollision.rayEntryDistance > entity2.pickingCollision.rayEntryDistance ? 1 : entity1.pickingCollision.rayEntryDistance < entity2.pickingCollision.rayEntryDistance ? -1 : 0;
 	}
 
-	private _getPickingCollision(bestCollision:PickingCollision = null): PickingCollision {
+	private _getPickingCollision(bestCollision: PickingCollision = null): PickingCollision {
 		// Sort pickers from closest to furthest to reduce tests.
 		this._collectedEntities = this._collectedEntities.sort(this.sortOnNearT); // TODO - test sort filter in JS
 
