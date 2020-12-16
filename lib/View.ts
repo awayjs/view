@@ -370,7 +370,7 @@ export class View extends AssetBase {
 
 	public present(): void {
 		if (!this._shareContext && this._target == null)
-			this._stage.context.present();
+			this._stage.present();
 	}
 
 	/*
