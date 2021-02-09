@@ -103,11 +103,11 @@ export class BoundingBox extends BoundingVolumeBase {
 		let matrix3D: Matrix3D;
 		if (this._targetCoordinateSpace != this._picker.entity) {
 			if (this._targetCoordinateSpace == this._picker.entity.parent) {
-				matrix3D = this._picker.entity.transform.matrix3D;
+				matrix3D = this._picker.entity.entity.transform.matrix3D;
 			} else {
-				matrix3D = this._picker.entity.transform.concatenatedMatrix3D.clone();
+				matrix3D = this._picker.entity.getMatrix3D().clone();
 
-				matrix3D.append(this._targetCoordinateSpace.transform.inverseConcatenatedMatrix3D);
+				matrix3D.append(this._targetCoordinateSpace.getInverseMatrix3D());
 			}
 		}
 

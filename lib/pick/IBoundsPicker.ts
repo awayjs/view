@@ -1,5 +1,6 @@
 import { Box, Vector3D, Sphere, IEventDispatcher, Matrix3D } from '@awayjs/core';
-import { IPartitionEntity } from '../base/IPartitionEntity';
+import { ContainerNode } from '../partition/ContainerNode';
+import { INode } from '../partition/INode';
 
 /**
  * Provides an interface for picking objects that can pick 3d objects from a view or scene.
@@ -8,9 +9,9 @@ import { IPartitionEntity } from '../base/IPartitionEntity';
  */
 export interface IBoundsPicker extends IEventDispatcher
 {
-	entity: IPartitionEntity;
+	entity: ContainerNode;
 
-	_hitTestPointInternal(rootEntity: IPartitionEntity, x: number, y: number, shapeFlag?: boolean, maskFlag?: boolean): boolean
+	_hitTestPointInternal(rootEntity: INode, x: number, y: number, shapeFlag?: boolean, maskFlag?: boolean): boolean
 
 	_getBoxBoundsInternal(matrix3D?: Matrix3D, strokeFlag?: boolean, fastFlag?: boolean, cache?: Box, target?: Box): Box
 

@@ -1,10 +1,13 @@
-import { Plane3D, Vector3D } from '@awayjs/core';
+import { ColorTransform, IAbstractionPool, IAsset, Matrix, Matrix3D, Plane3D, Vector3D } from '@awayjs/core';
 
-import { IContainerNode } from './IContainerNode';
+import { ContainerNode } from './ContainerNode';
 
 import { IPartitionTraverser } from './IPartitionTraverser';
 import { IPartitionEntity } from '../base/IPartitionEntity';
 import { PickGroup } from '../PickGroup';
+import { PartitionBase } from './PartitionBase';
+import { EntityNode } from './EntityNode';
+import { HierarchicalProperty } from '../base/HierarchicalProperty';
 
 /**
  * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
@@ -12,31 +15,39 @@ import { PickGroup } from '../PickGroup';
  *
  * @class away.pool.IDisplayObjectNode
  */
-export interface INode
+export interface INode extends IAsset
 {
+	readonly partition: PartitionBase;
+
+	readonly pool: IAbstractionPool;
+
 	//bounds:BoundingVolumeBase;
 
-	pickObject: IPartitionEntity;
+	//pickObject: IPartitionEntity;
 
 	boundsVisible: boolean;
 
-	maskId: number;
+	readonly entity: IPartitionEntity;
 
-	getBoundsPrimitive(pickGroup: PickGroup): IPartitionEntity;
-
-	parent: IContainerNode;
+	parent: ContainerNode;
 
 	_collectionMark: number;
 
-	isInFrustum(rootEntity: IPartitionEntity, planes: Array<Plane3D>, numPlanes: number, pickGroup: PickGroup): boolean;
+	isInFrustum(rootEntity: INode, planes: Array<Plane3D>, numPlanes: number, pickGroup: PickGroup): boolean;
 
 	isRenderable(): boolean;
 
-	isVisible(): boolean;
+	isInvisible(): boolean;
 
-	isIntersectingRay(rootEntity: IPartitionEntity, rayPosition: Vector3D, rayDirection: Vector3D, pickGroup: PickGroup): boolean;
+	getMaskId(): number;
+
+	getBoundsPrimitive(pickGroup: PickGroup): EntityNode;
+
+	isIntersectingRay(rootEntity: INode, rayPosition: Vector3D, rayDirection: Vector3D, pickGroup: PickGroup): boolean;
 
 	acceptTraverser(traverser: IPartitionTraverser);
 
 	isCastingShadow(): boolean;
+
+	setParent(node: ContainerNode);
 }

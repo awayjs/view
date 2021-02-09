@@ -1,4 +1,4 @@
-import { IPartitionEntity } from '../base/IPartitionEntity';
+import { EntityNode } from './EntityNode';
 import { INode } from './INode';
 import { PartitionBase } from './PartitionBase';
 
@@ -26,5 +26,5 @@ export interface IPartitionTraverser
 	 *
 	 * @param entity
 	 */
-	applyEntity(entity: IPartitionEntity): void;
+	applyEntity(entity: EntityNode): void;
 }

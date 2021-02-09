@@ -7,8 +7,9 @@ import { INode } from '../partition/INode';
 import { PickingCollision } from './PickingCollision';
 import { PickEntity } from '../base/PickEntity';
 import { PickGroup, RaycastPickerPool } from '../PickGroup';
-import { IPickingEntity } from '../base/IPickingEntity';
 import { IPartitionEntity } from '../base/IPartitionEntity';
+import { EntityNode } from '../partition/EntityNode';
+import { ContainerNode } from '../partition/ContainerNode';
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.
@@ -18,11 +19,11 @@ import { IPartitionEntity } from '../base/IPartitionEntity';
  * @class away.pick.RaycastPicker
  */
 export class RaycastPicker extends AbstractionBase implements IPartitionTraverser {
-	private _dragEntity: IPickingEntity;
+	private _dragEntity: ContainerNode;
 
 	public readonly partition: PartitionBase;
 
-	public readonly entity: IPickingEntity;
+	public readonly entity: ContainerNode;
 
 	public readonly pickGroup: PickGroup;
 
@@ -35,11 +36,11 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	 */
 	public layeredView: boolean; //TODO: something to enable this correctly
 
-	private _rootEntity: IPickingEntity;
+	private _rootEntity: ContainerNode;
 	private _shapeFlag: boolean;
 	private _globalRayPosition: Vector3D;
 	private _globalRayDirection: Vector3D;
-	private _ignoredEntities: Array<IPickingEntity>;
+	private _ignoredEntities: Array<IPartitionEntity>;
 
 	private _entities: PickEntity[] = [];
 	private _pickers: RaycastPicker[] = [];
@@ -56,7 +57,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 
 		this.pickGroup = pool.pickGroup;
 		this.partition = partition;
-		this.entity = <IPickingEntity> partition.root;
+		this.entity = partition.rootNode;
 	}
 
 	public traverse(): void {
@@ -66,7 +67,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	}
 
 	public getTraverser(partition: PartitionBase): IPartitionTraverser {
-		if (partition.root._iIsMouseEnabled() || (<IPickingEntity> partition.root).isDragEntity()) {
+		if (!partition.rootNode.isMouseDisabled() || partition.rootNode.isDragEntity()) {
 			const traverser: RaycastPicker = this.pickGroup.getRaycastPicker(partition);
 
 			if (traverser._isIntersectingRayInternal(this._rootEntity, this._globalRayPosition, this._globalRayDirection, this._shapeFlag))
@@ -78,21 +79,21 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return this;
 	}
 
-	public get dragEntity(): IPickingEntity {
+	public get dragEntity(): ContainerNode {
 		return this._dragEntity;
 	}
 
-	public set dragEntity(entity: IPickingEntity) {
+	public set dragEntity(entity: ContainerNode) {
 		if (this._dragEntity == entity)
 			return;
 
 		if (this._dragEntity)
-			this._dragEntity._stopDrag();
+			this._dragEntity.stopDrag();
 
 		this._dragEntity = entity;
 
 		if (this._dragEntity)
-			this._dragEntity._startDrag();
+			this._dragEntity.startDrag();
 	}
 
 	/**
@@ -101,11 +102,11 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	 * @param node The Partition3DNode object to frustum-test.
 	 */
 	public enterNode(node: INode): boolean {
-		if (!node.isVisible() || node.maskId != this._rootEntity.maskId)
+		if (node.isInvisible() || node.getMaskId() != this._rootEntity.getMaskId())
 			return false;
 
-		if (node.pickObject) {
-			node.pickObject.partition.traverse(this);
+		if ((<ContainerNode> node).pickObjectNode) {
+			(<ContainerNode> node).pickObjectNode.partition.traverse(this);
 			return false;
 		}
 
@@ -122,7 +123,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	/**
 	 * @inheritDoc
 	 */
-	public _isIntersectingRayInternal(rootEntity: IPickingEntity, globalRayPosition: Vector3D, globalRayDirection: Vector3D, shapeFlag: boolean): boolean {
+	public _isIntersectingRayInternal(rootEntity: ContainerNode, globalRayPosition: Vector3D, globalRayDirection: Vector3D, shapeFlag: boolean): boolean {
 		this._rootEntity = rootEntity;
 		this._globalRayPosition = globalRayPosition;
 		this._globalRayDirection = globalRayDirection;
@@ -217,7 +218,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return colliders;
 	}
 
-	public _collectEntities(collectedEntities: PickEntity[], dragEntity: IPickingEntity): void {
+	public _collectEntities(collectedEntities: PickEntity[], dragEntity: INode): void {
 		const len: number = this._pickers.length;
 		let picker: RaycastPicker;
 		for (var i: number = 0; i < len; i++)
@@ -259,7 +260,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	//			return this.getPickingCollision(this._raycastCollector);
 	//		}
 
-	public setIgnoreList(entities: Array<IPickingEntity>): void {
+	public setIgnoreList(entities: Array<IPartitionEntity>): void {
 		this._ignoredEntities = entities;
 	}
 
@@ -273,7 +274,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	// 	this.getPartition(entity).getAbstraction(entity).pickingCollider = collider;
 	// }
 
-	private isIgnored(entity: IPickingEntity): boolean {
+	private isIgnored(entity: IPartitionEntity): boolean {
 		if (this._ignoredEntities) {
 			const len: number = this._ignoredEntities.length;
 			for (let i: number = 0; i < len; i++)
@@ -331,8 +332,8 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 			this.updatePosition(bestCollision);
 
 		if (this._dragEntity) {
-			if (this._dragEntity.assetType == '[asset MovieClip]' && this._dragEntity.adapter) {
-				(<any> this._dragEntity.adapter).setDropTarget(bestCollision ? bestCollision.entity : null);
+			if (this._dragEntity.entity.assetType == '[asset MovieClip]' && this._dragEntity.entity.adapter) {
+				(<any> this._dragEntity.entity.adapter).setDropTarget(bestCollision ? bestCollision.entity : null);
 			}
 		}
 
@@ -348,7 +349,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 			entity = this._collectedEntities[i];
 			entity.pickingCollision.rayEntryDistance = Number.MAX_VALUE;
 			if (entity.isIntersectingShape(false))
-				colliders.push(entity.entity);
+				colliders.push(entity.entity.entity);
 		}
 		return colliders;
 	}
@@ -372,8 +373,9 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	 *
 	 * @param entity
 	 */
-	public applyEntity(entity: IPickingEntity): void {
-		if (!this.isIgnored(entity)) {
+	public applyEntity(entity: EntityNode): void {
+
+		if (!this.isIgnored(entity.entity)) {
 			const pickEntity: PickEntity = entity.getAbstraction<PickEntity>(this.pickGroup);
 			this._entities.push(pickEntity);
 		}

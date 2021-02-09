@@ -1,10 +1,9 @@
-import { IAssetClass, IAbstractionPool, AssetBase, AssetEvent, IAbstractionClass, IAsset } from '@awayjs/core';
+import { IAssetClass, IAbstractionPool, AssetBase, AssetEvent, IAbstractionClass, IAsset, AbstractionBase, UUID, AbstractMethodError } from '@awayjs/core';
 
 import { IPartitionEntity } from '../base/IPartitionEntity';
 
 import { IPartitionTraverser } from './IPartitionTraverser';
-import { IContainerNode } from './IContainerNode';
-import { IEntityNodeClass } from './IEntityNodeClass';
+import { ContainerNode } from './ContainerNode';
 import { EntityNode } from './EntityNode';
 import { INode } from './INode';
 
@@ -12,15 +11,13 @@ import { INode } from './INode';
  * @class away.partition.Partition
  */
 export class PartitionBase extends AssetBase implements IAbstractionPool {
-	private static _abstractionClassPool: Object = new Object();
+	private static _abstractionClassPool: Record<string, IAbstractionClass> = {};
 
 	private _invalid: boolean;
 	private _children: Array<PartitionBase> = new Array<PartitionBase>();
-	private _updateQueue: Object = {};
+	private _updateQueue: Record<number, IPartitionEntity> = {};
 
-	private _scene: IPartitionEntity;
-	protected _root: IPartitionEntity;
-	protected _rootNode: IContainerNode;
+	protected _rootNode: ContainerNode;
 	protected _parent: PartitionBase;
 
 	public isUpdated: boolean = false;
@@ -29,49 +26,39 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 		return this._parent;
 	}
 
-	public get root(): IPartitionEntity {
-		return this._root;
+	public get rootNode(): ContainerNode {
+		return <ContainerNode> this._rootNode;
 	}
 
-	public get scene(): IPartitionEntity {
-		return this._scene;
-	}
-
-	constructor(root: IPartitionEntity, isScene: boolean = false) {
+	constructor(rootNode: ContainerNode) {
 		super();
 
-		this._root = root;
-		this._root.addEventListener(AssetEvent.CLEAR, (event: AssetEvent) => this._onRootClear(event));
 
-		if (isScene)
-			this._scene = root;
+		this._rootNode = rootNode;
+
+		this._parent = rootNode.parent?.partition;
+
+		if (this._parent)
+			this._parent.addChild(this);	
 	}
 
-	public addChild(child: PartitionBase): PartitionBase {
-		if (child && child.parent)
-			child.parent.removeChildInternal(child);
-
+	public addChild(child: PartitionBase): void {
 		this._children.push(child);
 
-		child._setParent(this);
-
-		return child;
+		// this.updateNode(child.rootNode);
+		if (!this._invalid)
+			this.invalidate();
 	}
 
-	public removeChild(child: PartitionBase): PartitionBase {
-		this.removeChildInternal(child);
+	public removeChild(child: PartitionBase): void {
 
-		child._setParent(null);
+		child.clear();
 
-		return child;
-	}
+		this._children.splice(this._children.indexOf(child), 1)[0];
 
-	public removeChildInternal(child: PartitionBase): PartitionBase {
-		return this._children.splice(this._children.indexOf(child), 1)[0];
-	}
-
-	public getPartition(entity: IPartitionEntity): PartitionBase {
-		return null;
+		// this._rootNode.removeNode(child.rootNode);
+		if (!this._invalid)
+			this.invalidate();
 	}
 
 	public traverse(traverser: IPartitionTraverser): void {
@@ -97,13 +84,13 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	}
 
 	public updateNode(node: INode): void {
-		const targetNode: IContainerNode = this.findParentForNode(node);
+		const targetNode: ContainerNode = this.findParentForNode(node);
 
-		if (targetNode && node.parent != targetNode) {
-			if (node.parent)
-				node.parent.iRemoveNode(node);
-			targetNode.iAddNode(node);
-		}
+		// if (targetNode && node.parent != targetNode) {
+		// 	if (node.parent)
+		// 		node.parent.removeNode(node);
+		// 	targetNode.addNode(node);
+		// }
 	}
 
 	public clearEntity(entity: IPartitionEntity): void {
@@ -112,14 +99,8 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 
 		delete this._updateQueue[entity.id];
 
-		this.clearNode(entity.getAbstraction<EntityNode>(this));
-	}
-
-	public clearNode(node: INode) {
-		if (node.parent) {
-			node.parent.iRemoveNode(node);
-			node.parent = null;
-		}
+		// const node: INode = entity.getAbstraction<EntityNode>(this);
+		// node.parent.removeNode(node);
 	}
 
 	/**
@@ -127,7 +108,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	 * @param entity
 	 * @returns {away.partition.NodeBase}
 	 */
-	public findParentForNode(node: INode): IContainerNode {
+	public findParentForNode(node: INode): ContainerNode {
 		return this._rootNode;
 	}
 
@@ -148,39 +129,26 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 			this._parent.invalidate();
 	}
 
+	public clear(): void {
+		super.clear();
+
+		for (let i = 0; i < this._children.length; i++)
+			this._children[i].clear();
+	}
+
 	public dispose(): void {
 	}
 
-	public _setParent(parent: PartitionBase): void {
-		if (this._parent) {
-			this._parent.clearNode(this._rootNode);
-			this._parent.invalidate();
-		}
+	// public _setScene(scene: IPartitionEntity): void {
+	// 	if (this._scene == scene)
+	// 		return;
 
-		this._parent = parent;
+	// 	this._scene = scene;
 
-		if (parent) {
-			parent.updateNode(this._rootNode);
-			parent.invalidate();
-		}
-
-		this._setScene(parent ? parent.scene : null);
-	}
-
-	public _setScene(scene: IPartitionEntity): void {
-		if (this._scene == scene)
-			return;
-
-		this._scene = scene;
-
-		const len: number = this._children.length;
-		for (let i: number = 0; i < len; ++i)
-			this._children[i]._setScene(scene);
-	}
-
-	public _onRootClear(event: AssetEvent): void {
-		this.clear();
-	}
+	// 	const len: number = this._children.length;
+	// 	for (let i: number = 0; i < len; ++i)
+	// 		this._children[i]._setScene(scene);
+	// }
 
 	public requestAbstraction(asset: IAsset): IAbstractionClass {
 		return PartitionBase._abstractionClassPool[asset.assetType];
@@ -190,7 +158,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	 *
 	 * @param imageObjectClass
 	 */
-	public static registerAbstraction(entityNodeClass: IEntityNodeClass, assetClass: IAssetClass): void {
-		PartitionBase._abstractionClassPool[assetClass.assetType] = entityNodeClass;
+	public static registerAbstraction(abstractionClass: IAbstractionClass, assetClass: IAssetClass): void {
+		PartitionBase._abstractionClassPool[assetClass.assetType] = abstractionClass;
 	}
 }

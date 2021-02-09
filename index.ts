@@ -8,8 +8,12 @@ export {IEntityTraverser} from "./lib/base/IEntityTraverser";
 export {_IPick_PickableClass} from "./lib/base/_IPick_PickableClass";
 export {_Pick_PickableBase} from "./lib/base/_Pick_PickableBase";
 export {IPartitionEntity} from "./lib/base/IPartitionEntity";
+export {IPartitionContainer} from "./lib/base/IPartitionContainer";
 export {IPickingEntity} from "./lib/base/IPickingEntity";
 export {ITabEntity} from "./lib/base/ITabEntity";
+export {HierarchicalProperty} from "./lib/base/HierarchicalProperty";
+export {OrientationMode} from "./lib/base/OrientationMode";
+export {AlignmentMode} from "./lib/base/AlignmentMode";
 
 export {BoundingBox} from "./lib/bounds/BoundingBox";
 export {BoundingSphere} from "./lib/bounds/BoundingSphere";
@@ -20,15 +24,16 @@ export {NullBounds} from "./lib/bounds/NullBounds";
 
 export {BoundsPickerEvent} from "./lib/events/BoundsPickerEvent";
 export {ViewEvent} from "./lib/events/ViewEvent";
+export {ContainerEvent} from "./lib/events/ContainerEvent";
+export {HeirarchicalEvent} from "./lib/events/HeirarchicalEvent";
 
-export {IContainerNode} from "./lib/partition/IContainerNode";
 export {INode} from "./lib/partition/INode";
 export {IPartitionTraverser} from "./lib/partition/IPartitionTraverser";
 export {BasicPartition} from "./lib/partition/BasicPartition";
 export {EntityNode} from "./lib/partition/EntityNode";
-export {IEntityNodeClass} from "./lib/partition/IEntityNodeClass";
-export {NodeBase} from "./lib/partition/NodeBase";
+export {ContainerNode, NodePool} from "./lib/partition/ContainerNode";
 export {PartitionBase} from "./lib/partition/PartitionBase";
+export {IPartitionClass} from "./lib/partition/IPartitionClass";
 
 export {PickingCollision} from "./lib/pick/PickingCollision";
 export {RaycastPicker} from "./lib/pick/RaycastPicker";

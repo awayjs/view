@@ -1,4 +1,4 @@
-import { AbstractionBase, EventDispatcher, IAbstractionClass, IAbstractionPool, IAsset, IAssetClass } from '@awayjs/core';
+import { AbstractionBase, EventDispatcher, IAbstractionClass, IAbstractionPool, IAsset, IAssetClass, UUID } from '@awayjs/core';
 
 import { PickEntity } from './base/PickEntity';
 import { RaycastPicker } from './pick/RaycastPicker';
@@ -30,7 +30,7 @@ export class PickGroup extends EventDispatcher implements IAbstractionPool {
 	 */
 	constructor(view: View) {
 		super();
-		this.id = AbstractionBase.ID_COUNT++;
+		this.id = UUID.Next();
 		this.view = view;
 		this._raycastPickerPool = new RaycastPickerPool(this);
 		this._boundsPickerPool = new BoundsPickerPool(this);
@@ -73,7 +73,7 @@ export class RaycastPickerPool implements IAbstractionPool {
 	public readonly id: number;
 
 	constructor(pickGroup: PickGroup) {
-		this.id = AbstractionBase.ID_COUNT++;
+		this.id = UUID.Next();
 		this.pickGroup = pickGroup;
 	}
 
@@ -88,7 +88,7 @@ export class BoundsPickerPool implements IAbstractionPool {
 	public readonly id: number;
 
 	constructor(pickGroup: PickGroup) {
-		this.id = AbstractionBase.ID_COUNT++;
+		this.id = UUID.Next();
 		this.pickGroup = pickGroup;
 	}
 
@@ -102,7 +102,7 @@ class TabPickerPool implements IAbstractionPool {
 	public readonly id: number;
 
 	constructor() {
-		this.id = AbstractionBase.ID_COUNT++;
+		this.id = UUID.Next();
 	}
 
 	public requestAbstraction(assetClass: IAssetClass): IAbstractionClass {

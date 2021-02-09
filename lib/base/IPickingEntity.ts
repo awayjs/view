@@ -8,11 +8,5 @@ export interface IPickingEntity extends IPartitionEntity
 
 	tabEnabled: boolean;
 
-	_startDrag(): void;
-
-	_stopDrag(): void;
-
-	isDragEntity(): boolean;
-
 	setFocus(value: boolean, fromMouseDown?: boolean, sendSoftKeyEvent?: boolean);
 }

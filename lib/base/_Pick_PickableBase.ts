@@ -7,6 +7,8 @@ import { PickGroup } from '../PickGroup';
 import { PickingCollision } from '../pick/PickingCollision';
 
 import { View } from '../View';
+import { EntityNode } from '../partition/EntityNode';
+import { ContainerNode } from '../partition/ContainerNode';
 
 /**
  * @class RenderableListItem
@@ -18,7 +20,7 @@ export class _Pick_PickableBase extends AbstractionBase {
 	/**
 	 *
 	 */
-	public sourceEntity: IPartitionEntity;
+	public sourceEntity: ContainerNode;
 
 	/**
 	 *

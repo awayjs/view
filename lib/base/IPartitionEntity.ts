@@ -1,42 +1,47 @@
-import { Transform, ColorTransform, Matrix3D, IAsset } from '@awayjs/core';
+import { Transform, ColorTransform, Matrix3D, IAsset, IAbstractionClass } from '@awayjs/core';
 
 import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
+import { ContainerNode } from '../partition/ContainerNode';
+import { IPartitionClass } from '../partition/IPartitionClass';
 import { PartitionBase } from '../partition/PartitionBase';
-import { PickGroup } from '../PickGroup';
+import { BoundsPicker } from '../pick/BoundsPicker';
 import { IEntityTraverser } from './IEntityTraverser';
+import { IPartitionContainer } from './IPartitionContainer';
 
 export interface IPartitionEntity extends IAsset
 {
-	parent: IPartitionEntity;
+	partitionClass:IPartitionClass;
 
-	isAncestor(entity: IPartitionEntity): boolean;
+	parent: IPartitionContainer;
 
-	isDescendant(entity: IPartitionEntity): boolean;
+	pickObjectFromTimeline: boolean;
+
+	//isAncestor(entity: IPartitionEntity): boolean;
+
+	//isDescendant(entity: IPartitionEntity): boolean;
 
 	_iInternalUpdate(): void;
 
-	maskId: number;
+	//readonly maskId: number;
 
-	_iAssignedColorTransform(): ColorTransform;
+	//_iAssignedColorTransform(): ColorTransform;
 
-	maskOwners: Array<IPartitionEntity>;
+	//maskOwners: Array<IPartitionEntity>;
 
-	maskMode: boolean;
+	//maskMode: boolean;
 
 	_registrationMatrix3D: Matrix3D;
 
 	transform: Transform;
 
-	masks: Array<IPartitionEntity>;
-
-	partition: PartitionBase;
+	//masks: Array<IPartitionEntity>;
 
 	/**
 	 *
 	 */
 	defaultBoundingVolume: BoundingVolumeType;
 
-	pickObject: IPartitionEntity;
+	//pickObject: IPartitionEntity;
 
 	/**
 	 *
@@ -46,7 +51,7 @@ export interface IPartitionEntity extends IAsset
 	/**
 	 *
 	 */
-	getBoundsPrimitive(pickGroup: PickGroup): IPartitionEntity;
+	getBoundsPrimitive(picker: BoundsPicker): IPartitionEntity;
 
 	/**
 	 *
@@ -56,12 +61,12 @@ export interface IPartitionEntity extends IAsset
 	/**
 	 * @internal
 	 */
-	_iIsMouseEnabled(): boolean;
+	mouseEnabled: boolean;
 
 	/**
 	 * @internal
 	 */
-	_iIsVisible(): boolean;
+	//visible: boolean;
 
 	/**
 	 *

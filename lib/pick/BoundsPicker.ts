@@ -22,6 +22,8 @@ import { BoundingSphere } from '../bounds/BoundingSphere';
 import { IBoundsPicker } from './IBoundsPicker';
 import { BoundsPickerEvent } from '../events/BoundsPickerEvent';
 import { PickEntity } from '../base/PickEntity';
+import { EntityNode } from '../partition/EntityNode';
+import { ContainerNode } from '../partition/ContainerNode';
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.
@@ -34,9 +36,9 @@ import { PickEntity } from '../base/PickEntity';
  */
 export class BoundsPicker extends AbstractionBase implements IPartitionTraverser, IBoundsPicker {
 	protected _partition: PartitionBase;
-	protected _entity: IPartitionEntity;
+	protected _entity: ContainerNode;
 
-	private _boundingVolumePools: Object = new Object();
+	private _boundingVolumePools: Partial<Record<BoundingVolumeType, BoundingVolumePool>> = {};
 
 	public get partition(): PartitionBase {
 		return this._partition;
@@ -46,7 +48,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
      *
      * @returns {IPartitionEntity}
      */
-	public get entity(): IPartitionEntity {
+	public get entity(): ContainerNode {
 		return this._entity;
 	}
 
@@ -73,7 +75,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		// if (this._entity._registrationMatrix3D)
 		// 	return box.width*this._entity.scaleX*this._entity._registrationMatrix3D._rawData[0];
 
-		return box.width * this._entity.transform.scale.x;
+		return box.width * this._entity.entity.transform.scale.x;
 	}
 
 	public set width(val: number) {
@@ -85,7 +87,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 		//this._updateAbsoluteDimension();
 
-		this._entity.transform.scaleTo(val / box.width, this._entity.transform.scale.y, this._entity.transform.scale.z);
+		this._entity.entity.transform.scaleTo(val / box.width, this._entity.entity.transform.scale.y, this._entity.entity.transform.scale.z);
 	}
 
 	/**
@@ -107,7 +109,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		// if (this._entity._registrationMatrix3D)
 		// 	return box.height*this._entity.scaleY*this._entity._registrationMatrix3D._rawData[5];
 
-		return box.height * this._entity.transform.scale.y;
+		return box.height * this._entity.entity.transform.scale.y;
 	}
 
 	public set height(val: number) {
@@ -119,8 +121,8 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 		//this._updateAbsoluteDimension();
 
-		const scale = this._entity.transform.scale;
-		this._entity.transform.scaleTo(scale.x, val / box.height, scale.z);
+		const scale = this._entity.entity.transform.scale;
+		this._entity.entity.transform.scaleTo(scale.x, val / box.height, scale.z);
 	}
 
 	/**
@@ -142,7 +144,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		// if (this._entity._registrationMatrix3D)
 		// 	return  box.depth*this._entity.scaleZ*this._entity._registrationMatrix3D._rawData[10];
 
-		return box.depth * this._entity.transform.scale.z;
+		return box.depth * this._entity.entity.transform.scale.z;
 	}
 
 	public set depth(val: number) {
@@ -154,7 +156,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 		//this._updateAbsoluteDimension();
 
-		this._entity.transform.scaleTo(this._entity.transform.scale.x, this._entity.transform.scale.y, val / box.depth);
+		this._entity.entity.transform.scaleTo(this._entity.entity.transform.scale.x, this._entity.entity.transform.scale.y, val / box.depth);
 	}
 
 	constructor(partition: PartitionBase, pool: BoundsPickerPool) {
@@ -162,7 +164,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 		this._pickGroup = pool.pickGroup;
 		this._partition = partition;
-		this._entity = <IPartitionEntity> partition.root;
+		this._entity = partition.rootNode;
 	}
 
 	public onInvalidate(event: AssetEvent): void {
@@ -197,12 +199,12 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		return true;
 	}
 
-	public getBoundingVolume(target: IPartitionEntity = null, type: BoundingVolumeType = null): BoundingVolumeBase {
+	public getBoundingVolume(target: ContainerNode = null, type: BoundingVolumeType = null): BoundingVolumeBase {
 		if (target == null)
 			target = this._entity;
 
 		if (type == null)
-			type = this._entity.defaultBoundingVolume;
+			type = this._entity.entity.defaultBoundingVolume;
 
 		const pool: BoundingVolumePool = this._boundingVolumePools[type]
 									|| (this._boundingVolumePools[type] = new BoundingVolumePool(this, type));
@@ -210,11 +212,11 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		return <BoundingVolumeBase> target.getAbstraction(pool);
 	}
 
-	public getBoxBounds(targetCoordinateSpace: IPartitionEntity = null, strokeFlag: boolean = false, fastFlag: boolean = false): Box {
+	public getBoxBounds(targetCoordinateSpace: ContainerNode = null, strokeFlag: boolean = false, fastFlag: boolean = false): Box {
 		return (<BoundingBox> this.getBoundingVolume(targetCoordinateSpace, strokeFlag ? (fastFlag ? BoundingVolumeType.BOX_BOUNDS_FAST : BoundingVolumeType.BOX_BOUNDS) : (fastFlag ? BoundingVolumeType.BOX_FAST : BoundingVolumeType.BOX))).getBox();
 	}
 
-	public getSphereBounds(targetCoordinateSpace: IPartitionEntity = null, strokeFlag: boolean = false, fastFlag: boolean = false): Sphere {
+	public getSphereBounds(targetCoordinateSpace: ContainerNode = null, strokeFlag: boolean = false, fastFlag: boolean = false): Sphere {
 		return (<BoundingSphere> this.getBoundingVolume(targetCoordinateSpace, strokeFlag ? (fastFlag ? BoundingVolumeType.SPHERE_BOUNDS_FAST : BoundingVolumeType.SPHERE_BOUNDS) : (fastFlag ? BoundingVolumeType.SPHERE_FAST : BoundingVolumeType.SPHERE))).getSphere();
 	}
 
@@ -222,8 +224,8 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		return this._hitTestPointInternal(this._entity, x, y, shapeFlag, false);
 	}
 
-	public _hitTestPointInternal(rootEntity: IPartitionEntity, x: number, y: number, shapeFlag: boolean = false, maskFlag: boolean = false): boolean {
-		if (this._entity.maskId != -1 && (!maskFlag || !shapeFlag))//allow masks for bounds hit tests
+	public _hitTestPointInternal(rootEntity: INode, x: number, y: number, shapeFlag: boolean = false, maskFlag: boolean = false): boolean {
+		if (this._entity.getMaskId() != -1 && (!maskFlag || !shapeFlag))//allow masks for bounds hit tests
 			return false;
 
 		if (this._invalid)
@@ -231,7 +233,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 		//set local tempPoint for later reference
 		const tempPoint: Point = new Point(x, y);
-		this._entity.transform.globalToLocal(tempPoint, tempPoint);
+		this._entity.globalToLocal(tempPoint, tempPoint);
 
 		//early out for box test
 		const box: Box = this.getBoxBounds(null, false, true);
@@ -240,7 +242,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 			return false;
 
 		//early out for non-shape tests
-		if (!shapeFlag || this._entity.assetType == '[asset TextField]' || this._entity.assetType == '[asset Billboard]')
+		if (!shapeFlag || this._entity.entity.assetType == '[asset TextField]' || this._entity.entity.assetType == '[asset Billboard]')
 			return true;
 
 		const numPickers: number = this._boundsPickers.length;
@@ -296,9 +298,9 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 					else
 						m.identity();
 
-					m.prepend(this._boundsPickers[i].entity.transform.matrix3D);
-					if (this._boundsPickers[i].entity._registrationMatrix3D)
-						m.prepend(this._boundsPickers[i].entity._registrationMatrix3D);
+					m.prepend(this._boundsPickers[i].entity.entity.transform.matrix3D);
+					if (this._boundsPickers[i].entity.entity._registrationMatrix3D)
+						m.prepend(this._boundsPickers[i].entity.entity._registrationMatrix3D);
 
 					target = this._boundsPickers[i]._getBoxBoundsInternal(m, strokeFlag, fastFlag, cache, target);
 				} else {
@@ -336,9 +338,9 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 					else
 						m.identity();
 
-					m.prepend(this._boundsPickers[i].entity.transform.matrix3D);
-					if (this._boundsPickers[i].entity._registrationMatrix3D)
-						m.prepend(this._boundsPickers[i].entity._registrationMatrix3D);
+					m.prepend(this._boundsPickers[i].entity.entity.transform.matrix3D);
+					if (this._boundsPickers[i].entity.entity._registrationMatrix3D)
+						m.prepend(this._boundsPickers[i].entity.entity._registrationMatrix3D);
 
 					target = this._boundsPickers[i]._getSphereBoundsInternal(center, m, strokeFlag, fastFlag, cache, target);
 				} else {
@@ -361,7 +363,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		return this._isInFrustumInternal(this._entity, planes, numPlanes);
 	}
 
-	public _isInFrustumInternal(rootEntity: IPartitionEntity, planes: Array<Plane3D>, numPlanes: number): boolean {
+	public _isInFrustumInternal(rootEntity: ContainerNode, planes: Array<Plane3D>, numPlanes: number): boolean {
 		return this.getBoundingVolume(rootEntity).isInFrustum(planes, numPlanes);
 	}
 
@@ -382,7 +384,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	 *
 	 * @param entity
 	 */
-	public applyEntity(entity: IPartitionEntity): void {
+	public applyEntity(entity: EntityNode): void {
 		this._boundsPickers.push(entity.getAbstraction<PickEntity>(this._pickGroup));
 	}
 }
