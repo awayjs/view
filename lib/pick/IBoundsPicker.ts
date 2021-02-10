@@ -9,7 +9,7 @@ import { INode } from '../partition/INode';
  */
 export interface IBoundsPicker extends IEventDispatcher
 {
-	entity: ContainerNode;
+	node: ContainerNode;
 
 	_hitTestPointInternal(rootEntity: INode, x: number, y: number, shapeFlag?: boolean, maskFlag?: boolean): boolean
 

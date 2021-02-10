@@ -72,7 +72,7 @@ export class EntityNode extends AbstractionBase implements INode {
 	}
 
 	public onClear(event: AssetEvent): void {
-		(<PartitionBase> this._pool).clearEntity((<IPartitionEntity> this._asset));
+		(<PartitionBase> this._pool).clearEntity(this);
 
 		super.onClear(event);
 

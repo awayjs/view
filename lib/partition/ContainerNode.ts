@@ -89,14 +89,14 @@ export class ContainerNode extends AbstractionBase {
 		return this._parent;
 	}
 
-	public readonly entity: IPartitionContainer;
+	public readonly container: IPartitionContainer;
 
 	public get partition(): PartitionBase {
-		if (!this._partition || this._partitionClass != this.entity.partitionClass) {
-			this._partitionClass = this.entity.partitionClass;
+		if (!this._partition || this._partitionClass != this.container.partitionClass) {
+			this._partitionClass = this.container.partitionClass;
 
-			this._partition = this.entity.partitionClass
-				? new this.entity.partitionClass(this)
+			this._partition = this.container.partitionClass
+				? new this.container.partitionClass(this)
 				: this._parent?.partition
 				|| new (<NodePool> this._pool).partitionClass(this);
 		}
@@ -105,8 +105,8 @@ export class ContainerNode extends AbstractionBase {
 	}
 
 	public get pickObjectNode(): ContainerNode {
-		if (this._pickObject != this.entity.pickObject) {
-			this._pickObject = this.entity.pickObject;
+		if (this._pickObject != this.container.pickObject) {
+			this._pickObject = this.container.pickObject;
 
 			if (this._pickObject) {
 				this._pickObject.partitionClass = BasicPartition;
@@ -137,10 +137,10 @@ export class ContainerNode extends AbstractionBase {
 	 */
 	public getPosition(): Vector3D {
 		if (this._positionDirty) {
-			if (this.entity._registrationMatrix3D && this.entity.alignmentMode == AlignmentMode.REGISTRATION_POINT) {
-				this._position.x = -this.entity._registrationMatrix3D._rawData[12];
-				this._position.y = -this.entity._registrationMatrix3D._rawData[13];
-				this._position.z = -this.entity._registrationMatrix3D._rawData[14];
+			if (this.container._registrationMatrix3D && this.container.alignmentMode == AlignmentMode.REGISTRATION_POINT) {
+				this._position.x = -this.container._registrationMatrix3D._rawData[12];
+				this._position.y = -this.container._registrationMatrix3D._rawData[13];
+				this._position.z = -this.container._registrationMatrix3D._rawData[14];
 				this._position = this.getMatrix3D().transformVector(
 					this._position,
 					this._position);
@@ -179,31 +179,31 @@ export class ContainerNode extends AbstractionBase {
 
 	public getMatrix3D(): Matrix3D {
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.SCENE_TRANSFORM) {
-			this._matrix3D.copyFrom(this.entity.transform.matrix3D);
+			this._matrix3D.copyFrom(this.container.transform.matrix3D);
 
-			if (this.entity._registrationMatrix3D) {
+			if (this.container._registrationMatrix3D) {
 	
-				this._matrix3D.prepend(this.entity._registrationMatrix3D);
+				this._matrix3D.prepend(this.container._registrationMatrix3D);
 	
-				if (this.entity.alignmentMode != AlignmentMode.REGISTRATION_POINT) {
+				if (this.container.alignmentMode != AlignmentMode.REGISTRATION_POINT) {
 					this._matrix3D.appendTranslation(
-						-this.entity._registrationMatrix3D._rawData[12] * this.entity.transform.scale.x,
-						-this.entity._registrationMatrix3D._rawData[13] * this.entity.transform.scale.y,
-						-this.entity._registrationMatrix3D._rawData[14] * this.entity.transform.scale.z);
+						-this.container._registrationMatrix3D._rawData[12] * this.container.transform.scale.x,
+						-this.container._registrationMatrix3D._rawData[13] * this.container.transform.scale.y,
+						-this.container._registrationMatrix3D._rawData[14] * this.container.transform.scale.z);
 				}
 			}
 	
 			if (this._parent)
 				this._matrix3D.append(this._parent.getMatrix3D());
 	
-			if (this.entity.scrollRect)
-				this._matrix3D.prependTranslation(-this.entity.scrollRect.x, -this.entity.scrollRect.y, 0);
+			if (this.container.scrollRect)
+				this._matrix3D.prependTranslation(-this.container.scrollRect.x, -this.container.scrollRect.y, 0);
 	
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.SCENE_TRANSFORM;
 	
 			//TODO: refactor controller API
-			if (this.entity['_iController'])
-				this.entity['_iController'].updateController();
+			if (this.container['_iController'])
+				this.container['_iController'].updateController();
 		}
 
 		return this._matrix3D;
@@ -215,21 +215,21 @@ export class ContainerNode extends AbstractionBase {
 	 */
 	public getRenderMatrix3D(cameraTransform: Matrix3D): Matrix3D {
 
-		if (this.entity.orientationMode == OrientationMode.CAMERA_PLANE) {
+		if (this.container.orientationMode == OrientationMode.CAMERA_PLANE) {
 			const comps: Array<Vector3D> = cameraTransform.decompose();
 			comps[0].copyFrom(this.getPosition());
-			comps[3].copyFrom(this.entity.transform.scale);
+			comps[3].copyFrom(this.container.transform.scale);
 			this._orientationMatrix.recompose(comps);
 
 			//add in case of registration point
-			if (this.entity._registrationMatrix3D) {
-				this._orientationMatrix.prepend(this.entity._registrationMatrix3D);
+			if (this.container._registrationMatrix3D) {
+				this._orientationMatrix.prepend(this.container._registrationMatrix3D);
 
-				if (this.entity.alignmentMode != AlignmentMode.REGISTRATION_POINT)
+				if (this.container.alignmentMode != AlignmentMode.REGISTRATION_POINT)
 					this._orientationMatrix.appendTranslation(
-						-this.entity._registrationMatrix3D._rawData[12] * this.entity.transform.scale.x,
-						-this.entity._registrationMatrix3D._rawData[13] * this.entity.transform.scale.y,
-						-this.entity._registrationMatrix3D._rawData[14] * this.entity.transform.scale.z);
+						-this.container._registrationMatrix3D._rawData[12] * this.container.transform.scale.x,
+						-this.container._registrationMatrix3D._rawData[13] * this.container.transform.scale.y,
+						-this.container._registrationMatrix3D._rawData[14] * this.container.transform.scale.z);
 			}
 
 			return this._orientationMatrix;
@@ -243,15 +243,15 @@ export class ContainerNode extends AbstractionBase {
 			if (!this._colorTransform)
 				this._colorTransform = new ColorTransform();
 
-			if (this.entity.inheritColorTransform && this._parent && this._parent.getColorTransform()) {
+			if (this.container.inheritColorTransform && this._parent && this._parent.getColorTransform()) {
 				this._colorTransform.copyFrom(this._parent.getColorTransform());
 
-				this._colorTransform.prepend(this.entity.transform.colorTransform);
+				this._colorTransform.prepend(this.container.transform.colorTransform);
 			} else {
-				this._colorTransform.copyFrom(this.entity.transform.colorTransform);
+				this._colorTransform.copyFrom(this.container.transform.colorTransform);
 			}
 
-			if (this.entity.blendMode === BlendMode.OVERLAY) {
+			if (this.container.blendMode === BlendMode.OVERLAY) {
 				// apply 0.5 alpha for object with `overlay` because we not support it now
 				this._colorTransform.alphaMultiplier *= 0.5;
 			}
@@ -268,8 +268,8 @@ export class ContainerNode extends AbstractionBase {
 	 */
 	public getMaskId(): number {
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.MASK_ID) {
-			this._maskId = (this.entity.maskId != -1)
-			? this.entity.maskId
+			this._maskId = (this.container.maskId != -1)
+			? this.container.maskId
 			: (this._parent)
 				? this._parent.getMaskId()
 				: -1;
@@ -285,9 +285,9 @@ export class ContainerNode extends AbstractionBase {
 		if (update) {
 			this._masks.length = 0;
 
-			if (this.entity.masks)
-				for (let i = 0; i < this.entity.masks.length; i++)
-					this._masks.push(this.pool.getNode(this.entity.masks[i]).partition.rootNode);
+			if (this.container.masks)
+				for (let i = 0; i < this.container.masks.length; i++)
+					this._masks.push(this.pool.getNode(this.container.masks[i]).partition.rootNode);
 		}
 
 		return this._masks;
@@ -419,12 +419,12 @@ export class ContainerNode extends AbstractionBase {
 		this._onEntityClear
 			= (event: ContainerEvent) => this.clearEntity(event.entity);
 		
-		this.entity = container;
-		this.entity.addEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onHierarchicalInvalidate);
-		this.entity.addEventListener(ContainerEvent.ADD_CHILD_AT, this._onAddChildAt);
-		this.entity.addEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onRemoveChildAt);
-		this.entity.addEventListener(ContainerEvent.INVALIDATE_ENTITY, this._onEntityInvalidate);
-		this.entity.addEventListener(ContainerEvent.CLEAR_ENTITY, this._onEntityClear);
+		this.container = container;
+		this.container.addEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onHierarchicalInvalidate);
+		this.container.addEventListener(ContainerEvent.ADD_CHILD_AT, this._onAddChildAt);
+		this.container.addEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onRemoveChildAt);
+		this.container.addEventListener(ContainerEvent.INVALIDATE_ENTITY, this._onEntityInvalidate);
+		this.container.addEventListener(ContainerEvent.CLEAR_ENTITY, this._onEntityClear);
 
 		for (let i: number = 0; i < container.numChildren; ++i)
 			this.addChildAt(container.getChildAt(i).getAbstraction<ContainerNode>(this.pool), this._numChildNodes);
@@ -438,18 +438,18 @@ export class ContainerNode extends AbstractionBase {
 	public onClear(event: AssetEvent): void {
 		super.onInvalidate(event);
 
-		this.entity.removeEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onHierarchicalInvalidate);
-		this.entity.removeEventListener(ContainerEvent.ADD_CHILD_AT, this._onAddChildAt);
-		this.entity.removeEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onRemoveChildAt);
-		this.entity.removeEventListener(ContainerEvent.INVALIDATE_ENTITY, this._onEntityInvalidate);
-		this.entity.removeEventListener(ContainerEvent.CLEAR_ENTITY, this._onEntityClear);
+		this.container.removeEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onHierarchicalInvalidate);
+		this.container.removeEventListener(ContainerEvent.ADD_CHILD_AT, this._onAddChildAt);
+		this.container.removeEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onRemoveChildAt);
+		this.container.removeEventListener(ContainerEvent.INVALIDATE_ENTITY, this._onEntityInvalidate);
+		this.container.removeEventListener(ContainerEvent.CLEAR_ENTITY, this._onEntityClear);
 	}
 
 	public onInvalidate(event: AssetEvent): void {
 		super.onInvalidate(event);
 
-		if (this.entity.isEntity())
-			this.invalidateEntity(this.entity);
+		if (this.container.isEntity())
+			this.invalidateEntity(this.container);
 	}
 	/**
 	 *
@@ -471,7 +471,7 @@ export class ContainerNode extends AbstractionBase {
 	 */
 	public isInvisible(): boolean {
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.VISIBLE) {
-			this._invisible = !this.entity.visible || this.parent?.isInvisible();
+			this._invisible = !this.container.visible || this.parent?.isInvisible();
 
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.VISIBLE;
 		}
@@ -564,19 +564,19 @@ export class ContainerNode extends AbstractionBase {
 
 	private invalidateEntity(entity: IPartitionEntity): void {
 		if (this._entityNode == null) {
-			this._entityNode = entity.getAbstraction<EntityNode>(this._partition);
+			this._entityNode = entity.getAbstraction<EntityNode>(this.partition);
 			this._entityNode.setParent(this);
 		}
 
-		this._partition.invalidateEntity(entity);
+		this._partition.invalidateEntity(this._entityNode);
 	}
 
 	public clearEntity(entity: IPartitionEntity): void {
 		if (this._entityNode != null) {
 			this._entityNode.setParent(null);
-			this._entityNode = null;
+			this._partition.clearEntity(this._entityNode);
 
-			this._partition.clearEntity(entity);
+			this._entityNode = null;
 		}
 	}
 
@@ -595,12 +595,12 @@ export class ContainerNode extends AbstractionBase {
 
 	public isMouseDisabled(): boolean
 	{
-		return !this.entity.mouseEnabled || this.parent?.isMouseChildrenDisabled();
+		return !this.container.mouseEnabled || this.parent?.isMouseChildrenDisabled();
 	}
 
 	public isMouseChildrenDisabled(): boolean {
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.MOUSE_ENABLED) {
-			this._mouseChildrenDisabled = !this.entity.mouseChildren || this.parent?.isMouseChildrenDisabled();
+			this._mouseChildrenDisabled = !this.container.mouseChildren || this.parent?.isMouseChildrenDisabled();
 
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.MOUSE_ENABLED;
 		}
@@ -643,19 +643,19 @@ export class ContainerNode extends AbstractionBase {
 			this.dispatchEvent(this._invalidateMatrix3DEvent
 				|| (this._invalidateMatrix3DEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_MATRIX3D)));
 
-			if (this.entity.isEntity())
-				this.invalidateEntity(this.entity);
+			if (this.container.isEntity())
+				this.invalidateEntity(this.container);
 		}
 	}
 
 	public setParent(parent: ContainerNode): void {
 
 		if (!parent) {
-			if (this._parent.partition != this._partition)
-				this._parent.partition.removeChild(this._partition);
+			if (this._parent.partition != this.partition)
+				this._parent.partition.removeChild(this.partition);
 
-			if (this.entity.isEntity())
-				this.clearEntity(this.entity);
+			if (this.container.isEntity())
+				this.clearEntity(this.container);
 
 			this.clear();
 		}
@@ -664,10 +664,10 @@ export class ContainerNode extends AbstractionBase {
 		
 		if (this._parent) {
 			if (this._parent.partition != this.partition)
-				this._parent.partition.addChild(this._partition);				
+				this._parent.partition.addChild(this.partition);				
 
-			if (this.entity.isEntity())
-				this.invalidateEntity(this.entity);
+			if (this.container.isEntity())
+				this.invalidateEntity(this.container);
 		}
 
 		this.invalidateHierarchicalProperty(HierarchicalProperty.ALL);

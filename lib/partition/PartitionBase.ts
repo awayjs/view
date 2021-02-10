@@ -15,7 +15,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 
 	private _invalid: boolean;
 	private _children: Array<PartitionBase> = new Array<PartitionBase>();
-	private _updateQueue: Record<number, IPartitionEntity> = {};
+	private _updateQueue: Record<number, EntityNode> = {};
 
 	protected _rootNode: ContainerNode;
 	protected _parent: PartitionBase;
@@ -68,19 +68,19 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 		this._rootNode.acceptTraverser(traverser);
 	}
 
-	public invalidateEntity(entity: IPartitionEntity): void {
+	public invalidateEntity(entityNode: EntityNode): void {
 		if (!this._invalid)
 			this.invalidate();
 
-		this._updateQueue[entity.id] = entity;
+		this._updateQueue[entityNode.id] = entityNode;
 	}
 
-	public updateEntity(entity: IPartitionEntity): void {
+	public updateEntity(entityNode: EntityNode): void {
 		//TODO: remove reliance on view
 		//required for controllers with autoUpdate set to true and queued events
-		entity._iInternalUpdate();
+		entityNode.entity._iInternalUpdate();
 
-		this.updateNode(entity.getAbstraction<EntityNode>(this));
+		this.updateNode(entityNode);
 	}
 
 	public updateNode(node: INode): void {
@@ -93,11 +93,11 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 		// }
 	}
 
-	public clearEntity(entity: IPartitionEntity): void {
+	public clearEntity(entityNode: EntityNode): void {
 		if (!this._invalid)
 			this.invalidate();
 
-		delete this._updateQueue[entity.id];
+		delete this._updateQueue[entityNode.id];
 
 		// const node: INode = entity.getAbstraction<EntityNode>(this);
 		// node.parent.removeNode(node);

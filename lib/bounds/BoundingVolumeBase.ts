@@ -32,11 +32,11 @@ export class BoundingVolumeBase extends AbstractionBase {
 
 		this._picker.addEventListener(BoundsPickerEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
 
-		if (this._targetCoordinateSpace != this._picker.entity) {
-			let targetEntity: INode = this._picker.entity;
+		if (this._targetCoordinateSpace != this._picker.node) {
+			let targetEntity: ContainerNode = this._picker.node;
 
 			while (targetEntity && targetEntity != this._targetCoordinateSpace) {
-				targetEntity.entity.transform.addEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+				targetEntity.container.transform.addEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
 				targetEntity = targetEntity.parent;
 			}
 
@@ -59,11 +59,11 @@ export class BoundingVolumeBase extends AbstractionBase {
 
 		this._picker.removeEventListener(BoundsPickerEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
 
-		if (this._targetCoordinateSpace != this._picker.entity) {
-			let targetEntity: INode = this._picker.entity;
+		if (this._targetCoordinateSpace != this._picker.node) {
+			let targetEntity: ContainerNode = this._picker.node;
 
 			while (targetEntity && targetEntity != this._targetCoordinateSpace) {
-				targetEntity.entity.transform.removeEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+				targetEntity.container.transform.removeEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
 				targetEntity = targetEntity.parent;
 			}
 

@@ -27,8 +27,6 @@ export interface INode extends IAsset
 
 	boundsVisible: boolean;
 
-	readonly entity: IPartitionEntity;
-
 	parent: ContainerNode;
 
 	_collectionMark: number;

@@ -14,13 +14,21 @@ import { ContainerNode } from '../partition/ContainerNode';
  * @class RenderableListItem
  */
 export class _Pick_PickableBase extends AbstractionBase {
+
+	/**
+	 * 
+	 */
 	protected _view: View;
+
+	/**
+	 * 
+	 */
 	protected _pickGroup: PickGroup;
 
 	/**
 	 *
 	 */
-	public sourceEntity: ContainerNode;
+	protected _node: ContainerNode;
 
 	/**
 	 *
@@ -33,7 +41,7 @@ export class _Pick_PickableBase extends AbstractionBase {
 		super(traversable, pickEntity);
 
 		//store references
-		this.sourceEntity = pickEntity.entity;
+		this._node = pickEntity.node;
 		this._view = pickEntity.view;
 		this._pickGroup = pickEntity.pickGroup;
 	}

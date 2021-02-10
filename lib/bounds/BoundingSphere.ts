@@ -73,10 +73,10 @@ export class BoundingSphere extends BoundingVolumeBase {
 
 		let matrix3D: Matrix3D;
 		if (this._targetCoordinateSpace) {
-			if (this._targetCoordinateSpace == this._picker.entity) {
-				matrix3D = this._picker.entity.entity.transform.matrix3D;
+			if (this._targetCoordinateSpace == this._picker.node) {
+				matrix3D = this._picker.node.container.transform.matrix3D;
 			} else {
-				matrix3D = this._picker.entity.getMatrix3D().clone();
+				matrix3D = this._picker.node.getMatrix3D().clone();
 
 				if (this._targetCoordinateSpace.parent)
 					matrix3D.append(this._targetCoordinateSpace.parent.getInverseMatrix3D());
@@ -85,7 +85,7 @@ export class BoundingSphere extends BoundingVolumeBase {
 
 		this._sphere = this._picker._getSphereBoundsInternal(null, matrix3D, this._strokeFlag, this._fastFlag, this._sphere);
 
-		const matrix: Matrix3D = this._picker.entity.getMatrix3D();
+		const matrix: Matrix3D = this._picker.node.getMatrix3D();
 
 		const cx: number = this._sphere.x;
 		const cy: number = this._sphere.y;

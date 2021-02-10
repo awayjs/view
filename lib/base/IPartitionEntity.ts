@@ -16,32 +16,16 @@ export interface IPartitionEntity extends IAsset
 
 	pickObjectFromTimeline: boolean;
 
-	//isAncestor(entity: IPartitionEntity): boolean;
-
-	//isDescendant(entity: IPartitionEntity): boolean;
-
 	_iInternalUpdate(): void;
-
-	//readonly maskId: number;
-
-	//_iAssignedColorTransform(): ColorTransform;
-
-	//maskOwners: Array<IPartitionEntity>;
-
-	//maskMode: boolean;
 
 	_registrationMatrix3D: Matrix3D;
 
 	transform: Transform;
 
-	//masks: Array<IPartitionEntity>;
-
 	/**
 	 *
 	 */
 	defaultBoundingVolume: BoundingVolumeType;
-
-	//pickObject: IPartitionEntity;
 
 	/**
 	 *
@@ -62,11 +46,6 @@ export interface IPartitionEntity extends IAsset
 	 * @internal
 	 */
 	mouseEnabled: boolean;
-
-	/**
-	 * @internal
-	 */
-	//visible: boolean;
 
 	/**
 	 *

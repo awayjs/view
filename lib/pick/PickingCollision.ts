@@ -16,12 +16,12 @@ export class PickingCollision {
 	/**
 	 *
 	 */
-	public pickerEntity: ContainerNode;
+	public rootNode: ContainerNode;
 
 	/**
 	 * The entity to which this collision object belongs.
 	 */
-	public entity: EntityNode;
+	public entityNode: EntityNode;
 
 	/**
 	 * The pickGroup to which this collision object belongs.
@@ -88,8 +88,8 @@ export class PickingCollision {
 	 *
 	 * @param entity The entity to which this collision object belongs.
 	 */
-	constructor(entity: EntityNode, pickGroup: PickGroup) {
-		this.entity = entity;
+	constructor(entityNode: EntityNode, pickGroup: PickGroup) {
+		this.entityNode = entityNode;
 		this.pickGroup = pickGroup;
 	}
 }

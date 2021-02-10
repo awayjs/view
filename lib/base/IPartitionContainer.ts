@@ -28,10 +28,6 @@ export interface IPartitionContainer extends IPartitionEntity
 
 	setFocus(value: boolean, fromMouseDown?: boolean, sendSoftKeyEvent?: boolean);
 
-	//_iAssignedColorTransform(): ColorTransform;
-
-	//maskOwners: Array<IPartitionEntity>;
-
 	maskMode: boolean;
 
 	masks: Array<IPartitionEntity>;
@@ -52,11 +48,6 @@ export interface IPartitionContainer extends IPartitionEntity
 	defaultBoundingVolume: BoundingVolumeType;
 
 	pickObject: IPartitionEntity;
-
-	/**
-	 *
-	 */
-	//castsShadows: boolean;
 
 	/**
 	 * @internal
