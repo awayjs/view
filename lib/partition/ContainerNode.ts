@@ -390,7 +390,7 @@ export class ContainerNode extends AbstractionBase {
 	 */
 	public localToGlobal(point: Point, target: Point = null): Point {
 		this._tempVector3D.setTo(point.x, point.y, 0);
-		const pos: Vector3D = this.getInverseMatrix3D().transformVector(this._tempVector3D, this._tempVector3D);
+		const pos: Vector3D = this.getMatrix3D().transformVector(this._tempVector3D, this._tempVector3D);
 
 		if (!target)
 			target = new Point();
