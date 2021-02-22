@@ -35,5 +35,10 @@ export enum HierarchicalProperty {
 	/**
 	 *
 	 */
-	ALL = 63,
+	CACHE_AS_BITMAP = 64,
+
+	/**
+	 *
+	 */
+	ALL = 127,
 }

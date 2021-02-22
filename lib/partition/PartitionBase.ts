@@ -1,6 +1,10 @@
-import { IAssetClass, IAbstractionPool, AssetBase, AssetEvent, IAbstractionClass, IAsset, AbstractionBase, UUID, AbstractMethodError } from '@awayjs/core';
-
-import { IPartitionEntity } from '../base/IPartitionEntity';
+import {
+	IAssetClass,
+	IAbstractionPool,
+	AssetBase,
+	IAbstractionClass,
+	IAsset,
+} from '@awayjs/core';
 
 import { IPartitionTraverser } from './IPartitionTraverser';
 import { ContainerNode } from './ContainerNode';
@@ -33,13 +37,12 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	constructor(rootNode: ContainerNode) {
 		super();
 
-
 		this._rootNode = rootNode;
 
 		this._parent = rootNode.parent?.partition;
 
 		if (this._parent)
-			this._parent.addChild(this);	
+			this._parent.addChild(this);
 	}
 
 	public addChild(child: PartitionBase): void {
@@ -84,7 +87,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	}
 
 	public updateNode(node: INode): void {
-		const targetNode: ContainerNode = this.findParentForNode(node);
+		//const targetNode: ContainerNode = this.findParentForNode(node);
 
 		// if (targetNode && node.parent != targetNode) {
 		// 	if (node.parent)

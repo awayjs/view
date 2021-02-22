@@ -78,6 +78,8 @@ export class ContainerNode extends AbstractionBase {
 	private _inverseMatrix3DDirty: boolean = true;
 	private _orientationMatrix: Matrix3D = new Matrix3D();
 	private _tempVector3D: Vector3D = new Vector3D();
+	private _isCacheSource: boolean = false;
+	private _cacheAsBitmap: boolean = false;
 
 	private _invisible: boolean;
 	private _maskId: number = -1;
@@ -104,6 +106,10 @@ export class ContainerNode extends AbstractionBase {
 	public get partition(): PartitionBase {
 		if (!this._partition || this._partitionClass != this.container.partitionClass) {
 			this._partitionClass = this.container.partitionClass;
+
+			if (this.parent === this) {
+				throw ('Slef REF!!!');
+			}
 
 			this._partition = this.container.partitionClass
 				? new this.container.partitionClass(this)
@@ -270,6 +276,39 @@ export class ContainerNode extends AbstractionBase {
 		}
 
 		return this._colorTransform || (this._colorTransform = new ColorTransform());
+	}
+
+	private rebuildBitmapCacheFlag() {
+
+		if (!(this._hierarchicalPropsDirty & HierarchicalProperty.CACHE_AS_BITMAP)) {
+			return;
+		}
+
+		// mark that this container is cache source
+		this._isCacheSource = (<any> this.container).cacheAsBitmap;
+
+		// when subree has cached parent include self
+		// parent (self = true, sub = true)
+		// -> child (self = false, sub = true)
+		// -> child (self = false, sub = true)
+		// -> child (self = false, sub = true)
+		// this is requred, because need know that current container is cache-source
+
+		if (this._parent) {
+			this._cacheAsBitmap = this._isCacheSource || this.parent.getIsCacheAsBitmap();
+		}
+
+		this._hierarchicalPropsDirty ^= HierarchicalProperty.CACHE_AS_BITMAP;
+	}
+
+	public getIsCacheSource(): boolean {
+		this.rebuildBitmapCacheFlag();
+		return this._isCacheSource;
+	}
+
+	public getIsCacheAsBitmap(): boolean {
+		this.rebuildBitmapCacheFlag();
+		return this._cacheAsBitmap;
 	}
 
 	/**

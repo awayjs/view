@@ -127,7 +127,7 @@ export class EntityNode extends AbstractionBase implements INode {
 
 			this._boundsPrimitive.setParent(this._parent);
 		}
-		
+
 		return this._boundsPrimitive;
 	}
 
@@ -154,7 +154,15 @@ export class EntityNode extends AbstractionBase implements INode {
 	 * @returns {boolean}
 	 */
 	public isRenderable(): boolean {
-		return this.parent.getColorTransform()._isRenderable();
+		const p = this.parent;
+
+		const tree = p.getIsCacheAsBitmap();
+		const self = p.getIsCacheSource();
+
+		// we can render only when self cached (because handle a cache texture) or when both is not cached
+		const rendered = self || (!tree && !self);
+
+		return p.getColorTransform()._isRenderable() && rendered;
 	}
 
 	/**
