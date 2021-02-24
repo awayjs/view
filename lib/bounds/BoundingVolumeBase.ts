@@ -4,8 +4,6 @@ import { BoundsPickerEvent } from '../events/BoundsPickerEvent';
 
 import { BoundingVolumePool } from './BoundingVolumePool';
 import { IBoundsPicker } from '../pick/IBoundsPicker';
-import { IPartitionEntity } from '../base/IPartitionEntity';
-import { INode } from '../partition/INode';
 import { ContainerNode } from '../partition/ContainerNode';
 import { ContainerNodeEvent } from '../events/ContainerNodeEvent';
 

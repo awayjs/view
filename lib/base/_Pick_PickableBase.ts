@@ -1,13 +1,11 @@
 import { AssetEvent, AbstractionBase, Matrix3D, Vector3D, AbstractMethodError, Sphere, Box } from '@awayjs/core';
 
-import { IPartitionEntity } from './IPartitionEntity';
 import { ITraversable } from './ITraversable';
 import { PickEntity } from './PickEntity';
 import { PickGroup } from '../PickGroup';
 import { PickingCollision } from '../pick/PickingCollision';
 
 import { View } from '../View';
-import { EntityNode } from '../partition/EntityNode';
 import { ContainerNode } from '../partition/ContainerNode';
 
 /**

@@ -1,13 +1,11 @@
-import { ColorTransform, IAbstractionPool, IAsset, Matrix, Matrix3D, Plane3D, Vector3D } from '@awayjs/core';
+import { IAbstractionPool, IAsset, Plane3D, Vector3D } from '@awayjs/core';
 
 import { ContainerNode } from './ContainerNode';
 
 import { IPartitionTraverser } from './IPartitionTraverser';
-import { IPartitionEntity } from '../base/IPartitionEntity';
 import { PickGroup } from '../PickGroup';
 import { PartitionBase } from './PartitionBase';
 import { EntityNode } from './EntityNode';
-import { HierarchicalProperty } from '../base/HierarchicalProperty';
 
 /**
  * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to

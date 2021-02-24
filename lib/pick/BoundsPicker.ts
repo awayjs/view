@@ -8,7 +8,6 @@ import {
 	Point
 } from '@awayjs/core';
 
-import { IPartitionEntity } from '../base/IPartitionEntity';
 import { PartitionBase } from '../partition/PartitionBase';
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
 import { INode } from '../partition/INode';

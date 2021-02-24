@@ -29,7 +29,6 @@ import { BoundsPickerEvent } from '../events/BoundsPickerEvent';
 import { View } from '../View';
 import { IPartitionEntity } from './IPartitionEntity';
 import { EntityNode } from '../partition/EntityNode';
-import { INode } from '../partition/INode';
 import { ContainerNode } from '../partition/ContainerNode';
 
 /**

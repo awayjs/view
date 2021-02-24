@@ -1,4 +1,4 @@
-import { AbstractionBase, EventDispatcher, IAbstractionClass, IAbstractionPool, IAsset, IAssetClass, UUID } from '@awayjs/core';
+import { EventDispatcher, IAbstractionClass, IAbstractionPool, IAsset, IAssetClass, UUID } from '@awayjs/core';
 
 import { PickEntity } from './base/PickEntity';
 import { RaycastPicker } from './pick/RaycastPicker';

@@ -1,14 +1,11 @@
 import { Vector3D, AbstractionBase, IAbstractionPool } from '@awayjs/core';
 
-import { IPartitionEntity } from '../base/IPartitionEntity';
 import { PartitionBase } from '../partition/PartitionBase';
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
 import { INode } from '../partition/INode';
 
 import { ITabEntity } from '../base/ITabEntity';
 import { EntityNode } from '../partition/EntityNode';
-import { IPartitionContainer } from '../base/IPartitionContainer';
-import { IPartitionClass } from '../partition/IPartitionClass';
 import { ContainerNode } from '../partition/ContainerNode';
 
 /**

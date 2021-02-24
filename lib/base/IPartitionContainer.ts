@@ -1,10 +1,7 @@
-import { Transform, ColorTransform, Matrix3D, IAsset, IAbstractionClass, Rectangle } from '@awayjs/core';
+import { Rectangle } from '@awayjs/core';
 import { BlendMode } from '@awayjs/stage';
 
 import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
-import { ContainerNode } from '../partition/ContainerNode';
-import { IPartitionClass } from '../partition/IPartitionClass';
-import { BoundsPicker } from '../pick/BoundsPicker';
 import { AlignmentMode } from './AlignmentMode';
 import { IEntityTraverser } from './IEntityTraverser';
 import { IPartitionEntity } from './IPartitionEntity';
