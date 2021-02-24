@@ -37,16 +37,13 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	constructor(rootNode: ContainerNode) {
 		super();
 
-		this._rootNode = rootNode;
-
-		this._parent = rootNode.parent?.partition;
-
-		if (this._parent)
-			this._parent.addChild(this);
+		this._rootNode = rootNode;	
 	}
 
 	public addChild(child: PartitionBase): void {
 		this._children.push(child);
+
+		child.setParent(this);
 
 		// this.updateNode(child.rootNode);
 		if (!this._invalid)
@@ -59,9 +56,16 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 
 		this._children.splice(this._children.indexOf(child), 1)[0];
 
+		child.setParent(null);
+
 		// this._rootNode.removeNode(child.rootNode);
 		if (!this._invalid)
 			this.invalidate();
+	}
+
+	public setParent(parent: PartitionBase): void
+	{
+		this._parent = parent;
 	}
 
 	public traverse(traverser: IPartitionTraverser): void {
