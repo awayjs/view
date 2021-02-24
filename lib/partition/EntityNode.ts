@@ -16,15 +16,14 @@ import { HierarchicalProperty } from '../base/HierarchicalProperty';
 export class EntityNode extends AbstractionBase implements INode {
 	private _parent: ContainerNode;
 	private _boundsVisible: boolean;
-	private _boundsPrimitive:EntityNode;
-	private _boundsPrimitiveDirty:boolean;
-	
+	private _boundsPrimitive: EntityNode;
+	private _boundsPrimitiveDirty: boolean;
+
 	public _iUpdateQueueNext: EntityNode;
 
 	public _collectionMark: number;// = 0;
 
-	public get parent(): ContainerNode
-	{
+	public get parent(): ContainerNode {
 		return this._parent;
 	}
 
@@ -42,8 +41,8 @@ export class EntityNode extends AbstractionBase implements INode {
 
 	public get boundsVisible(): boolean {
 		if (this._boundsVisible != (<IPartitionEntity> this._asset).boundsVisible) {
-			this._boundsVisible = (<IPartitionEntity> this._asset).boundsVisible
-			
+			this._boundsVisible = (<IPartitionEntity> this._asset).boundsVisible;
+
 			if (this._boundsVisible) {
 				this._boundsPrimitiveDirty = true;
 			} else if (this._boundsPrimitive) {
@@ -79,7 +78,6 @@ export class EntityNode extends AbstractionBase implements INode {
 		this.clear();
 	}
 
-	
 	public onInvalidate(event: AssetEvent): void {
 		super.onInvalidate(event);
 

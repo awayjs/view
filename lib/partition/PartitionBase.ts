@@ -37,7 +37,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	constructor(rootNode: ContainerNode) {
 		super();
 
-		this._rootNode = rootNode;	
+		this._rootNode = rootNode;
 	}
 
 	public addChild(child: PartitionBase): void {
@@ -63,8 +63,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 			this.invalidate();
 	}
 
-	public setParent(parent: PartitionBase): void
-	{
+	public setParent(parent: PartitionBase): void {
 		this._parent = parent;
 	}
 

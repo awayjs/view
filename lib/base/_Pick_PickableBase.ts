@@ -16,12 +16,12 @@ import { ContainerNode } from '../partition/ContainerNode';
 export class _Pick_PickableBase extends AbstractionBase {
 
 	/**
-	 * 
+	 *
 	 */
 	protected _view: View;
 
 	/**
-	 * 
+	 *
 	 */
 	protected _pickGroup: PickGroup;
 

@@ -3,7 +3,7 @@ import { IPartitionEntity } from './IPartitionEntity';
 
 export interface ITabEntity extends IPartitionContainer
 {
-	
+
 	tabEnabled: boolean;
 	tabIndex: number;
 }

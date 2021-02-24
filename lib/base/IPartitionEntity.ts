@@ -10,7 +10,7 @@ import { IPartitionContainer } from './IPartitionContainer';
 
 export interface IPartitionEntity extends IAsset
 {
-	partitionClass:IPartitionClass;
+	partitionClass: IPartitionClass;
 
 	parent: IPartitionContainer;
 

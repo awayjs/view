@@ -42,10 +42,10 @@ export interface ContainerNode extends INode
 
 	getMaskOwners(): ContainerNode[];
 
-	isMouseDisabled() :boolean;
+	isMouseDisabled(): boolean;
 
-	isMouseChildrenDisabled() :boolean;
-	
+	isMouseChildrenDisabled(): boolean;
+
 	isDescendant(node: ContainerNode): boolean;
 
 	isAncestor(node: ContainerNode): boolean;
@@ -59,6 +59,6 @@ export interface ContainerNode extends INode
 	globalToLocal3D(position: Vector3D): Vector3D;
 
 	localToGlobal(point: Point, target?: Point): Point;
-	
-	invalidateHierarchicalProperty(propertyDirty:HierarchicalProperty): void;
+
+	invalidateHierarchicalProperty(propertyDirty: HierarchicalProperty): void;
 }

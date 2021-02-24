@@ -16,7 +16,7 @@ export interface IPartitionContainer extends IPartitionEntity
 
 	readonly maskId: number;
 
-	getChildAt(index:number): IPartitionEntity;
+	getChildAt(index: number): IPartitionEntity;
 
 	isEntity(): boolean;
 
