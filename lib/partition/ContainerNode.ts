@@ -491,7 +491,7 @@ export class ContainerNode extends AbstractionBase {
 		if (this._entityNode)
 			this.clearEntity();
 
-		for (let i:number = 0; i < this._numChildNodes; i++)
+		for (let i: number = 0; i < this._numChildNodes; i++)
 			this._childNodes[i].onClear(event);
 
 		this.clear();
@@ -594,7 +594,7 @@ export class ContainerNode extends AbstractionBase {
 	 * @internal
 	 */
 	private addChildAt(entity: IPartitionEntity, index: number): void {
-		const node = entity.getAbstraction<ContainerNode>(this._pool)
+		const node = entity.getAbstraction<ContainerNode>(this._pool);
 
 		node.setParent(this);
 
