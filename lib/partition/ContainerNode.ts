@@ -335,7 +335,7 @@ export class ContainerNode extends AbstractionBase {
 
 			if (this.container.masks)
 				for (let i = 0; i < this.container.masks.length; i++)
-					this._masks.push(this.pool.getNode(this.container.masks[i]).partition.rootNode);
+					this._masks.push((<NodePool> this._pool).getNode(this.container.masks[i]).partition.rootNode);
 		}
 
 		return this._masks;
@@ -457,15 +457,14 @@ export class ContainerNode extends AbstractionBase {
 			= (event: HeirarchicalEvent) => this.invalidateHierarchicalProperty(event.property);
 
 		this._onAddChildAt
-			// eslint-disable-next-line max-len
-			= (event: ContainerEvent) => this.addChildAt(event.entity.getAbstraction<ContainerNode>(this.pool), event.index);
+			= (event: ContainerEvent) => this.addChildAt(event.entity, event.index);
 
 		this._onRemoveChildAt
 			= (event: ContainerEvent) => this.removeChildAt(event.index);
 		this._onEntityInvalidate
 			= (event: ContainerEvent) => this.invalidateEntity(event.entity);
 		this._onEntityClear
-			= (event: ContainerEvent) => this.clearEntity(event.entity);
+			= (event: ContainerEvent) => this.clearEntity();
 
 		this.container = container;
 		this.container.addEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onHierarchicalInvalidate);
@@ -475,22 +474,27 @@ export class ContainerNode extends AbstractionBase {
 		this.container.addEventListener(ContainerEvent.CLEAR_ENTITY, this._onEntityClear);
 
 		for (let i: number = 0; i < container.numChildren; ++i)
-			this.addChildAt(container.getChildAt(i).getAbstraction<ContainerNode>(this.pool), this._numChildNodes);
-
-		// if (container.isEntity())
-		// 	this.invalidateEntity(container);
+			this.addChildAt(container.getChildAt(i), this._numChildNodes);
 
 		this._hierarchicalPropsDirty = HierarchicalProperty.ALL;
 	}
 
 	public onClear(event: AssetEvent): void {
-		super.onInvalidate(event);
+		super.onClear(event);
 
 		this.container.removeEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onHierarchicalInvalidate);
 		this.container.removeEventListener(ContainerEvent.ADD_CHILD_AT, this._onAddChildAt);
 		this.container.removeEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onRemoveChildAt);
 		this.container.removeEventListener(ContainerEvent.INVALIDATE_ENTITY, this._onEntityInvalidate);
 		this.container.removeEventListener(ContainerEvent.CLEAR_ENTITY, this._onEntityClear);
+
+		if (this._entityNode)
+			this.clearEntity();
+
+		for (let i:number = 0; i < this._numChildNodes; i++)
+			this._childNodes[i].onClear(event);
+
+		this.clear();
 	}
 
 	public onInvalidate(event: AssetEvent): void {
@@ -589,7 +593,9 @@ export class ContainerNode extends AbstractionBase {
 	 * @param node
 	 * @internal
 	 */
-	public addChildAt(node: ContainerNode, index: number): void {
+	private addChildAt(entity: IPartitionEntity, index: number): void {
+		const node = entity.getAbstraction<ContainerNode>(this._pool)
+
 		node.setParent(this);
 
 		if (index == this._numChildNodes)
@@ -605,10 +611,10 @@ export class ContainerNode extends AbstractionBase {
 	 * @param node
 	 * @internal
 	 */
-	public removeChildAt(index: number): void {
+	private removeChildAt(index: number): void {
 		this._numChildNodes--;
 
-		const node: INode = (index == this._numChildNodes)
+		const node: ContainerNode = (index == this._numChildNodes)
 			? this._childNodes.pop()
 			: this._childNodes.splice(index, 1)[0];
 
@@ -624,13 +630,10 @@ export class ContainerNode extends AbstractionBase {
 		this._partition.invalidateEntity(this._entityNode);
 	}
 
-	public clearEntity(_entity: IPartitionEntity): void {
-		if (this._entityNode != null) {
-			this._entityNode.setParent(null);
-			this._partition.clearEntity(this._entityNode);
-
-			this._entityNode = null;
-		}
+	private clearEntity(): void {
+		this._partition.clearEntity(this._entityNode);
+		this._entityNode.setParent(null);
+		this._entityNode = null;
 	}
 
 	public startDrag(): void {
@@ -701,14 +704,11 @@ export class ContainerNode extends AbstractionBase {
 
 	public setParent(parent: ContainerNode): void {
 
-		if (!parent) {
+		if (this._parent) {
 			if (this._parent.partition != this.partition)
 				this._parent.partition.removeChild(this.partition);
 
-			if (this.container.isEntity())
-				this.clearEntity(this.container);
-
-			this.clear();
+			this.onClear(null);
 		}
 
 		this._parent = parent;

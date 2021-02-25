@@ -171,6 +171,10 @@ export class EntityNode extends AbstractionBase implements INode {
 	}
 
 	public setParent(parent: ContainerNode): void {
+
+		if (!parent)
+			this.onClear(null);
+
 		this._parent = parent;
 	}
 }
