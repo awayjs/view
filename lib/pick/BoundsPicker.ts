@@ -223,7 +223,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		return this._hitTestPointInternal(this._node, x, y, shapeFlag, false);
 	}
 
-	public _hitTestPointInternal(rootEntity: INode, x: number, y: number, shapeFlag: boolean = false, maskFlag: boolean = false): boolean {
+	public _hitTestPointInternal(rootEntity: ContainerNode, x: number, y: number, shapeFlag: boolean = false, maskFlag: boolean = false): boolean {
 		if (this._node.getMaskId() != -1 && (!maskFlag || !shapeFlag))//allow masks for bounds hit tests
 			return false;
 
