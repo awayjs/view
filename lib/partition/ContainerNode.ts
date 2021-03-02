@@ -498,11 +498,11 @@ export class ContainerNode extends AbstractionBase {
 			this._parent.partition.removeChild(this.partition);
 
 		if (this._pickObject) {
-			this._pickObject = null
+			this._pickObject = null;
 			this._pickObjectNode.setParent(null);
 			this._pickObjectNode = null;
 		}
-		
+
 		this.clear();
 	}
 
