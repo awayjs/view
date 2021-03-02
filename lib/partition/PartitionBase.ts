@@ -65,6 +65,9 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 
 	public setParent(parent: PartitionBase): void {
 		this._parent = parent;
+
+		if (!this._parent)
+			this.clear();
 	}
 
 	public traverse(traverser: IPartitionTraverser): void {

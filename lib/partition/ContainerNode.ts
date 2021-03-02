@@ -494,6 +494,15 @@ export class ContainerNode extends AbstractionBase {
 		for (let i: number = 0; i < this._numChildNodes; i++)
 			this._childNodes[i].onClear(event);
 
+		if (this._parent.partition != this.partition)
+			this._parent.partition.removeChild(this.partition);
+
+		if (this._pickObject) {
+			this._pickObject = null
+			this._pickObjectNode.setParent(null);
+			this._pickObjectNode = null;
+		}
+		
 		this.clear();
 	}
 
@@ -704,12 +713,8 @@ export class ContainerNode extends AbstractionBase {
 
 	public setParent(parent: ContainerNode): void {
 
-		if (this._parent) {
-			if (this._parent.partition != this.partition)
-				this._parent.partition.removeChild(this.partition);
-
+		if (this._parent)
 			this.onClear(null);
-		}
 
 		this._parent = parent;
 
