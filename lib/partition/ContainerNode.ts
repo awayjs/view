@@ -155,7 +155,7 @@ export class ContainerNode extends AbstractionBase {
 	public set transformDisabled(value: boolean) {
 		if (this._transformDisabled == value)
 			return;
-	
+
 		this._transformDisabled = value;
 
 		if (this._transformDisabled) {
