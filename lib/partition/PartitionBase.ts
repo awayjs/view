@@ -52,7 +52,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 
 	public removeChild(child: PartitionBase): void {
 
-		child.clear();
+		//child.clear();
 
 		this._children.splice(this._children.indexOf(child), 1)[0];
 
@@ -65,9 +65,6 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 
 	public setParent(parent: PartitionBase): void {
 		this._parent = parent;
-
-		if (!this._parent)
-			this.clear();
 	}
 
 	public traverse(traverser: IPartitionTraverser): void {
