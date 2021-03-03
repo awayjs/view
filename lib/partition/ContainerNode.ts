@@ -8,6 +8,7 @@ import {
 	Matrix3D,
 	ColorTransform,
 	Point,
+	Transform,
 } from '@awayjs/core';
 
 import { IPartitionEntity } from '../base/IPartitionEntity';
@@ -56,6 +57,7 @@ export class NodePool implements IAbstractionPool {
  */
 export class ContainerNode extends AbstractionBase {
 
+	private static _nullTransform: Transform = new Transform();
 	private _invalidateMatrix3DEvent: ContainerNodeEvent;
 	private _onHierarchicalInvalidate: (event: HeirarchicalEvent) => void;
 	private _onAddChildAt: (event: ContainerEvent) => void;
@@ -80,6 +82,8 @@ export class ContainerNode extends AbstractionBase {
 	private _tempVector3D: Vector3D = new Vector3D();
 	private _isCacheSource: boolean = false;
 	private _cacheAsBitmap: boolean = false;
+	private _transformDisabled: boolean = false;
+	private _activeTransform: Transform;
 
 	private _invisible: boolean;
 	private _maskId: number = -1;
@@ -148,6 +152,23 @@ export class ContainerNode extends AbstractionBase {
 		return <NodePool> this._pool;
 	}
 
+	public set transformDisabled(value: boolean) {
+		if (this._transformDisabled == value)
+			return;
+	
+		this._transformDisabled = value;
+
+		if (this._transformDisabled) {
+			this._activeTransform = ContainerNode._nullTransform;
+		} else {
+			this._activeTransform = this.container.transform;
+		}
+	}
+
+	public get transformDisabled(): boolean {
+		return this._transformDisabled;
+	}
+
 	/**
 	 *
 	 */
@@ -197,7 +218,7 @@ export class ContainerNode extends AbstractionBase {
 
 	public getMatrix3D(): Matrix3D {
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.SCENE_TRANSFORM) {
-			this._matrix3D.copyFrom(this.container.transform.matrix3D);
+			this._matrix3D.copyFrom(this._activeTransform.matrix3D);
 
 			if (this.container._registrationMatrix3D) {
 
@@ -205,9 +226,9 @@ export class ContainerNode extends AbstractionBase {
 
 				if (this.container.alignmentMode != AlignmentMode.REGISTRATION_POINT) {
 					this._matrix3D.appendTranslation(
-						-this.container._registrationMatrix3D._rawData[12] * this.container.transform.scale.x,
-						-this.container._registrationMatrix3D._rawData[13] * this.container.transform.scale.y,
-						-this.container._registrationMatrix3D._rawData[14] * this.container.transform.scale.z);
+						-this.container._registrationMatrix3D._rawData[12] * this._activeTransform.scale.x,
+						-this.container._registrationMatrix3D._rawData[13] * this._activeTransform.scale.y,
+						-this.container._registrationMatrix3D._rawData[14] * this._activeTransform.scale.z);
 				}
 			}
 
@@ -235,7 +256,7 @@ export class ContainerNode extends AbstractionBase {
 		if (this.container.orientationMode == OrientationMode.CAMERA_PLANE) {
 			const comps: Array<Vector3D> = cameraTransform.decompose();
 			comps[0].copyFrom(this.getPosition());
-			comps[3].copyFrom(this.container.transform.scale);
+			comps[3].copyFrom(this._activeTransform.scale);
 			this._orientationMatrix.recompose(comps);
 
 			//add in case of registration point
@@ -244,9 +265,9 @@ export class ContainerNode extends AbstractionBase {
 
 				if (this.container.alignmentMode != AlignmentMode.REGISTRATION_POINT)
 					this._orientationMatrix.appendTranslation(
-						-this.container._registrationMatrix3D._rawData[12] * this.container.transform.scale.x,
-						-this.container._registrationMatrix3D._rawData[13] * this.container.transform.scale.y,
-						-this.container._registrationMatrix3D._rawData[14] * this.container.transform.scale.z);
+						-this.container._registrationMatrix3D._rawData[12] * this._activeTransform.scale.x,
+						-this.container._registrationMatrix3D._rawData[13] * this._activeTransform.scale.y,
+						-this.container._registrationMatrix3D._rawData[14] * this._activeTransform.scale.z);
 			}
 
 			return this._orientationMatrix;
@@ -259,12 +280,12 @@ export class ContainerNode extends AbstractionBase {
 			if (!this._colorTransform)
 				this._colorTransform = new ColorTransform();
 
-			if (this.container.inheritColorTransform && this._parent && this._parent.getColorTransform()) {
+			if (this._parent && this._parent.getColorTransform()) {
 				this._colorTransform.copyFrom(this._parent.getColorTransform());
 
-				this._colorTransform.prepend(this.container.transform.colorTransform);
+				this._colorTransform.prepend(this._activeTransform.colorTransform);
 			} else {
-				this._colorTransform.copyFrom(this.container.transform.colorTransform);
+				this._colorTransform.copyFrom(this._activeTransform.colorTransform);
 			}
 
 			if (this.container.blendMode === BlendMode.OVERLAY) {
@@ -375,11 +396,8 @@ export class ContainerNode extends AbstractionBase {
 	 */
 	public globalToLocal(point: Point, target: Point = null): Point {
 		this._tempVector3D.setTo(point.x, point.y, 0);
-		//console.log("this._tempVector3D", this._tempVector3D);
-		//console.log("this._transform.inverseConcatenatedMatrix3D", this._transform.inverseConcatenatedMatrix3D);
 		const pos: Vector3D = this.getInverseMatrix3D().transformVector(this._tempVector3D, this._tempVector3D);
 
-		//console.log("pos", pos);
 		if (!target)
 			target = new Point();
 
@@ -477,6 +495,8 @@ export class ContainerNode extends AbstractionBase {
 			this.addChildAt(container.getChildAt(i), this._numChildNodes);
 
 		this._hierarchicalPropsDirty = HierarchicalProperty.ALL;
+
+		this._activeTransform = this.container.transform;
 	}
 
 	public onClear(event: AssetEvent): void {
@@ -493,9 +513,6 @@ export class ContainerNode extends AbstractionBase {
 
 		for (let i: number = 0; i < this._numChildNodes; i++)
 			this._childNodes[i].onClear(event);
-
-		if (this._parent.partition != this.partition)
-			this._parent.partition.removeChild(this.partition);
 
 		if (this._pickObject) {
 			this._pickObject = null;
@@ -533,7 +550,9 @@ export class ContainerNode extends AbstractionBase {
 	 */
 	public isInvisible(): boolean {
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.VISIBLE) {
-			this._invisible = !this.container.visible || this.parent?.isInvisible();
+			this._invisible = this._transformDisabled
+				? false
+				: !this.container.visible || this.parent?.isInvisible();
 
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.VISIBLE;
 		}
@@ -602,7 +621,7 @@ export class ContainerNode extends AbstractionBase {
 	 * @param node
 	 * @internal
 	 */
-	private addChildAt(entity: IPartitionEntity, index: number): void {
+	public addChildAt(entity: IPartitionEntity, index: number): ContainerNode {
 		const node = entity.getAbstraction<ContainerNode>(this._pool);
 
 		node.setParent(this);
@@ -613,6 +632,8 @@ export class ContainerNode extends AbstractionBase {
 			this._childNodes.splice(index, 0, node);
 
 		this._numChildNodes++;
+
+		return node;
 	}
 
 	/**
@@ -620,7 +641,7 @@ export class ContainerNode extends AbstractionBase {
 	 * @param node
 	 * @internal
 	 */
-	private removeChildAt(index: number): void {
+	public removeChildAt(index: number): ContainerNode {
 		this._numChildNodes--;
 
 		const node: ContainerNode = (index == this._numChildNodes)
@@ -628,6 +649,8 @@ export class ContainerNode extends AbstractionBase {
 			: this._childNodes.splice(index, 1)[0];
 
 		node.setParent(null);
+
+		return node;
 	}
 
 	private invalidateEntity(entity: IPartitionEntity): void {
@@ -713,8 +736,12 @@ export class ContainerNode extends AbstractionBase {
 
 	public setParent(parent: ContainerNode): void {
 
-		if (this._parent)
-			this.onClear(null);
+		if (this._parent) {
+			if (this._parent.partition != this.partition)
+				this._parent.partition.removeChild(this.partition);
+
+			this.clear();
+		}
 
 		this._parent = parent;
 
