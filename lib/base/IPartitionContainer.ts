@@ -31,8 +31,6 @@ export interface IPartitionContainer extends IPartitionEntity
 
 	blendMode: BlendMode;
 
-	inheritColorTransform: boolean;
-
 	alignmentMode: AlignmentMode;
 
 	orientationMode: OrientationMode;
