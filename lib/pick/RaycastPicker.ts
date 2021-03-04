@@ -12,9 +12,11 @@ import { EntityNode } from '../partition/EntityNode';
 import { ContainerNode } from '../partition/ContainerNode';
 
 /**
- * Picks a 3d object from a view or scene by 3D raycast calculations.
- * Performs an initial coarse boundary calculation to return a subset of entities whose bounding volumes intersect with the specified ray,
- * then triggers an optional picking collider on individual renderable objects to further determine the precise values of the picking ray collision.
+ * Picks a 3d object from a view or scene by 3D raycast calculations. Performs
+ * an initial coarse boundary calculation to return a subset of entities whose
+ * bounding volumes intersect with the specified ray, then triggers an optional
+ * picking collider on individual renderable objects to further determine the
+ * precise values of the picking ray collision.
  *
  * @class away.pick.RaycastPicker
  */
@@ -49,8 +51,9 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	/**
 	 * Creates a new <code>RaycastPicker</code> object.
 	 *
-	 * @param findClosestCollision Determines whether the picker searches for the closest bounds collision along the ray,
-	 * or simply returns the first collision encountered. Defaults to false.
+	 * @param findClosestCollision Determines whether the picker searches for
+	 * the closest bounds collision along the ray, or simply returns the first
+	 * collision encountered. Defaults to false.
 	 */
 	constructor(partition: PartitionBase, pool: RaycastPickerPool) {
 		super(partition, pool);
@@ -97,7 +100,8 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	}
 
 	/**
-	 * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
+	 * Returns true if the current node is at least partly in the frustum. If
+	 * so, the partition node knows to pass on the traverser to its children.
 	 *
 	 * @param node The Partition3DNode object to frustum-test.
 	 */
@@ -231,48 +235,11 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 			(entity = this._entities[i]).pickingCollision.rootNode = this.rootNode;
 			collectedEntities.push(entity);
 		}
-		// //need to re-calculate the rayEntryDistance for only those entities inside the picker
-		// this._pickingCollision.rayEntryDistance = Number.MAX_VALUE;
-		// for (var i:number = 0; i < this._entities.length; ++i) {
-		// 	if (this._pickingCollision.rayEntryDistance > this._entities[i].pickingCollision.rayEntryDistance) {
-		// 		this._pickingCollision.rayEntryDistance = this._entities[i].pickingCollision.rayEntryDistance;
-		// 		this._pickingCollision.normal = this._entities[i].pickingCollision.normal;
-		// 	}
-		// }
-
-		// this._pickingCollision.rayOriginIsInsideBounds = this._pickingCollision.rayEntryDistance == 0;
 	}
-
-	//		public getEntityCollision(position:Vector3D, direction:Vector3D, entities:Array<IPickingEntity>):PickingCollision
-	//		{
-	//			this._numRenderables = 0;
-	//
-	//			var renderable:IPickingEntity;
-	//			var l:number = entities.length;
-	//
-	//			for (var c:number = 0; c < l; c++) {
-	//				renderable = entities[c];
-	//
-	//				if (renderable.isIntersectingRay(position, direction))
-	//					this._renderables[this._numRenderables++] = renderable;
-	//			}
-	//
-	//			return this.getPickingCollision(this._raycastCollector);
-	//		}
 
 	public setIgnoreList(entities: Array<IPartitionEntity>): void {
 		this._ignoredEntities = entities;
 	}
-
-	// public getCollider(entity:IPickingEntity):IPickingCollider
-	// {
-	// 	return this.getPartition(entity).getAbstraction(entity).pickingCollider;
-	// }
-
-	// public setCollider(entity:IPickingEntity, collider:IPickingCollider)
-	// {
-	// 	this.getPartition(entity).getAbstraction(entity).pickingCollider = collider;
-	// }
 
 	private isIgnored(entity: IPartitionEntity): boolean {
 		if (this._ignoredEntities) {
@@ -286,8 +253,11 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	}
 
 	private sortOnNearT(entity1: PickEntity, entity2: PickEntity): number {
-		//return entity1._iPickingCollision.rayEntryDistance > entity2._iPickingCollision.rayEntryDistance? 1 : -1;// use this for Icycle;
-		return entity1.pickingCollision.rayEntryDistance > entity2.pickingCollision.rayEntryDistance ? 1 : entity1.pickingCollision.rayEntryDistance < entity2.pickingCollision.rayEntryDistance ? -1 : 0;
+		return entity1.pickingCollision.rayEntryDistance > entity2.pickingCollision.rayEntryDistance
+			? 1
+			: entity1.pickingCollision.rayEntryDistance < entity2.pickingCollision.rayEntryDistance
+				? -1
+				: 0;
 	}
 
 	private _getPickingCollision(bestCollision: PickingCollision = null): PickingCollision {

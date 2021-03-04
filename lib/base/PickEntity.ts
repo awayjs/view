@@ -56,25 +56,22 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	}
 
 	/**
-     *
-     * @returns {IPickingEntity}
-     */
+	 *
+	 */
 	public get view(): View {
 		return this._view;
 	}
 
 	/**
-     *
-     * @returns {IPickingEntity}
-     */
+	 *
+	 */
 	public get node(): ContainerNode {
 		return this._node;
 	}
 
 	/**
-     *
-     * @returns {IPickingEntity}
-     */
+	 *
+	 */
 	public get pickGroup(): PickGroup {
 		return this._pickGroup;
 	}
@@ -85,8 +82,6 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 	/**
 	 * //TODO
-	 *
-	 * @param materialClassGL
 	 */
 	constructor(entity: EntityNode, pickGroup: PickGroup) {
 		super(entity, pickGroup);
@@ -122,10 +117,10 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	 * @param x         The <i>x</i> coordinate to test against this object.
 	 * @param y         The <i>y</i> coordinate to test against this object.
 	 * @param shapeFlag Whether to check against the actual pixels of the object
-	 *                 (<code>true</code>) or the bounding box
-	 *                 (<code>false</code>).
-	 * @param maskFlag Whether to check against the object when it is used as mask
-	 *                 (<code>false</code>).
+	 *                  (<code>true</code>) or the bounding box
+	 *                  (<code>false</code>).
+	 * @param maskFlag  Whether to check against the object when it is used as
+	 *                  mask (<code>false</code>).
 	 * @return <code>true</code> if the display object overlaps or intersects
 	 *         with the specified point; <code>false</code> otherwise.
 	 */
