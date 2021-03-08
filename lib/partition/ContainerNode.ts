@@ -9,6 +9,7 @@ import {
 	ColorTransform,
 	Point,
 	Transform,
+	Rectangle,
 } from '@awayjs/core';
 
 import { IPartitionEntity } from '../base/IPartitionEntity';
@@ -69,6 +70,8 @@ export class ContainerNode extends AbstractionBase {
 	private _partitionClass: IPartitionClass;
 	private _pickObject: IPartitionEntity;
 	private _pickObjectNode: ContainerNode;
+	private _scrollRect: Rectangle;
+	private _scrollRectNode: ContainerNode;
 	private _isDragEntity: boolean;
 	public _hierarchicalPropsDirty: HierarchicalProperty = HierarchicalProperty.ALL;
 
@@ -609,6 +612,20 @@ export class ContainerNode extends AbstractionBase {
 		if (!traverser.enterNode(this))
 			return;
 
+		if (this._scrollRect != this.container.scrollRect) {
+			this._scrollRect = this.container.scrollRect;
+			
+			if (this._scrollRectNode) {
+				this._scrollRectNode.setParent(null);
+				this._scrollRectNode = null;
+			}
+
+			if (this._scrollRect) {
+				this._scrollRectNode = this.container.getScrollRectPrimitive().getAbstraction<ContainerNode>(this._pool);
+
+				this._scrollRectNode.setParent(this);
+			}
+		}
 		for (let i: number = this._numChildNodes - 1; i >= 0; i--)
 			this._childNodes[i].acceptTraverser(traverser);
 

@@ -38,6 +38,11 @@ export interface IPartitionEntity extends IAsset
 	/**
 	 *
 	 */
+	getScrollRectPrimitive(): IPartitionEntity;
+
+	/**
+	 *
+	 */
 	castsShadows: boolean;
 
 	/**
