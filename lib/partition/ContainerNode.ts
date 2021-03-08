@@ -614,7 +614,7 @@ export class ContainerNode extends AbstractionBase {
 
 		if (this._scrollRect != this.container.scrollRect) {
 			this._scrollRect = this.container.scrollRect;
-			
+
 			if (this._scrollRectNode) {
 				this._scrollRectNode.setParent(null);
 				this._scrollRectNode = null;
