@@ -37,6 +37,8 @@ export interface IPartitionContainer extends IPartitionEntity
 
 	scrollRect: Rectangle;
 
+	isScrollRectMask: boolean;
+
 	/**
 	 *
 	 */

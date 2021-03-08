@@ -238,8 +238,15 @@ export class ContainerNode extends AbstractionBase {
 			if (this._parent)
 				this._matrix3D.append(this._parent.getMatrix3D());
 
-			if (this.container.scrollRect)
+			// scrollRect-masks are childs of the object that have the scrollRect applied
+			// to support scrolling we need to:
+			// 		- move objects with scrollRect by negative scrollRect position
+			// 		- move scrollRect-masks by positive scrollRect position
+
+			if (!this.container.isScrollRectMask && this.container.scrollRect)
 				this._matrix3D.prependTranslation(-this.container.scrollRect.x, -this.container.scrollRect.y, 0);
+			else if (this.container.isScrollRectMask && this.container.scrollRect)
+				this._matrix3D.prependTranslation(this.container.scrollRect.x, this.container.scrollRect.y, 0);
 
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.SCENE_TRANSFORM;
 
@@ -612,7 +619,7 @@ export class ContainerNode extends AbstractionBase {
 		if (!traverser.enterNode(this))
 			return;
 
-		if (this._scrollRect != this.container.scrollRect) {
+		if (!this.container.isScrollRectMask && this._scrollRect != this.container.scrollRect) {
 			this._scrollRect = this.container.scrollRect;
 
 			if (this._scrollRectNode) {
@@ -621,8 +628,12 @@ export class ContainerNode extends AbstractionBase {
 			}
 
 			if (this._scrollRect) {
-				this._scrollRectNode = this.container.getScrollRectPrimitive().getAbstraction<ContainerNode>(this._pool);
+				this._scrollRectNode = this.container.getScrollRectPrimitive()
+					.getAbstraction<ContainerNode>(this._pool);
 
+				this._scrollRectNode.container.isScrollRectMask = true;
+				this._scrollRectNode.container.scrollRect = this._scrollRect;
+				this._scrollRectNode.partition.setParent(this.partition);
 				this._scrollRectNode.setParent(this);
 			}
 		}
