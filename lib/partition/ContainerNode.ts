@@ -148,9 +148,8 @@ export class ContainerNode extends AbstractionBase {
 		return this._pickObjectNode;
 	}
 
-	public get renderToImage(): boolean
-	{
-		const renderToImage: boolean = this.container.cacheAsBitmap
+	public get renderToImage(): boolean {
+		const renderToImage: boolean = this.container.cacheAsBitmap;
 		if (this._renderToImage != renderToImage) {
 			this._renderToImage = renderToImage;
 
