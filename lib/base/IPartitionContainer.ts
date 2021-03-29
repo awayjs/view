@@ -13,6 +13,10 @@ export interface IPartitionContainer extends IPartitionEntity
 
 	readonly maskId: number;
 
+	cacheAsBitmap: boolean;
+
+	scale9Grid: Rectangle;
+
 	getChildAt(index: number): IPartitionEntity;
 
 	isEntity(): boolean;

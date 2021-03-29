@@ -72,6 +72,7 @@ export class ContainerNode extends AbstractionBase {
 	private _pickObjectNode: ContainerNode;
 	private _scrollRect: Rectangle;
 	private _scrollRectNode: ContainerNode;
+	private _renderToImage: boolean;
 	private _isDragEntity: boolean;
 	public _hierarchicalPropsDirty: HierarchicalProperty = HierarchicalProperty.ALL;
 
@@ -83,8 +84,8 @@ export class ContainerNode extends AbstractionBase {
 	private _inverseMatrix3DDirty: boolean = true;
 	private _orientationMatrix: Matrix3D = new Matrix3D();
 	private _tempVector3D: Vector3D = new Vector3D();
-	private _isCacheSource: boolean = false;
-	private _cacheAsBitmap: boolean = false;
+	// private _isCacheSource: boolean = false;
+	// private _cacheAsBitmap: boolean = false;
 	private _transformDisabled: boolean = false;
 	private _activeTransform: Transform;
 
@@ -145,6 +146,19 @@ export class ContainerNode extends AbstractionBase {
 		}
 
 		return this._pickObjectNode;
+	}
+
+	public get renderToImage(): boolean
+	{
+		const renderToImage: boolean = this.container.cacheAsBitmap
+		if (this._renderToImage != renderToImage) {
+			this._renderToImage = renderToImage;
+
+			if (!this._renderToImage)
+				this.partition.clearLocalNode();
+		}
+
+		return this._renderToImage;
 	}
 
 	public get boundsVisible(): boolean {
@@ -309,38 +323,38 @@ export class ContainerNode extends AbstractionBase {
 		return this._colorTransform || (this._colorTransform = new ColorTransform());
 	}
 
-	private rebuildBitmapCacheFlag() {
+	// private rebuildBitmapCacheFlag() {
 
-		if (!(this._hierarchicalPropsDirty & HierarchicalProperty.CACHE_AS_BITMAP)) {
-			return;
-		}
+	// 	if (!(this._hierarchicalPropsDirty & HierarchicalProperty.CACHE_AS_BITMAP)) {
+	// 		return;
+	// 	}
 
-		// mark that this container is cache source
-		this._isCacheSource = (<any> this.container).cacheAsBitmap;
+	// 	// mark that this container is cache source
+	// 	this._isCacheSource = (<any> this.container).cacheAsBitmap;
 
-		// when subree has cached parent include self
-		// parent (self = true, sub = true)
-		// -> child (self = false, sub = true)
-		// -> child (self = false, sub = true)
-		// -> child (self = false, sub = true)
-		// this is requred, because need know that current container is cache-source
+	// 	// when subree has cached parent include self
+	// 	// parent (self = true, sub = true)
+	// 	// -> child (self = false, sub = true)
+	// 	// -> child (self = false, sub = true)
+	// 	// -> child (self = false, sub = true)
+	// 	// this is requred, because need know that current container is cache-source
 
-		if (this._parent) {
-			this._cacheAsBitmap = this._isCacheSource || this.parent.getIsCacheAsBitmap();
-		}
+	// 	if (this._parent) {
+	// 		this._cacheAsBitmap = this._isCacheSource || this.parent.getIsCacheAsBitmap();
+	// 	}
 
-		this._hierarchicalPropsDirty ^= HierarchicalProperty.CACHE_AS_BITMAP;
-	}
+	// 	this._hierarchicalPropsDirty ^= HierarchicalProperty.CACHE_AS_BITMAP;
+	// }
 
-	public getIsCacheSource(): boolean {
-		this.rebuildBitmapCacheFlag();
-		return this._isCacheSource;
-	}
+	// public getIsCacheSource(): boolean {
+	// 	this.rebuildBitmapCacheFlag();
+	// 	return this._isCacheSource;
+	// }
 
-	public getIsCacheAsBitmap(): boolean {
-		this.rebuildBitmapCacheFlag();
-		return this._cacheAsBitmap;
-	}
+	// public getIsCacheAsBitmap(): boolean {
+	// 	this.rebuildBitmapCacheFlag();
+	// 	return this._cacheAsBitmap;
+	// }
 
 	/**
 	 *
@@ -535,6 +549,9 @@ export class ContainerNode extends AbstractionBase {
 
 	public onInvalidate(event: AssetEvent): void {
 		super.onInvalidate(event);
+
+		if (this.partition != this._parent?.partition)
+			this._partition.invalidate();
 
 		if (this.container.isEntity())
 			this.invalidateEntity(this.container);

@@ -20,6 +20,8 @@ export interface IPartitionEntity extends IAsset
 
 	transform: Transform;
 
+	zOffset: number;
+
 	/**
 	 *
 	 */

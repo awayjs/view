@@ -78,6 +78,8 @@ export class EntityNode extends AbstractionBase implements INode {
 	}
 
 	public onInvalidate(event: AssetEvent): void {
+		(<PartitionBase> this._pool).invalidateEntity(this);
+
 		super.onInvalidate(event);
 
 		this.invalidate();
@@ -151,15 +153,16 @@ export class EntityNode extends AbstractionBase implements INode {
 	 * @returns {boolean}
 	 */
 	public isRenderable(): boolean {
-		const p = this.parent;
+		return this.parent.getColorTransform()._isRenderable();
+		// const p = this.parent;
 
-		const tree = p.getIsCacheAsBitmap();
-		const self = p.getIsCacheSource();
+		// const tree = p.getIsCacheAsBitmap();
+		// const self = p.getIsCacheSource();
 
-		// we can render only when self cached (because handle a cache texture) or when both is not cached
-		const rendered = self || (!tree && !self);
+		// // we can render only when self cached (because handle a cache texture) or when both is not cached
+		// const rendered = self || (!tree && !self);
 
-		return p.getColorTransform()._isRenderable() && rendered;
+		// return p.getColorTransform()._isRenderable() && rendered;
 	}
 
 	/**

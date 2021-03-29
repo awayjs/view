@@ -4,12 +4,20 @@ import {
 	AssetBase,
 	IAbstractionClass,
 	IAsset,
+	PerspectiveProjection,
+	CoordinateSystem,
+	Transform,
+	Vector3D,
 } from '@awayjs/core';
 
 import { IPartitionTraverser } from './IPartitionTraverser';
-import { ContainerNode } from './ContainerNode';
+import { ContainerNode, NodePool } from './ContainerNode';
 import { EntityNode } from './EntityNode';
 import { INode } from './INode';
+import { View } from '../View';
+import { Stage } from '@awayjs/stage';
+import { BasicPartition } from './BasicPartition';
+import { VaoWebGL } from '@awayjs/stage/dist/lib/webgl/VaoWebGL';
 
 /**
  * @class away.partition.Partition
@@ -18,6 +26,8 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	private static _abstractionClassPool: Record<string, IAbstractionClass> = {};
 
 	private _invalid: boolean;
+	private _localView: View;
+	private _localNode: ContainerNode;
 	private _children: Array<PartitionBase> = new Array<PartitionBase>();
 	private _updateQueue: Record<number, EntityNode> = {};
 
@@ -38,6 +48,43 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 		super();
 
 		this._rootNode = rootNode;
+	}
+
+	public getLocalView(stage: Stage): View {
+
+		if (!this._localView) {
+			const projection = new PerspectiveProjection();
+			projection.coordinateSystem = CoordinateSystem.LEFT_HANDED;
+			projection.originX = -1;
+			projection.originY = 1;
+			projection.transform = new Transform();
+			projection.transform.moveTo(0, 0, -1000);
+			projection.transform.lookAt(new Vector3D());
+			this._localView = new View(projection, stage, null, null, null, true);
+			this._localView.backgroundAlpha = 0;
+		}
+
+		return this._localView;
+	}
+
+	public clearLocalView(): void {
+		if (this._localView)
+			this._localView = null;
+	}
+
+	public getLocalNode(): ContainerNode {
+
+		if (!this._localNode)
+			this._localNode = NodePool.getRootNode(this._rootNode.container, BasicPartition);
+
+		return this._localNode;
+	}
+
+	public clearLocalNode(): void {
+		if (this._localNode) {
+			this._localNode.onClear(null);
+			this._localNode = null;
+		}
 	}
 
 	public addChild(child: PartitionBase): void {
