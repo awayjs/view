@@ -164,7 +164,7 @@ export class View extends AssetBase {
      *
      */
 	public get height(): number {
-		return this._scale.y * this._targetHeight;
+		return this._rect.height;
 	}
 
 	public set height(value: number) {
@@ -337,9 +337,7 @@ export class View extends AssetBase {
 
 		this._stage.addEventListener(StageEvent.INVALIDATE_SIZE, this._onInvalidateSizeDelegate);
 
-		this._targetWidth = this._stage.width;
-		this._targetHeight = this._stage.height;
-
+		this._updateDimensions();
 		this._updateFocalLength();
 		this._updatePixelRatio();
 	}
@@ -414,6 +412,9 @@ export class View extends AssetBase {
 		this._updateDimensions();
 		this._updateFocalLength();
 		this._updatePixelRatio();
+
+		if (!this.preserveDimensions || (!this._shareContext && this._target == null))
+			this._invalidateSize();
 	}
 
 	private _onInvalidateViewMatrix3D(event: ProjectionEvent): void {
@@ -436,6 +437,9 @@ export class View extends AssetBase {
 		this._updateDimensions();
 		this._updateFocalLength();
 		this._updatePixelRatio();
+
+		if (!this.preserveDimensions || (!this._shareContext && this._target == null))
+			this._invalidateSize();
 	}
 
 	private _updateDimensions(): void {
@@ -462,8 +466,6 @@ export class View extends AssetBase {
 			this._rect.y = this._offset.y * this._targetHeight;
 			this._rect.width = this._scale.x * this._targetWidth;
 			this._rect.height = this._scale.y * this._targetHeight;
-
-			this._invalidateSize();
 		}
 	}
 
