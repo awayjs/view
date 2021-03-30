@@ -517,6 +517,9 @@ export class ContainerNode extends AbstractionBase {
 		for (let i: number = 0; i < container.numChildren; ++i)
 			this.addChildAt(container.getChildAt(i), this._numChildNodes);
 
+		if (this.container.isEntity())
+			this.invalidateEntity(this.container);
+
 		this._hierarchicalPropsDirty = HierarchicalProperty.ALL;
 
 		this._activeTransform = this.container.transform;
