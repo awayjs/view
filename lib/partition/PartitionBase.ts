@@ -17,7 +17,6 @@ import { INode } from './INode';
 import { View } from '../View';
 import { Stage } from '@awayjs/stage';
 import { BasicPartition } from './BasicPartition';
-import { VaoWebGL } from '@awayjs/stage/dist/lib/webgl/VaoWebGL';
 
 /**
  * @class away.partition.Partition
