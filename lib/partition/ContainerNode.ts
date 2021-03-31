@@ -10,6 +10,7 @@ import {
 	Point,
 	Transform,
 	Rectangle,
+	Box,
 } from '@awayjs/core';
 
 import { IPartitionEntity } from '../base/IPartitionEntity';
@@ -59,6 +60,7 @@ export class NodePool implements IAbstractionPool {
 export class ContainerNode extends AbstractionBase {
 
 	private static _nullTransform: Transform = new Transform();
+
 	private _invalidateMatrix3DEvent: ContainerNodeEvent;
 	private _onHierarchicalInvalidate: (event: HeirarchicalEvent) => void;
 	private _onAddChildAt: (event: ContainerEvent) => void;
@@ -74,7 +76,6 @@ export class ContainerNode extends AbstractionBase {
 	private _scrollRectNode: ContainerNode;
 	private _renderToImage: boolean;
 	private _isDragEntity: boolean;
-	public _hierarchicalPropsDirty: HierarchicalProperty = HierarchicalProperty.ALL;
 
 	private _position: Vector3D = new Vector3D();
 	private _positionDirty: boolean;
@@ -84,8 +85,6 @@ export class ContainerNode extends AbstractionBase {
 	private _inverseMatrix3DDirty: boolean = true;
 	private _orientationMatrix: Matrix3D = new Matrix3D();
 	private _tempVector3D: Vector3D = new Vector3D();
-	// private _isCacheSource: boolean = false;
-	// private _cacheAsBitmap: boolean = false;
 	private _transformDisabled: boolean = false;
 	private _activeTransform: Transform;
 
@@ -100,9 +99,9 @@ export class ContainerNode extends AbstractionBase {
 	protected _childPool: NodePool;
 	protected _childNodes: Array<ContainerNode> = new Array<ContainerNode>();
 	protected _numChildNodes: number = 0;
-
 	protected _debugEntity: IPartitionEntity;
 
+	public _hierarchicalPropsDirty: HierarchicalProperty = HierarchicalProperty.ALL;
 	public _collectionMark: number;// = 0;
 
 	public get parent(): ContainerNode {
@@ -116,7 +115,7 @@ export class ContainerNode extends AbstractionBase {
 			this._partitionClass = this.container.partitionClass;
 
 			if (this.parent === this) {
-				throw ('Slef REF!!!');
+				throw ('Self REF!!!');
 			}
 
 			this._partition = this.container.partitionClass
@@ -149,8 +148,12 @@ export class ContainerNode extends AbstractionBase {
 	}
 
 	public get renderToImage(): boolean {
-		const renderToImage: boolean = this.container.cacheAsBitmap;
-		if (this._renderToImage != renderToImage) {
+		const renderToImage: boolean =
+			this.container.cacheAsBitmap ||
+			!!this.container.scale9Grid ||
+			!!this.container.filters;
+
+		if (this._renderToImage !== renderToImage) {
 			this._renderToImage = renderToImage;
 
 			if (!this._renderToImage)
@@ -322,39 +325,6 @@ export class ContainerNode extends AbstractionBase {
 		return this._colorTransform || (this._colorTransform = new ColorTransform());
 	}
 
-	// private rebuildBitmapCacheFlag() {
-
-	// 	if (!(this._hierarchicalPropsDirty & HierarchicalProperty.CACHE_AS_BITMAP)) {
-	// 		return;
-	// 	}
-
-	// 	// mark that this container is cache source
-	// 	this._isCacheSource = (<any> this.container).cacheAsBitmap;
-
-	// 	// when subree has cached parent include self
-	// 	// parent (self = true, sub = true)
-	// 	// -> child (self = false, sub = true)
-	// 	// -> child (self = false, sub = true)
-	// 	// -> child (self = false, sub = true)
-	// 	// this is requred, because need know that current container is cache-source
-
-	// 	if (this._parent) {
-	// 		this._cacheAsBitmap = this._isCacheSource || this.parent.getIsCacheAsBitmap();
-	// 	}
-
-	// 	this._hierarchicalPropsDirty ^= HierarchicalProperty.CACHE_AS_BITMAP;
-	// }
-
-	// public getIsCacheSource(): boolean {
-	// 	this.rebuildBitmapCacheFlag();
-	// 	return this._isCacheSource;
-	// }
-
-	// public getIsCacheAsBitmap(): boolean {
-	// 	this.rebuildBitmapCacheFlag();
-	// 	return this._cacheAsBitmap;
-	// }
-
 	/**
 	 *
 	 * @returns {number}
@@ -487,7 +457,26 @@ export class ContainerNode extends AbstractionBase {
 		return target;
 	}
 
-	public getBoundsPrimitive(pickGroup: PickGroup): EntityNode {
+	public update9Slice(bounds: Rectangle | Box) {
+		const source = this.container;
+		if (!source.scale9Grid) {
+			return;
+		}
+
+		// TODO refact this
+		// MC can't have graphics with shapes, it is container
+		const isValidMC = (source.assetType === '[asset MovieClip]' && this._childNodes.length);
+		const target = isValidMC ? this._childNodes[0].container.graphics : source.graphics;
+
+		if (!target) {
+			return;
+		}
+
+		target.setSlice9Rectangle(source.scale9Grid, bounds);
+		target.updateSlice9(source.transform.scale.x, source.transform.scale.y);
+	}
+
+	public getBoundsPrimitive(_pickGroup: PickGroup): EntityNode {
 		return null;
 	}
 
@@ -505,7 +494,7 @@ export class ContainerNode extends AbstractionBase {
 		this._onEntityInvalidate
 			= (event: ContainerEvent) => this.invalidateEntity(event.entity);
 		this._onEntityClear
-			= (event: ContainerEvent) => this.clearEntity();
+			= (_event: ContainerEvent) => this.clearEntity();
 
 		this.container = container;
 		this.container.addEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onHierarchicalInvalidate);
@@ -566,12 +555,13 @@ export class ContainerNode extends AbstractionBase {
 	 * @returns {boolean}
 	 * @internal
 	 */
-	public isInFrustum(rootEntity: INode, planes: Array<Plane3D>, numPlanes: number, pickGroup: PickGroup): boolean {
+	public isInFrustum(
+		_rootEntity: INode, _planes: Array<Plane3D>, _numPlanes: number, _pickGroup: PickGroup): boolean {
+
 		if (this.isInvisible())
 			return false;
 
 		return true;
-		//return this.partition.isUpdated || pickGroup.getBoundsPicker(this.partition)._isInFrustumInternal(rootEntity, planes, numPlanes);
 	}
 
 	/**
@@ -632,13 +622,13 @@ export class ContainerNode extends AbstractionBase {
 			this.partition.updateEntities();
 
 		//get the sub-traverser for the partition, if different, terminate this traversal
-		if (traverser.partition != this.partition && traverser != traverser.getTraverser(this.partition))
+		if (traverser.partition !== this.partition && traverser !== traverser.getTraverser(this.partition))
 			return;
 
 		if (!traverser.enterNode(this))
 			return;
 
-		if (!this.container.maskMode && this._scrollRect != this.container.scrollRect) {
+		if (!this.container.maskMode && this._scrollRect !== this.container.scrollRect) {
 			this._scrollRect = this.container.scrollRect;
 
 			if (this._scrollRectNode) {
@@ -689,7 +679,7 @@ export class ContainerNode extends AbstractionBase {
 	public removeChildAt(index: number): ContainerNode {
 		this._numChildNodes--;
 
-		const node: ContainerNode = (index == this._numChildNodes)
+		const node: ContainerNode = (index === this._numChildNodes)
 			? this._childNodes.pop()
 			: this._childNodes.splice(index, 1)[0];
 
@@ -782,7 +772,7 @@ export class ContainerNode extends AbstractionBase {
 	public setParent(parent: ContainerNode): void {
 
 		if (this._parent) {
-			if (this._parent.partition != this.partition)
+			if (this._parent.partition !== this.partition)
 				this._parent.partition.removeChild(this.partition);
 
 			this.clear();
@@ -791,7 +781,7 @@ export class ContainerNode extends AbstractionBase {
 		this._parent = parent;
 
 		if (this._parent) {
-			if (this._parent.partition != this.partition)
+			if (this._parent.partition !== this.partition)
 				this._parent.partition.addChild(this.partition);
 
 			if (this.container.isEntity())
