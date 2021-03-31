@@ -53,10 +53,6 @@ export class EntityNode extends AbstractionBase implements INode {
 		return this._boundsVisible;
 	}
 
-	/**
-	 *
-	 * @returns {number}
-	 */
 	constructor(entity: IPartitionEntity, partition: PartitionBase) {
 		super(entity, partition);
 	}
@@ -98,12 +94,14 @@ export class EntityNode extends AbstractionBase implements INode {
 	 * @param numPlanes
 	 * @returns {boolean}
 	 */
-	public isInFrustum(rootEntity: ContainerNode, planes: Array<Plane3D>, numPlanes: number, pickGroup: PickGroup): boolean {
+	public isInFrustum(
+		_rootEntity: ContainerNode, _planes: Array<Plane3D>, _numPlanes: number, _pickGroup: PickGroup): boolean {
+
 		if (this.isInvisible())
 			return false;
 
 		return true;
-		return this._asset.getAbstraction<PickEntity>(pickGroup)._isInFrustumInternal(rootEntity, planes, numPlanes);
+		//return this._asset.getAbstraction<PickEntity>(pickGroup)._isInFrustumInternal(rootEntity, planes, numPlanes);
 	}
 
 	public isInvisible(): boolean {
@@ -133,19 +131,12 @@ export class EntityNode extends AbstractionBase implements INode {
 	/**
 	 * @inheritDoc
 	 */
-	public isIntersectingRay(rootEntity: ContainerNode, globalRayPosition: Vector3D, globalRayDirection: Vector3D, pickGroup: PickGroup): boolean {
-		// if (!(<IPartitionEntity> this._asset).partition)
-		// 	return false;
-
-		// var box:Box = pickGroup.getBoundsPicker((<IPartitionEntity> this._asset).partition).getBoxBounds(null, false, true);
-
-		// if (box == null)
-		// 	return false;
-
-		// if (box.rayIntersection((<IPartitionEntity> this._asset).transform.inverseConcatenatedMatrix3D.transformVector(globalRayPosition), (<IPartitionEntity> this._asset).transform.inverseConcatenatedMatrix3D.deltaTransformVector(globalRayDirection)) < 0)
-		// 	return false;
-
-		return this.getAbstraction<PickEntity>(pickGroup)._isIntersectingRayInternal(rootEntity, globalRayPosition, globalRayDirection);
+	public isIntersectingRay(
+		rootEntity: ContainerNode, globalRayPosition: Vector3D, globalRayDirection: Vector3D, pickGroup: PickGroup
+	): boolean {
+		return this
+			.getAbstraction<PickEntity>(pickGroup)
+			._isIntersectingRayInternal(rootEntity, globalRayPosition, globalRayDirection);
 	}
 
 	/**
@@ -154,15 +145,6 @@ export class EntityNode extends AbstractionBase implements INode {
 	 */
 	public isRenderable(): boolean {
 		return this.parent.getColorTransform()._isRenderable();
-		// const p = this.parent;
-
-		// const tree = p.getIsCacheAsBitmap();
-		// const self = p.getIsCacheSource();
-
-		// // we can render only when self cached (because handle a cache texture) or when both is not cached
-		// const rendered = self || (!tree && !self);
-
-		// return p.getColorTransform()._isRenderable() && rendered;
 	}
 
 	/**

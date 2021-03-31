@@ -23,6 +23,7 @@ import { BasicPartition } from './BasicPartition';
  */
 export class PartitionBase extends AssetBase implements IAbstractionPool {
 	private static _abstractionClassPool: Record<string, IAbstractionClass> = {};
+	private static _defaultProjection: PerspectiveProjection;
 
 	private _invalid: boolean;
 	private _localView: View;
@@ -52,13 +53,23 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	public getLocalView(stage: Stage): View {
 
 		if (!this._localView) {
-			const projection = new PerspectiveProjection();
-			projection.coordinateSystem = CoordinateSystem.LEFT_HANDED;
-			projection.originX = -1;
-			projection.originY = 1;
-			projection.transform = new Transform();
-			projection.transform.moveTo(0, 0, -1000);
-			projection.transform.lookAt(new Vector3D());
+			/**
+			* projection is not simple object
+			* not needed spawn it for every cached partition
+			* it has 3 matrices = 100 bytes + Transform,
+			* that have 4 matrices + a lot of vectors (16 bytes) = 300 bytes,
+			* And this is under heavy extending. 1 projection allocate more that 4kb per instance
+			*/
+			let projection = PartitionBase._defaultProjection;
+			if (!projection) {
+				projection = new PerspectiveProjection();
+				projection.coordinateSystem = CoordinateSystem.LEFT_HANDED;
+				projection.originX = -1;
+				projection.originY = 1;
+				projection.transform = new Transform();
+				projection.transform.moveTo(0, 0, -1000);
+				projection.transform.lookAt(new Vector3D());
+			}
 			this._localView = new View(projection, stage, null, null, null, true);
 			this._localView.backgroundAlpha = 0;
 		}
@@ -183,6 +194,9 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 
 	public clear(): void {
 		super.clear();
+
+		this._localView.dispose();
+		this._localView = null;
 
 		for (let i = 0; i < this._children.length; i++)
 			this._children[i].clear();
