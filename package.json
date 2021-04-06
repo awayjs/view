@@ -1,6 +1,6 @@
 {
   "name": "@awayjs/view",
-  "version": "0.6.26",
+  "version": "0.6.27",
   "description": "View for AwayJS",
   "main": "bundle/awayjs-view.umd.js",
   "module": "dist/index.js",
