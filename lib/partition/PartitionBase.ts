@@ -65,7 +65,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 				projection = new PerspectiveProjection();
 				projection.coordinateSystem = CoordinateSystem.LEFT_HANDED;
 				projection.originX = -1;
-				projection.originY = 1;
+				projection.originY = -1;
 				projection.transform = new Transform();
 				projection.transform.moveTo(0, 0, -1000);
 				projection.transform.lookAt(new Vector3D());
@@ -84,14 +84,18 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 
 	public getLocalNode(): ContainerNode {
 
-		if (!this._localNode)
+		if (!this._localNode) {
 			this._localNode = NodePool.getRootNode(this._rootNode.container, BasicPartition);
+			this._localNode.transformDisabled = true;
+			this.addChild(this._localNode.partition);
+		}
 
 		return this._localNode;
 	}
 
 	public clearLocalNode(): void {
 		if (this._localNode) {
+			this.removeChild(this._localNode.partition);
 			this._localNode.onClear(null);
 			this._localNode = null;
 		}
