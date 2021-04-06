@@ -22,6 +22,7 @@ export {BoundingVolumeType} from "./lib/bounds/BoundingVolumeType";
 export {NullBounds} from "./lib/bounds/NullBounds";
 
 export {BoundsPickerEvent} from "./lib/events/BoundsPickerEvent";
+export {ContainerNodeEvent} from "./lib/events/ContainerNodeEvent";
 export {ViewEvent} from "./lib/events/ViewEvent";
 export {ContainerEvent} from "./lib/events/ContainerEvent";
 export {HeirarchicalEvent} from "./lib/events/HeirarchicalEvent";
