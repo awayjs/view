@@ -472,8 +472,8 @@ export class ContainerNode extends AbstractionBase {
 			return;
 		}
 
-		target.setSlice9Rectangle(source.scale9Grid, bounds);
-		target.updateSlice9(source.transform.scale.x, source.transform.scale.y);
+		target.setScale9(source.scale9Grid, bounds);
+		target.updateScale9(source.transform.scale.x, source.transform.scale.y);
 	}
 
 	public getBoundsPrimitive(_pickGroup: PickGroup): EntityNode {

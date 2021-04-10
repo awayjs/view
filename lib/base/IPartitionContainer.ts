@@ -8,8 +8,8 @@ import { IPartitionEntity } from './IPartitionEntity';
 import { OrientationMode } from './OrientationMode';
 
 interface IScale9GridTarget {
-	setSlice9Rectangle(slice: Rectangle, bounds: Rectangle | Box): void,
-	updateSlice9(scaleX: number, scaleY: number): void;
+	setScale9(slice: Rectangle, bounds: Rectangle | Box): void,
+	updateScale9(scaleX: number, scaleY: number): void;
 }
 
 export interface IPartitionContainer extends IPartitionEntity
