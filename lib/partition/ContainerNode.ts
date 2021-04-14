@@ -472,7 +472,10 @@ export class ContainerNode extends AbstractionBase {
 			return;
 		}
 
-		target.setScale9(source.scale9Grid, bounds);
+		if (bounds) {
+			target.setScale9(source.scale9Grid, bounds);
+		}
+
 		target.updateScale9(source.transform.scale.x, source.transform.scale.y);
 	}
 
@@ -620,6 +623,8 @@ export class ContainerNode extends AbstractionBase {
 	public acceptTraverser(traverser: IPartitionTraverser): void {
 		if (this.partition.rootNode == this)
 			this.partition.updateEntities();
+
+		this.update9Slice(null);
 
 		//get the sub-traverser for the partition, if different, terminate this traversal
 		if (traverser.partition !== this.partition && traverser !== traverser.getTraverser(this.partition))
