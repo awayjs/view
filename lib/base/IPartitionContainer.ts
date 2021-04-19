@@ -1,4 +1,4 @@
-import { Box, Rectangle } from '@awayjs/core';
+import { Rectangle } from '@awayjs/core';
 import { BlendMode } from '@awayjs/stage';
 
 import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
@@ -7,11 +7,6 @@ import { IEntityTraverser } from './IEntityTraverser';
 import { IPartitionEntity } from './IPartitionEntity';
 import { OrientationMode } from './OrientationMode';
 
-interface IScale9GridTarget {
-	setScale9(slice: Rectangle, bounds: Rectangle | Box): void,
-	updateScale9(scaleX: number, scaleY: number): void;
-}
-
 export interface IPartitionContainer extends IPartitionEntity
 {
 	readonly numChildren: number;
@@ -19,8 +14,6 @@ export interface IPartitionContainer extends IPartitionEntity
 	readonly maskId: number;
 
 	readonly filters: Array<any>;
-
-	readonly graphics?: IScale9GridTarget;
 
 	cacheAsBitmap: boolean;
 

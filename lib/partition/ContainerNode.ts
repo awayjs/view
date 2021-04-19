@@ -10,7 +10,6 @@ import {
 	Point,
 	Transform,
 	Rectangle,
-	Box,
 } from '@awayjs/core';
 
 import { IPartitionEntity } from '../base/IPartitionEntity';
@@ -79,6 +78,7 @@ export class ContainerNode extends AbstractionBase {
 
 	private _position: Vector3D = new Vector3D();
 	private _positionDirty: boolean;
+	private _scale9Container: IPartitionContainer;
 	private _matrix3D: Matrix3D = new Matrix3D();
 	private _colorTransform: ColorTransform;
 	private _inverseMatrix3D: Matrix3D;
@@ -148,10 +148,7 @@ export class ContainerNode extends AbstractionBase {
 	}
 
 	public get renderToImage(): boolean {
-		const renderToImage: boolean =
-			this.container.cacheAsBitmap ||
-			!!this.container.scale9Grid ||
-			!!this.container.filters;
+		const renderToImage: boolean = this.container.cacheAsBitmap || this.container.filters?.length > 0;
 
 		if (this._renderToImage !== renderToImage) {
 			this._renderToImage = renderToImage;
@@ -186,6 +183,18 @@ export class ContainerNode extends AbstractionBase {
 
 	public get transformDisabled(): boolean {
 		return this._transformDisabled;
+	}
+
+	public getScale9Container(): IPartitionContainer {
+		if (this._hierarchicalPropsDirty & HierarchicalProperty.SCALE9) {
+			this._scale9Container = this.container.scale9Grid
+				? this.container
+				: this._parent?.getScale9Container();
+
+			this._hierarchicalPropsDirty ^= HierarchicalProperty.SCALE9;
+		}
+
+		return this._scale9Container;
 	}
 
 	/**
@@ -457,28 +466,6 @@ export class ContainerNode extends AbstractionBase {
 		return target;
 	}
 
-	public update9Slice(bounds: Rectangle | Box) {
-		const source = this.container;
-		if (!source.scale9Grid) {
-			return;
-		}
-
-		// TODO refact this
-		// MC can't have graphics with shapes, it is container
-		const isValidMC = (source.assetType === '[asset MovieClip]' && this._childNodes.length);
-		const target = isValidMC ? this._childNodes[0].container.graphics : source.graphics;
-
-		if (!target) {
-			return;
-		}
-
-		if (bounds) {
-			target.setScale9(source.scale9Grid, bounds);
-		}
-
-		target.updateScale9(source.transform.scale.x, source.transform.scale.y);
-	}
-
 	public getBoundsPrimitive(_pickGroup: PickGroup): EntityNode {
 		return null;
 	}
@@ -623,8 +610,6 @@ export class ContainerNode extends AbstractionBase {
 	public acceptTraverser(traverser: IPartitionTraverser): void {
 		if (this.partition.rootNode == this)
 			this.partition.updateEntities();
-
-		this.update9Slice(null);
 
 		//get the sub-traverser for the partition, if different, terminate this traversal
 		if (traverser.partition !== this.partition && traverser !== traverser.getTraverser(this.partition))
