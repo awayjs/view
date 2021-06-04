@@ -174,6 +174,13 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 	public traverse(): void {
 		this._boundsPickers.length = 0;
+		if (this._node?.container) {
+			const cont: any = this._node.container;
+			if (cont.scaleX === 0 || cont.scaleY === 0 || cont.scaleZ === 0) {
+				this._invalid = false;
+				return;
+			}
+		}
 		this._partition.traverse(this);
 
 		this._invalid = false;
