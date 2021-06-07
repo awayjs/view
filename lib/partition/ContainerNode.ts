@@ -59,13 +59,17 @@ export class NodePool implements IAbstractionPool {
 export class ContainerNode extends AbstractionBase {
 
 	private static _nullTransform: Transform = new Transform();
+	private static _tempVector3D: Vector3D = new Vector3D();
+	private static _nullColorTransform = new ColorTransform();
 
 	private _invalidateMatrix3DEvent: ContainerNodeEvent;
+	/*
 	private _onHierarchicalInvalidate: (event: HeirarchicalEvent) => void;
 	private _onAddChildAt: (event: ContainerEvent) => void;
 	private _onRemoveChildAt: (event: ContainerEvent) => void;
 	private _onEntityInvalidate: (event: ContainerEvent) => void;
 	private _onEntityClear: (event: ContainerEvent) => void;
+	*/
 
 	private _entityNode: EntityNode;
 	private _partitionClass: IPartitionClass;
@@ -84,7 +88,6 @@ export class ContainerNode extends AbstractionBase {
 	private _inverseMatrix3D: Matrix3D;
 	private _inverseMatrix3DDirty: boolean = true;
 	private _orientationMatrix: Matrix3D = new Matrix3D();
-	private _tempVector3D: Vector3D = new Vector3D();
 	private _transformDisabled: boolean = false;
 	private _activeTransform: Transform;
 
@@ -331,7 +334,7 @@ export class ContainerNode extends AbstractionBase {
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.COLOR_TRANSFORM;
 		}
 
-		return this._colorTransform || (this._colorTransform = new ColorTransform());
+		return this._colorTransform || ContainerNode._nullColorTransform;
 	}
 
 	/**
@@ -353,12 +356,19 @@ export class ContainerNode extends AbstractionBase {
 	}
 
 	public getMasks(update: boolean = false): ContainerNode[] {
-		if (update) {
-			this._masks.length = 0;
+		if (!update) {
+			return this._masks;
+		}
 
-			if (this.container.masks)
-				for (let i = 0; i < this.container.masks.length; i++)
-					this._masks.push((<NodePool> this._pool).getNode(this.container.masks[i]).partition.rootNode);
+		if (this.container.masks) {
+			const len = this.container.masks.length;
+			this._masks.length = len;
+
+			for (let i = 0; i < len; i++) {
+				this._masks[i] = (<NodePool> this._pool).getNode(this.container.masks[i]).partition.rootNode;
+			}
+		} else {
+			this._masks.length = 0;
 		}
 
 		return this._masks;
@@ -392,16 +402,16 @@ export class ContainerNode extends AbstractionBase {
 	 * returns a new Point object with _x_ and _y_ values that relate to the
 	 * origin of the display object instead of the origin of the Stage.
 	 *
-	 * @param point An object created with the Point class. The Point object
-	 *              specifies the _x_ and _y_ coordinates as properties.
-	 * @return A Point object with coordinates relative to the display object.
 	 */
 	public globalToLocal(point: Point, target: Point = null): Point {
-		this._tempVector3D.setTo(point.x, point.y, 0);
-		const pos: Vector3D = this.getInverseMatrix3D().transformVector(this._tempVector3D, this._tempVector3D);
+		const tmp = ContainerNode._tempVector3D;
+		tmp.setTo(point.x, point.y, 0);
 
-		if (!target)
+		const pos = this.getInverseMatrix3D().transformVector(tmp, tmp);
+
+		if (!target) {
 			target = new Point();
+		}
 
 		target.x = pos.x;
 		target.y = pos.y;
@@ -422,10 +432,6 @@ export class ContainerNode extends AbstractionBase {
 	 * containing <code>x</code>, <code>y</code>, and <code>z</code> values that
 	 * are relative to the origin of the three-dimensional display object.</p>
 	 *
-	 * @param point A Vector3D object representing global x, y and z coordinates in
-	 *              the scene.
-	 * @return A Vector3D object with coordinates relative to the three-dimensional
-	 *         display object.
 	 */
 	public globalToLocal3D(position: Vector3D): Vector3D {
 		return this.getInverseMatrix3D().transformVector(position);
@@ -454,11 +460,14 @@ export class ContainerNode extends AbstractionBase {
 	 * @return A Point object with coordinates relative to the Stage.
 	 */
 	public localToGlobal(point: Point, target: Point = null): Point {
-		this._tempVector3D.setTo(point.x, point.y, 0);
-		const pos: Vector3D = this.getMatrix3D().transformVector(this._tempVector3D, this._tempVector3D);
+		const tmp = ContainerNode._tempVector3D;
+		tmp.setTo(point.x, point.y, 0);
 
-		if (!target)
+		const pos = this.getMatrix3D().transformVector(tmp, tmp);
+
+		if (!target) {
 			target = new Point();
+		}
 
 		target.x = pos.x;
 		target.y = pos.y;
@@ -473,6 +482,8 @@ export class ContainerNode extends AbstractionBase {
 	constructor(container: IPartitionContainer, pool: NodePool) {
 		super(container, pool);
 
+		this._onEvent = this._onEvent.bind(this);
+		/*
 		this._onHierarchicalInvalidate
 			= (event: HeirarchicalEvent) => this.invalidateHierarchicalProperty(event.property);
 
@@ -485,13 +496,22 @@ export class ContainerNode extends AbstractionBase {
 			= (event: ContainerEvent) => this.invalidateEntity(event.entity);
 		this._onEntityClear
 			= (_event: ContainerEvent) => this.clearEntity();
+		*/
 
 		this.container = container;
+		/*
 		this.container.addEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onHierarchicalInvalidate);
 		this.container.addEventListener(ContainerEvent.ADD_CHILD_AT, this._onAddChildAt);
 		this.container.addEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onRemoveChildAt);
 		this.container.addEventListener(ContainerEvent.INVALIDATE_ENTITY, this._onEntityInvalidate);
 		this.container.addEventListener(ContainerEvent.CLEAR_ENTITY, this._onEntityClear);
+		*/
+
+		this.container.addEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onEvent);
+		this.container.addEventListener(ContainerEvent.ADD_CHILD_AT, this._onEvent);
+		this.container.addEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onEvent);
+		this.container.addEventListener(ContainerEvent.INVALIDATE_ENTITY, this._onEvent);
+		this.container.addEventListener(ContainerEvent.CLEAR_ENTITY, this._onEvent);
 
 		for (let i: number = 0; i < container.numChildren; ++i)
 			this.addChildAt(container.getChildAt(i), this._numChildNodes);
@@ -504,14 +524,37 @@ export class ContainerNode extends AbstractionBase {
 		this._activeTransform = this.container.transform;
 	}
 
+	private _onEvent(e: ContainerEvent) {
+		switch (e.type) {
+			case ContainerEvent.CLEAR_ENTITY:
+				return this.clearEntity();
+			case ContainerEvent.INVALIDATE_ENTITY:
+				return this.invalidateEntity(e.entity);
+			case ContainerEvent.REMOVE_CHILD_AT:
+				return this.removeChildAt(e.index);
+			case ContainerEvent.ADD_CHILD_AT:
+				return this.addChildAt(e.entity, e.index);
+			case HeirarchicalEvent.INVALIDATE_PROPERTY:
+				return this.invalidateHierarchicalProperty((<HeirarchicalEvent> <any> e).property);
+		}
+	}
+
 	public onClear(event: AssetEvent): void {
 		super.onClear(event);
 
+		/*
 		this.container.removeEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onHierarchicalInvalidate);
 		this.container.removeEventListener(ContainerEvent.ADD_CHILD_AT, this._onAddChildAt);
 		this.container.removeEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onRemoveChildAt);
 		this.container.removeEventListener(ContainerEvent.INVALIDATE_ENTITY, this._onEntityInvalidate);
 		this.container.removeEventListener(ContainerEvent.CLEAR_ENTITY, this._onEntityClear);
+		*/
+
+		this.container.removeEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onEvent);
+		this.container.removeEventListener(ContainerEvent.ADD_CHILD_AT, this._onEvent);
+		this.container.removeEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onEvent);
+		this.container.removeEventListener(ContainerEvent.INVALIDATE_ENTITY, this._onEvent);
+		this.container.removeEventListener(ContainerEvent.CLEAR_ENTITY, this._onEvent);
 
 		if (this._entityNode)
 			this.clearEntity();

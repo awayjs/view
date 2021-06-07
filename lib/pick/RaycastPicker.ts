@@ -21,6 +21,9 @@ import { ContainerNode } from '../partition/ContainerNode';
  * @class away.pick.RaycastPicker
  */
 export class RaycastPicker extends AbstractionBase implements IPartitionTraverser {
+	private static _rayPosition: Vector3D = new Vector3D();
+	private static _rayDirection: Vector3D = new Vector3D();
+
 	private _dragNode: ContainerNode;
 
 	public readonly partition: PartitionBase;
@@ -73,8 +76,14 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		if (!partition.rootNode.isMouseDisabled() || partition.rootNode.isDragEntity()) {
 			const traverser: RaycastPicker = this.pickGroup.getRaycastPicker(partition);
 
-			if (traverser._isIntersectingRayInternal(this._rootEntity, this._globalRayPosition, this._globalRayDirection, this._shapeFlag))
+			if (traverser._isIntersectingRayInternal(
+				this._rootEntity,
+				this._globalRayPosition,
+				this._globalRayDirection,
+				this._shapeFlag)
+			) {
 				this._pickers.push(traverser);
+			}
 
 			return traverser;
 		}
@@ -114,20 +123,27 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 			return false;
 		}
 
-		return  node.isIntersectingRay(this._rootEntity, this._globalRayPosition, this._globalRayDirection, this.pickGroup);
+		return node.isIntersectingRay(
+			this._rootEntity, this._globalRayPosition, this._globalRayDirection, this.pickGroup);
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public isIntersectingRay(globalRayPosition: Vector3D, globalRayDirection: Vector3D, shapeFlag: boolean = false): boolean {
+	public isIntersectingRay(
+		globalRayPosition: Vector3D,
+		globalRayDirection: Vector3D,
+		shapeFlag: boolean = false
+	): boolean {
 		return this._isIntersectingRayInternal(this.rootNode, globalRayPosition, globalRayDirection, shapeFlag);
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public _isIntersectingRayInternal(rootEntity: ContainerNode, globalRayPosition: Vector3D, globalRayDirection: Vector3D, shapeFlag: boolean): boolean {
+	public _isIntersectingRayInternal(
+		rootEntity: ContainerNode, globalRayPosition: Vector3D, globalRayDirection: Vector3D, shapeFlag: boolean
+	): boolean {
 		this._rootEntity = rootEntity;
 		this._globalRayPosition = globalRayPosition;
 		this._globalRayDirection = globalRayDirection;
@@ -176,19 +192,33 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	/**
 	 * @inheritDoc
 	 */
-	public getCollision(rayPosition: Vector3D, rayDirection: Vector3D, shapeFlag: boolean = false, startingCollision: PickingCollision = null): PickingCollision {
-		return this._getCollisionInternal(rayPosition, rayDirection, shapeFlag, false, startingCollision);
+	public getCollision(
+		rayPosition: Vector3D,
+		rayDirection: Vector3D,
+		shapeFlag: boolean = false,
+		startingCollision: PickingCollision = null
+	): PickingCollision {
+		return this._getCollisionInternal(
+			rayPosition, rayDirection, shapeFlag, false, startingCollision);
 	}
 
-	public getViewCollision(x: number, y: number, shapeFlag: boolean = false, startingCollision: PickingCollision = null) {
+	public getViewCollision(
+		x: number, y: number, shapeFlag: boolean = false, startingCollision: PickingCollision = null
+	) {
 		//update ray
-		const rayPosition: Vector3D = this.pickGroup.view.unproject(x, y, 0);
-		const rayDirection: Vector3D = this.pickGroup.view.unproject(x, y, 1).subtract(rayPosition);
+		const rayPosition = this.pickGroup.view.unproject(x, y, 0, RaycastPicker._rayPosition);
+		const rayDirection = this.pickGroup.view.unproject(x, y, 1, RaycastPicker._rayDirection).subtract(rayPosition);
 
 		return this._getCollisionInternal(rayPosition, rayDirection, shapeFlag, false, startingCollision);
 	}
 
-	public _getCollisionInternal(rayPosition: Vector3D, rayDirection: Vector3D, shapeFlag: boolean, maskFlag: boolean, startingCollision: PickingCollision) {
+	public _getCollisionInternal(
+		rayPosition: Vector3D,
+		rayDirection: Vector3D,
+		shapeFlag: boolean,
+		maskFlag: boolean,
+		startingCollision: PickingCollision
+	) {
 		//early out if no collisions detected
 		if (!this._isIntersectingRayInternal(this.rootNode, rayPosition, rayDirection, shapeFlag))
 			return null;
@@ -225,13 +255,13 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	public _collectEntities(collectedEntities: PickEntity[], dragNode: INode): void {
 		const len: number = this._pickers.length;
 		let picker: RaycastPicker;
-		for (var i: number = 0; i < len; i++)
+		for (let i = 0; i < len; i++)
 			if ((picker = this._pickers[i]).rootNode != dragNode)
 				picker._collectEntities(collectedEntities, dragNode);
 
 		//ensures that raycastPicker entities are always added last, for correct 2D picking
 		let entity: PickEntity;
-		for (var i: number = 0; i < this._entities.length; ++i) {
+		for (let i = 0; i < this._entities.length; ++i) {
 			(entity = this._entities[i]).pickingCollision.rootNode = this.rootNode;
 			collectedEntities.push(entity);
 		}
@@ -252,7 +282,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return false;
 	}
 
-	private sortOnNearT(entity1: PickEntity, entity2: PickEntity): number {
+	private static sortOnNearT(entity1: PickEntity, entity2: PickEntity): number {
 		return entity1.pickingCollision.rayEntryDistance > entity2.pickingCollision.rayEntryDistance
 			? 1
 			: entity1.pickingCollision.rayEntryDistance < entity2.pickingCollision.rayEntryDistance
@@ -262,8 +292,8 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 
 	private _getPickingCollision(bestCollision: PickingCollision = null): PickingCollision {
 		// Sort pickers from closest to furthest to reduce tests.
-		this._collectedEntities = this._collectedEntities.sort(this.sortOnNearT); // TODO - test sort filter in JS
-
+		// TODO - test sort filter in JS
+		this._collectedEntities = this._collectedEntities.sort(RaycastPicker.sortOnNearT);
 		// ---------------------------------------------------------------------
 		// Evaluate triangle collisions when needed.
 		// Replaces collision data provided by bounds collider with more precise data.
@@ -299,7 +329,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		}
 
 		if (bestCollision)
-			this.updatePosition(bestCollision);
+			RaycastPicker.updatePosition(bestCollision);
 
 		if (this._dragNode) {
 			if (this._dragNode.container.assetType == '[asset MovieClip]' && this._dragNode.container.adapter) {
@@ -324,7 +354,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return colliders;
 	}
 
-	private updatePosition(pickingCollision: PickingCollision): void {
+	private static updatePosition(pickingCollision: PickingCollision): void {
 		const collisionPos: Vector3D = pickingCollision.position || (pickingCollision.position = new Vector3D());
 
 		const rayDir: Vector3D = pickingCollision.rayDirection;
