@@ -51,13 +51,6 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	private _pickers: RaycastPicker[] = [];
 	private _collectedEntities: PickEntity[] = [];
 
-	/**
-	 * Creates a new <code>RaycastPicker</code> object.
-	 *
-	 * @param findClosestCollision Determines whether the picker searches for
-	 * the closest bounds collision along the ray, or simply returns the first
-	 * collision encountered. Defaults to false.
-	 */
 	constructor(partition: PartitionBase, pool: RaycastPickerPool) {
 		super(partition, pool);
 
@@ -205,9 +198,14 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	public getViewCollision(
 		x: number, y: number, shapeFlag: boolean = false, startingCollision: PickingCollision = null
 	) {
+		const view = this.pickGroup.view;
+
 		//update ray
-		const rayPosition = this.pickGroup.view.unproject(x, y, 0, RaycastPicker._rayPosition);
-		const rayDirection = this.pickGroup.view.unproject(x, y, 1, RaycastPicker._rayDirection).subtract(rayPosition);
+		const rayPosition = view.unproject(x, y, 0, RaycastPicker._rayPosition);
+		const rayDirection = view.unproject(x, y, 1, RaycastPicker._rayDirection);
+
+		// decrementBy is non-alloc method instead of substract
+		rayDirection.decrementBy(rayPosition);
 
 		return this._getCollisionInternal(rayPosition, rayDirection, shapeFlag, false, startingCollision);
 	}
