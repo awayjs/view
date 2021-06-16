@@ -34,6 +34,8 @@ import { ContainerNode } from '../partition/ContainerNode';
  * @class away.pick.RaycastPicker
  */
 export class BoundsPicker extends AbstractionBase implements IPartitionTraverser, IBoundsPicker {
+	private static tmpPoint = new Point();
+
 	protected _partition: PartitionBase;
 	protected _node: ContainerNode;
 
@@ -86,7 +88,11 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 		//this._updateAbsoluteDimension();
 
-		this._node.container.transform.scaleTo(val / box.width, this._node.container.transform.scale.y, this._node.container.transform.scale.z);
+		this._node.container.transform.scaleTo(
+			val / box.width,
+			this._node.container.transform.scale.y,
+			this._node.container.transform.scale.z
+		);
 	}
 
 	/**
@@ -155,7 +161,11 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 		//this._updateAbsoluteDimension();
 
-		this._node.container.transform.scaleTo(this._node.container.transform.scale.x, this._node.container.transform.scale.y, val / box.depth);
+		this._node.container.transform.scaleTo(
+			this._node.container.transform.scale.x,
+			this._node.container.transform.scale.y,
+			val / box.depth
+		);
 	}
 
 	constructor(partition: PartitionBase, pool: BoundsPickerPool) {
@@ -218,19 +228,39 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		return <BoundingVolumeBase> target.getAbstraction(pool);
 	}
 
-	public getBoxBounds(targetCoordinateSpace: ContainerNode = null, strokeFlag: boolean = false, fastFlag: boolean = false): Box {
-		return (<BoundingBox> this.getBoundingVolume(targetCoordinateSpace, strokeFlag ? (fastFlag ? BoundingVolumeType.BOX_BOUNDS_FAST : BoundingVolumeType.BOX_BOUNDS) : (fastFlag ? BoundingVolumeType.BOX_FAST : BoundingVolumeType.BOX))).getBox();
+	public getBoxBounds(
+		targetCoordinateSpace: ContainerNode = null, strokeFlag: boolean = false, fastFlag: boolean = false): Box {
+
+		return (<BoundingBox> this.getBoundingVolume(
+			targetCoordinateSpace,
+			strokeFlag
+				? (fastFlag ? BoundingVolumeType.BOX_BOUNDS_FAST : BoundingVolumeType.BOX_BOUNDS)
+				: (fastFlag ? BoundingVolumeType.BOX_FAST : BoundingVolumeType.BOX))
+		).getBox();
 	}
 
-	public getSphereBounds(targetCoordinateSpace: ContainerNode = null, strokeFlag: boolean = false, fastFlag: boolean = false): Sphere {
-		return (<BoundingSphere> this.getBoundingVolume(targetCoordinateSpace, strokeFlag ? (fastFlag ? BoundingVolumeType.SPHERE_BOUNDS_FAST : BoundingVolumeType.SPHERE_BOUNDS) : (fastFlag ? BoundingVolumeType.SPHERE_FAST : BoundingVolumeType.SPHERE))).getSphere();
+	public getSphereBounds(
+		targetCoordinateSpace: ContainerNode = null, strokeFlag: boolean = false, fastFlag: boolean = false): Sphere {
+
+		return (<BoundingSphere> this.getBoundingVolume(
+			targetCoordinateSpace,
+			strokeFlag
+				? (fastFlag ? BoundingVolumeType.SPHERE_BOUNDS_FAST : BoundingVolumeType.SPHERE_BOUNDS)
+				: (fastFlag ? BoundingVolumeType.SPHERE_FAST : BoundingVolumeType.SPHERE))
+		).getSphere();
 	}
 
 	public hitTestPoint(x: number, y: number, shapeFlag: boolean = false): boolean {
 		return this._hitTestPointInternal(this._node, x, y, shapeFlag, false);
 	}
 
-	public _hitTestPointInternal(rootEntity: ContainerNode, x: number, y: number, shapeFlag: boolean = false, maskFlag: boolean = false): boolean {
+	public _hitTestPointInternal(
+		rootEntity: ContainerNode,
+		x: number, y: number,
+		shapeFlag: boolean = false,
+		maskFlag: boolean = false
+	): boolean {
+
 		if (this._node.getMaskId() != -1 && (!maskFlag || !shapeFlag))//allow masks for bounds hit tests
 			return false;
 
@@ -238,7 +268,9 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 			this.traverse();
 
 		//set local tempPoint for later reference
-		const tempPoint: Point = new Point(x, y);
+		const tempPoint: Point = BoundsPicker.tmpPoint;
+		tempPoint.setTo(x, y);
+
 		this._node.globalToLocal(tempPoint, tempPoint);
 
 		//early out for box test
@@ -248,7 +280,10 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 			return false;
 
 		//early out for non-shape tests
-		if (!shapeFlag || this._node.container.assetType == '[asset TextField]' || this._node.container.assetType == '[asset Billboard]')
+		if (!shapeFlag ||
+			this._node.container.assetType == '[asset TextField]' ||
+			this._node.container.assetType == '[asset Billboard]'
+		)
 			return true;
 
 		const numPickers: number = this._boundsPickers.length;
@@ -284,13 +319,17 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 			return false;
 
 		//if the fast box passes, do the slow test
-		if (!obj.getBoxBounds(this._node, true).intersects(this.getBoxBounds(this._node, true)))
-			return false;
-
-		return true;
+		return obj.getBoxBounds(this._node, true).intersects(this.getBoxBounds(this._node, true));
 	}
 
-	public _getBoxBoundsInternal(matrix3D: Matrix3D = null, strokeFlag: boolean = true, fastFlag: boolean = true, cache: Box = null, target: Box = null): Box {
+	public _getBoxBoundsInternal(
+		matrix3D: Matrix3D = null,
+		strokeFlag: boolean = true,
+		fastFlag: boolean = true,
+		cache: Box = null,
+		target: Box = null
+	): Box {
+
 		if (this._invalid)
 			this.traverse();
 
@@ -318,7 +357,15 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		return target;
 	}
 
-	public _getSphereBoundsInternal(center: Vector3D = null, matrix3D: Matrix3D = null, strokeFlag: boolean = true, fastFlag: boolean = true, cache: Sphere = null, target: Sphere = null): Sphere {
+	public _getSphereBoundsInternal(
+		center: Vector3D = null,
+		matrix3D: Matrix3D = null,
+		strokeFlag: boolean = true,
+		fastFlag: boolean = true,
+		cache: Sphere = null,
+		target: Sphere = null
+	): Sphere {
+
 		if (this._invalid)
 			this.traverse();
 
