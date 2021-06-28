@@ -34,6 +34,7 @@ import { ContainerNode } from '../partition/ContainerNode';
  * @class away.pick.RaycastPicker
  */
 export class BoundsPicker extends AbstractionBase implements IPartitionTraverser, IBoundsPicker {
+	private static tmpMatrix: Matrix3D = new Matrix3D();
 	private static tmpPoint = new Point();
 
 	protected _partition: PartitionBase;
@@ -83,15 +84,32 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		const box: Box = this.getBoxBounds();
 
 		//return if box is empty ie setting width for no content is impossible
-		if (box == null || box.width == 0)
+		if (box == null)
 			return;
+
+		const matrix = BoundsPicker.tmpMatrix;
+
+		matrix.copyFrom(this.node.container.transform.matrix3D);
+		matrix.transformBox(box, box);
+
+		const scaleFactor = box.width > 0 ? val / box.width : 1;
+
+		matrix.appendScale(
+			scaleFactor || 0.0001,
+			1,
+			1
+		);
+
+		// decompose matrix for grabing transformed scale of transform
+		// this is target scale that applied (real?) by width
+		const realScale = matrix.decompose()[3];
 
 		//this._updateAbsoluteDimension();
 
 		this._node.container.transform.scaleTo(
-			val / box.width,
-			this._node.container.transform.scale.y,
-			this._node.container.transform.scale.z
+			realScale.x,
+			realScale.y,
+			realScale.z
 		);
 	}
 
@@ -121,13 +139,30 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		const box: Box = this.getBoxBounds();
 
 		//return if box is empty ie setting height for no content is impossible
-		if (box == null || box.height == 0)
+		if (box == null)
 			return;
+		const matrix = BoundsPicker.tmpMatrix;
+
+		matrix.copyFrom(this.node.container.transform.matrix3D);
+		matrix.transformBox(box, box);
+
+		const scaleFactor = box.height > 0 ? val / box.height : 1;
+
+		matrix.appendScale(
+			1,
+			scaleFactor || 0.0001,
+			1
+		);
+
+		const realScale = matrix.decompose()[3];
 
 		//this._updateAbsoluteDimension();
 
-		const scale = this._node.container.transform.scale;
-		this._node.container.transform.scaleTo(scale.x, val / box.height, scale.z);
+		this._node.container.transform.scaleTo(
+			realScale.x,
+			realScale.y,
+			realScale.z
+		);
 	}
 
 	/**
@@ -184,13 +219,6 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 	public traverse(): void {
 		this._boundsPickers.length = 0;
-		if (this._node?.container) {
-			const cont: any = this._node.container;
-			if (cont.scaleX === 0 || cont.scaleY === 0 || cont.scaleZ === 0) {
-				this._invalid = false;
-				return;
-			}
-		}
 		this._partition.traverse(this);
 
 		this._invalid = false;
