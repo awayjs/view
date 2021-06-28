@@ -87,13 +87,28 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		if (box == null)
 			return;
 
-		const matrix = BoundsPicker.tmpMatrix;
+		const rotation = this._node.container.transform.rotation;
+		const baseMatrix = this._node.container.transform.matrix3D;
 
-		matrix.copyFrom(this.node.container.transform.matrix3D);
-		matrix.transformBox(box, box);
+		baseMatrix.transformBox(box, box);
 
 		const scaleFactor = box.width > 0 ? val / box.width : 1;
 
+		// without rotation, fast case
+		if (rotation.z === 0) {
+			const s = this._node.container.transform.scale;
+			this._node.container.transform.scaleTo(
+				s.x * scaleFactor || 0.0001,
+				s.y,
+				s.z
+			);
+
+			return;
+		}
+
+		const matrix = BoundsPicker.tmpMatrix;
+
+		matrix.copyFrom(baseMatrix);
 		matrix.appendScale(
 			scaleFactor || 0.0001,
 			1,
@@ -141,13 +156,29 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		//return if box is empty ie setting height for no content is impossible
 		if (box == null)
 			return;
-		const matrix = BoundsPicker.tmpMatrix;
 
-		matrix.copyFrom(this.node.container.transform.matrix3D);
-		matrix.transformBox(box, box);
+		const baseMatrix = this.node.container.transform.matrix3D;
+		const rotation = this.node.container.transform.rotation;
 
+		baseMatrix.transformBox(box, box);
 		const scaleFactor = box.height > 0 ? val / box.height : 1;
 
+		// without rotation, fast case
+		if (rotation.z === 0) {
+			const s = this._node.container.transform.scale;
+			this._node.container.transform.scaleTo(
+				s.x,
+				s.y * scaleFactor || 0.0001,
+				s.z
+			);
+
+			return;
+		}
+
+		// or we should use decomposition
+		const matrix = BoundsPicker.tmpMatrix;
+
+		matrix.copyFrom(baseMatrix);
 		matrix.appendScale(
 			1,
 			scaleFactor || 0.0001,
