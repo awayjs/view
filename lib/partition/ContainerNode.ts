@@ -151,7 +151,10 @@ export class ContainerNode extends AbstractionBase {
 	}
 
 	public get renderToImage(): boolean {
-		const renderToImage: boolean = this.container.cacheAsBitmap || this.container.filters?.length > 0;
+		const cnt = this.container;
+		const renderToImage = cnt.cacheAsBitmap
+				|| cnt.filters?.length > 0
+				|| (cnt.blendMode && !(cnt.blendMode === BlendMode.LAYER || cnt.blendMode === BlendMode.NORMAL));
 
 		if (this._renderToImage !== renderToImage) {
 			this._renderToImage = renderToImage;
@@ -326,7 +329,8 @@ export class ContainerNode extends AbstractionBase {
 				this._colorTransform.copyFrom(this._activeTransform.colorTransform);
 			}
 
-			if (this.container.blendMode === BlendMode.OVERLAY) {
+			// if we will use getter - it return empty blend in USE_UNSAFE_BLEND = false
+			if ((<any> this.container)._blendMode === BlendMode.OVERLAY) {
 				// apply 0.5 alpha for object with `overlay` because we not support it now
 				this._colorTransform.alphaMultiplier *= 0.5;
 			}
