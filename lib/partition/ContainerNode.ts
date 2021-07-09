@@ -323,10 +323,10 @@ export class ContainerNode extends AbstractionBase {
 
 			if (this._parent && this._parent.getColorTransform()) {
 				this._colorTransform.copyFrom(this._parent.getColorTransform());
-
-				this._colorTransform.prepend(this._activeTransform.colorTransform);
+				// we MUST prepend real transform, because it used in cached phase
+				this._colorTransform.prepend(this.container.transform.colorTransform);
 			} else {
-				this._colorTransform.copyFrom(this._activeTransform.colorTransform);
+				this._colorTransform.copyFrom(this.container.transform.colorTransform);
 			}
 
 			// if we will use getter - it return empty blend in USE_UNSAFE_BLEND = false
@@ -635,7 +635,8 @@ export class ContainerNode extends AbstractionBase {
 	 * @returns {boolean}
 	 */
 	public isRenderable(): boolean {
-		return true;
+		// if container is invisible - all child nodes automatically invisible to
+		return !this.isInvisible() && this.getColorTransform()._isRenderable();
 	}
 
 	/**
