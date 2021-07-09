@@ -329,11 +329,12 @@ export class ContainerNode extends AbstractionBase {
 				this._colorTransform.copyFrom(this.container.transform.colorTransform);
 			}
 
+			/*
 			// if we will use getter - it return empty blend in USE_UNSAFE_BLEND = false
 			if ((<any> this.container)._blendMode === BlendMode.OVERLAY) {
 				// apply 0.5 alpha for object with `overlay` because we not support it now
 				this._colorTransform.alphaMultiplier *= 0.5;
-			}
+			}*/
 
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.COLOR_TRANSFORM;
 		}
