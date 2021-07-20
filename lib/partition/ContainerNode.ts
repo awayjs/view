@@ -88,6 +88,7 @@ export class ContainerNode extends AbstractionBase {
 	private _inverseMatrix3D: Matrix3D;
 	private _inverseMatrix3DDirty: boolean = true;
 	private _orientationMatrix: Matrix3D = new Matrix3D();
+	private _colorTransformDisabled: boolean = false;
 	private _transformDisabled: boolean = false;
 	private _activeTransform: Transform;
 
@@ -174,11 +175,24 @@ export class ContainerNode extends AbstractionBase {
 		return <NodePool> this._pool;
 	}
 
+	/**
+	 * Allow disable/enable colorTransform for this node independent of transform, this required for cache phase
+	 * @param value
+	 */
+	public set colorTransformDisabled(value: boolean) {
+		this._colorTransformDisabled = value;
+	}
+
+	public get colorTransformDisabled() {
+		return this._colorTransformDisabled;
+	}
+
 	public set transformDisabled(value: boolean) {
 		if (this._transformDisabled == value)
 			return;
 
 		this._transformDisabled = value;
+		this._colorTransformDisabled = value;
 
 		if (this._transformDisabled) {
 			this._activeTransform = ContainerNode._nullTransform;
@@ -317,13 +331,17 @@ export class ContainerNode extends AbstractionBase {
 	}
 
 	public getColorTransform(): ColorTransform {
+		if (this._colorTransformDisabled) {
+			return ContainerNode._nullColorTransform;
+		}
+
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.COLOR_TRANSFORM) {
 			if (!this._colorTransform)
 				this._colorTransform = new ColorTransform();
 
 			if (this._parent && this._parent.getColorTransform()) {
 				this._colorTransform.copyFrom(this._parent.getColorTransform());
-				// we MUST prepend real transform, because it used in cached phase
+				// we MUST prepend real transform in cached phase, but reset in cached image render phase
 				this._colorTransform.prepend(this.container.transform.colorTransform);
 			} else {
 				this._colorTransform.copyFrom(this.container.transform.colorTransform);
