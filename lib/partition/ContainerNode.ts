@@ -105,7 +105,7 @@ export class ContainerNode extends AbstractionBase {
 	public readonly container: IPartitionContainer;
 
 	public get partition(): PartitionBase {
-		if (!this._partition || this._partitionClass != this.container.partitionClass) {
+		if (!this._partition || this._partitionClass !== this.container.partitionClass) {
 			this._partitionClass = this.container.partitionClass;
 
 			if (this.parent === this) {
@@ -116,7 +116,11 @@ export class ContainerNode extends AbstractionBase {
 				? new this.container.partitionClass(this)
 				: this._parent?.partition
 				|| new (<NodePool> this._pool).partitionClass(this);
+
+			if (this.container.isEntity()) {
+				this.invalidateEntity(this.container);
 			}
+		}
 
 		return this._partition;
 	}
