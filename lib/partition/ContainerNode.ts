@@ -53,9 +53,6 @@ export class NodePool implements IAbstractionPool {
 	}
 }
 
-/**
- * @class away.partition.ContainerNode
- */
 export class ContainerNode extends AbstractionBase {
 
 	private static _nullTransform: Transform = new Transform();
@@ -63,13 +60,6 @@ export class ContainerNode extends AbstractionBase {
 	private static _nullColorTransform = new ColorTransform();
 
 	private _invalidateMatrix3DEvent: ContainerNodeEvent;
-	/*
-	private _onHierarchicalInvalidate: (event: HeirarchicalEvent) => void;
-	private _onAddChildAt: (event: ContainerEvent) => void;
-	private _onRemoveChildAt: (event: ContainerEvent) => void;
-	private _onEntityInvalidate: (event: ContainerEvent) => void;
-	private _onEntityClear: (event: ContainerEvent) => void;
-	*/
 
 	private _entityNode: EntityNode;
 	private _partitionClass: IPartitionClass;
@@ -126,7 +116,7 @@ export class ContainerNode extends AbstractionBase {
 				? new this.container.partitionClass(this)
 				: this._parent?.partition
 				|| new (<NodePool> this._pool).partitionClass(this);
-		}
+			}
 
 		return this._partition;
 	}
@@ -480,6 +470,7 @@ export class ContainerNode extends AbstractionBase {
 	 *
 	 * @param point The name or identifier of a point created with the Point
 	 *              class, specifying the _x_ and _y_ coordinates as properties.
+	 * @param target Result point
 	 * @return A Point object with coordinates relative to the Stage.
 	 */
 	public localToGlobal(point: Point, target: Point = null): Point {
@@ -506,30 +497,8 @@ export class ContainerNode extends AbstractionBase {
 		super(container, pool);
 
 		this._onEvent = this._onEvent.bind(this);
-		/*
-		this._onHierarchicalInvalidate
-			= (event: HeirarchicalEvent) => this.invalidateHierarchicalProperty(event.property);
-
-		this._onAddChildAt
-			= (event: ContainerEvent) => this.addChildAt(event.entity, event.index);
-
-		this._onRemoveChildAt
-			= (event: ContainerEvent) => this.removeChildAt(event.index);
-		this._onEntityInvalidate
-			= (event: ContainerEvent) => this.invalidateEntity(event.entity);
-		this._onEntityClear
-			= (_event: ContainerEvent) => this.clearEntity();
-		*/
 
 		this.container = container;
-		/*
-		this.container.addEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onHierarchicalInvalidate);
-		this.container.addEventListener(ContainerEvent.ADD_CHILD_AT, this._onAddChildAt);
-		this.container.addEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onRemoveChildAt);
-		this.container.addEventListener(ContainerEvent.INVALIDATE_ENTITY, this._onEntityInvalidate);
-		this.container.addEventListener(ContainerEvent.CLEAR_ENTITY, this._onEntityClear);
-		*/
-
 		this.container.addEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onEvent);
 		this.container.addEventListener(ContainerEvent.ADD_CHILD_AT, this._onEvent);
 		this.container.addEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onEvent);
@@ -565,14 +534,6 @@ export class ContainerNode extends AbstractionBase {
 	public onClear(event: AssetEvent): void {
 		super.onClear(event);
 
-		/*
-		this.container.removeEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onHierarchicalInvalidate);
-		this.container.removeEventListener(ContainerEvent.ADD_CHILD_AT, this._onAddChildAt);
-		this.container.removeEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onRemoveChildAt);
-		this.container.removeEventListener(ContainerEvent.INVALIDATE_ENTITY, this._onEntityInvalidate);
-		this.container.removeEventListener(ContainerEvent.CLEAR_ENTITY, this._onEntityClear);
-		*/
-
 		this.container.removeEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onEvent);
 		this.container.removeEventListener(ContainerEvent.ADD_CHILD_AT, this._onEvent);
 		this.container.removeEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onEvent);
@@ -604,20 +565,14 @@ export class ContainerNode extends AbstractionBase {
 			this.invalidateEntity(this.container);
 	}
 
-	/**
-	 *
-	 * @param planes
-	 * @param numPlanes
-	 * @returns {boolean}
-	 * @internal
-	 */
 	public isInFrustum(
-		_rootEntity: INode, _planes: Array<Plane3D>, _numPlanes: number, _pickGroup: PickGroup): boolean {
+		_rootEntity: INode,
+		_planes: Array<Plane3D>,
+		_numPlanes: number,
+		_pickGroup: PickGroup
+	): boolean {
 
-		if (this.isInvisible())
-			return false;
-
-		return true;
+		return !this.isInvisible();
 	}
 
 	/**
@@ -635,17 +590,12 @@ export class ContainerNode extends AbstractionBase {
 		return this._invisible;
 	}
 
-	/**
-	 *
-	 * @param rayPosition
-	 * @param rayDirection
-	 * @returns {boolean}
-	 */
 	public isIntersectingRay(
 		_rootEntity: INode,
 		_rayPosition: Vector3D,
 		_rayDirection: Vector3D,
-		_pickGroup: PickGroup): boolean {
+		_pickGroup: PickGroup
+	): boolean {
 		return true;
 	}
 
@@ -708,11 +658,6 @@ export class ContainerNode extends AbstractionBase {
 			this._entityNode.acceptTraverser(traverser);
 	}
 
-	/**
-	 *
-	 * @param node
-	 * @internal
-	 */
 	public addChildAt(entity: IPartitionEntity, index: number): ContainerNode {
 		const node = entity.getAbstraction<ContainerNode>(this._pool);
 
@@ -728,11 +673,6 @@ export class ContainerNode extends AbstractionBase {
 		return node;
 	}
 
-	/**
-	 *
-	 * @param node
-	 * @internal
-	 */
 	public removeChildAt(index: number): ContainerNode {
 		this._numChildNodes--;
 
