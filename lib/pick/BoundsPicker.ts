@@ -35,7 +35,10 @@ import { ContainerNode } from '../partition/ContainerNode';
  */
 export class BoundsPicker extends AbstractionBase implements IPartitionTraverser, IBoundsPicker {
 	private static tmpMatrix: Matrix3D = new Matrix3D();
-	private static tmpPoint = new Point();
+	private static tmpPoint: Point = new Point();
+	private static tmpBox: Box = new Box();
+
+	public static MINIMAL_SCALE = 0.00001;
 
 	protected _partition: PartitionBase;
 	protected _node: ContainerNode;
@@ -54,9 +57,9 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		return this._node;
 	}
 
-	private _pickGroup: PickGroup;
+	private readonly _pickGroup: PickGroup;
 
-	private _boundsPickers: IBoundsPicker[] = [];
+	private readonly _boundsPickers: IBoundsPicker[] = [];
 
 	/**
 	 * Indicates the width of the display object, in pixels. The width is
@@ -74,31 +77,30 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		if (box == null)
 			return 0;
 
-		// if (this._node._registrationMatrix3D)
-		// 	return box.width*this._node.scaleX*this._node._registrationMatrix3D._rawData[0];
-
-		return box.width * this._node.container.transform.scale.x;
+		// scale already should be applied, because we request width relative self
+		return box.width;
 	}
 
 	public set width(val: number) {
-		const box: Box = this.getBoxBounds();
+		const transform = this._node.container.transform;
+		const selfBox = this.getBoxBounds();
 
 		//return if box is empty ie setting width for no content is impossible
-		if (box == null)
+		if (selfBox == null)
 			return;
 
-		const rotation = this._node.container.transform.rotation;
-		const baseMatrix = this._node.container.transform.matrix3D;
+		const rotation = transform.rotation;
+		const baseMatrix = transform.matrix3D;
 
-		baseMatrix.transformBox(box, box);
+		const box = baseMatrix.transformBox(selfBox, BoundsPicker.tmpBox);
 
 		const scaleFactor = box.width > 0 ? val / box.width : 1;
 
 		// without rotation, fast case
 		if (rotation.z === 0) {
-			const s = this._node.container.transform.scale;
-			this._node.container.transform.scaleTo(
-				s.x * scaleFactor || 0.0001,
+			const s = transform.scale;
+			transform.scaleTo(
+				s.x * scaleFactor || BoundsPicker.MINIMAL_SCALE,
 				s.y,
 				s.z
 			);
@@ -110,18 +112,16 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 		matrix.copyFrom(baseMatrix);
 		matrix.appendScale(
-			scaleFactor || 0.0001,
+			scaleFactor || BoundsPicker.MINIMAL_SCALE,
 			1,
 			1
 		);
 
-		// decompose matrix for grabing transformed scale of transform
+		// decompose matrix for grabbing transformed scale of transform
 		// this is target scale that applied (real?) by width
 		const realScale = matrix.decompose()[3];
 
-		//this._updateAbsoluteDimension();
-
-		this._node.container.transform.scaleTo(
+		transform.scaleTo(
 			realScale.x,
 			realScale.y,
 			realScale.z
@@ -147,28 +147,31 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		// if (this._node._registrationMatrix3D)
 		// 	return box.height*this._node.scaleY*this._node._registrationMatrix3D._rawData[5];
 
-		return box.height * this._node.container.transform.scale.y;
+		// already should be applied
+		return box.height;// * this._node.container.transform.scale.y;
 	}
 
 	public set height(val: number) {
-		const box: Box = this.getBoxBounds();
+		const transform = this._node.container.transform;
+		const selfBox = this.getBoxBounds();
 
 		//return if box is empty ie setting height for no content is impossible
-		if (box == null)
+		if (selfBox == null)
 			return;
 
-		const baseMatrix = this.node.container.transform.matrix3D;
-		const rotation = this.node.container.transform.rotation;
+		const baseMatrix = transform.matrix3D;
+		const rotation = transform.rotation;
 
-		baseMatrix.transformBox(box, box);
+		const box = baseMatrix.transformBox(selfBox, BoundsPicker.tmpBox);
+
 		const scaleFactor = box.height > 0 ? val / box.height : 1;
 
 		// without rotation, fast case
 		if (rotation.z === 0) {
-			const s = this._node.container.transform.scale;
-			this._node.container.transform.scaleTo(
+			const s = transform.scale;
+			transform.scaleTo(
 				s.x,
-				s.y * scaleFactor || 0.0001,
+				s.y * scaleFactor || BoundsPicker.MINIMAL_SCALE,
 				s.z
 			);
 
@@ -181,15 +184,13 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		matrix.copyFrom(baseMatrix);
 		matrix.appendScale(
 			1,
-			scaleFactor || 0.0001,
+			scaleFactor || BoundsPicker.MINIMAL_SCALE,
 			1
 		);
 
 		const realScale = matrix.decompose()[3];
 
-		//this._updateAbsoluteDimension();
-
-		this._node.container.transform.scaleTo(
+		transform.scaleTo(
 			realScale.x,
 			realScale.y,
 			realScale.z
