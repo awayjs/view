@@ -60,6 +60,7 @@ export class ContainerNode extends AbstractionBase {
 	private static _nullColorTransform = new ColorTransform();
 
 	private _invalidateMatrix3DEvent: ContainerNodeEvent;
+	private _invalidateColorTransformEvent: ContainerNodeEvent;
 
 	private _entityNode: EntityNode;
 	private _partitionClass: IPartitionClass;
@@ -330,6 +331,12 @@ export class ContainerNode extends AbstractionBase {
 		}
 
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.COLOR_TRANSFORM) {
+			this._hierarchicalPropsDirty ^= HierarchicalProperty.COLOR_TRANSFORM;
+
+			if (this._colorTransformDisabled) {
+				return ContainerNode._nullColorTransform;
+			}
+
 			if (!this._colorTransform)
 				this._colorTransform = new ColorTransform();
 
@@ -348,7 +355,6 @@ export class ContainerNode extends AbstractionBase {
 				this._colorTransform.alphaMultiplier *= 0.5;
 			}*/
 
-			this._hierarchicalPropsDirty ^= HierarchicalProperty.COLOR_TRANSFORM;
 		}
 
 		return this._colorTransform || ContainerNode._nullColorTransform;
@@ -746,6 +752,15 @@ export class ContainerNode extends AbstractionBase {
 	}
 
 	public invalidateHierarchicalProperty(property: HierarchicalProperty): void {
+		// property dirty check not working for ColorTransform
+		// will emit every change
+		// todo Fixme
+		if (property & HierarchicalProperty.COLOR_TRANSFORM) {
+
+			// eslint-disable-next-line max-len
+			this.dispatchEvent(this._invalidateColorTransformEvent || (this._invalidateColorTransformEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_COLOR_TRANSFORM)));
+		}
+
 		const propertyDirty: number = (this._hierarchicalPropsDirty ^ property) & property;
 		if (!propertyDirty)
 			return;

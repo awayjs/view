@@ -6,6 +6,7 @@ export class ContainerNodeEvent extends EventBase {
 	 *
 	 */
 	public static INVALIDATE_MATRIX3D: string = 'invalidateMatrix3D';
+	public static INVALIDATE_COLOR_TRANSFORM: string = 'invalidateColorTransform';
 
 	constructor(type: string) {
 		super(type);
