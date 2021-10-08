@@ -148,9 +148,15 @@ export class ContainerNode extends AbstractionBase {
 
 	public get renderToImage(): boolean {
 		const cnt = this.container;
-		const renderToImage = cnt.cacheAsBitmap
-				|| cnt.filters?.length > 0
-				|| (cnt.blendMode && !(cnt.blendMode === BlendMode.LAYER || cnt.blendMode === BlendMode.NORMAL));
+		const {
+			blendMode, filters, cacheAsBitmap
+		} = cnt;
+
+		const renderToImage = this.isRenderable() && (
+			cacheAsBitmap ||
+			filters && filters.length > 0 ||
+			(blendMode && !(blendMode === BlendMode.LAYER || blendMode === BlendMode.NORMAL))
+		);
 
 		if (this._renderToImage !== renderToImage) {
 			this._renderToImage = renderToImage;
