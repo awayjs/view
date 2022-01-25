@@ -31,7 +31,7 @@ export {INode} from "./lib/partition/INode";
 export {IPartitionTraverser} from "./lib/partition/IPartitionTraverser";
 export {BasicPartition} from "./lib/partition/BasicPartition";
 export {EntityNode} from "./lib/partition/EntityNode";
-export {ContainerNode, NodePool} from "./lib/partition/ContainerNode";
+export {ContainerNode} from "./lib/partition/ContainerNode";
 export {PartitionBase} from "./lib/partition/PartitionBase";
 export {IPartitionClass} from "./lib/partition/IPartitionClass";
 

@@ -11,7 +11,7 @@ import {
 } from '@awayjs/core';
 
 import { IPartitionTraverser } from './IPartitionTraverser';
-import { ContainerNode, NodePool } from './ContainerNode';
+import { ContainerNode } from './ContainerNode';
 import { EntityNode } from './EntityNode';
 import { INode } from './INode';
 import { View } from '../View';
@@ -50,10 +50,10 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 		this._rootNode = rootNode;
 	}
 
-	public getLocalView(stage: Stage): View {
+	public getLocalNode(): ContainerNode {
 
-		if (!this._localView) {
-			/**
+		if (!this._localNode) {
+						/**
 			* projection is not simple object
 			* not needed spawn it for every cached partition
 			* it has 3 matrices = 100 bytes + Transform,
@@ -70,22 +70,9 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 				projection.transform.moveTo(0, 0, -1000);
 				projection.transform.lookAt(new Vector3D());
 			}
-			this._localView = new View(projection, stage, null, null, null, true);
-			this._localView.backgroundAlpha = 0;
-		}
-
-		return this._localView;
-	}
-
-	public clearLocalView(): void {
-		if (this._localView)
-			this._localView = null;
-	}
-
-	public getLocalNode(): ContainerNode {
-
-		if (!this._localNode) {
-			this._localNode = NodePool.getRootNode(this._rootNode.container, BasicPartition);
+			let view = new View(projection, this._rootNode.pool.stage, null, null, null, true);
+			view.backgroundAlpha = 0;
+			this._localNode = view.getNode(this._rootNode.container);
 			this._localNode.transformDisabled = true;
 			this.addChild(this._localNode.partition);
 		}
