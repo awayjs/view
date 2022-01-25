@@ -53,7 +53,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	public getLocalNode(): ContainerNode {
 
 		if (!this._localNode) {
-						/**
+			/**
 			* projection is not simple object
 			* not needed spawn it for every cached partition
 			* it has 3 matrices = 100 bytes + Transform,
@@ -70,7 +70,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 				projection.transform.moveTo(0, 0, -1000);
 				projection.transform.lookAt(new Vector3D());
 			}
-			let view = new View(projection, this._rootNode.pool.stage, null, null, null, true);
+			const view = new View(projection, this._rootNode.pool.stage, null, null, null, true);
 			view.backgroundAlpha = 0;
 			this._localNode = view.getNode(this._rootNode.container);
 			this._localNode.transformDisabled = true;
