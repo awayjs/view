@@ -1,4 +1,4 @@
-import { AbstractionBase, Plane3D, Vector3D, AssetEvent, IAbstractionPool } from '@awayjs/core';
+import { AbstractionBase, Plane3D, Vector3D, AssetEvent } from '@awayjs/core';
 
 import { IPartitionEntity } from '../base/IPartitionEntity';
 
@@ -8,7 +8,6 @@ import { ContainerNode } from './ContainerNode';
 import { PartitionBase } from './PartitionBase';
 import { PickGroup } from '../PickGroup';
 import { PickEntity } from '../base/PickEntity';
-import { View } from '../View';
 
 /**
  * @class away.partition.EntityNode

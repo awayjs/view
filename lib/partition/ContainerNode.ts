@@ -1,8 +1,6 @@
 import {
 	Plane3D,
 	Vector3D,
-	IAbstractionPool,
-	IAbstractionClass,
 	AbstractionBase,
 	AssetEvent,
 	Matrix3D,

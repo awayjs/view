@@ -6,7 +6,6 @@ import { IPartitionTraverser } from './IPartitionTraverser';
 import { PickGroup } from '../PickGroup';
 import { PartitionBase } from './PartitionBase';
 import { EntityNode } from './EntityNode';
-import { View } from '../View';
 
 /**
  * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to

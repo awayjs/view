@@ -15,8 +15,6 @@ import { ContainerNode } from './ContainerNode';
 import { EntityNode } from './EntityNode';
 import { INode } from './INode';
 import { View } from '../View';
-import { Stage } from '@awayjs/stage';
-import { BasicPartition } from './BasicPartition';
 
 /**
  * @class away.partition.Partition

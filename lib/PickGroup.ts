@@ -6,8 +6,6 @@ import { PartitionBase } from './partition/PartitionBase';
 import { BoundsPicker } from './pick/BoundsPicker';
 import { TabPicker } from './pick/TabPicker';
 
-import { View } from './View';
-
 /**
  * @class away.pool.PickGroup
  */
