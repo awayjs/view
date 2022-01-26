@@ -23,6 +23,7 @@ export class PickGroup extends EventDispatcher implements IAbstractionPool {
 	public static getInstance(): PickGroup {
 		return PickGroup._instance || (PickGroup._instance = new PickGroup());
 	}
+
 	/**
 	 * //TODO
 	 *
