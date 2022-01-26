@@ -12,42 +12,28 @@ import { View } from './View';
  * @class away.pool.PickGroup
  */
 export class PickGroup extends EventDispatcher implements IAbstractionPool {
-	private static _instancePool: Object = new Object();
-	public static get instancePool(): Object {return PickGroup._instancePool;}
-
+	private static _instance: PickGroup;
 	private static _tabPickerPool: TabPickerPool;
-	public readonly view: View;
 	private _raycastPickerPool: RaycastPickerPool;
 	private _boundsPickerPool: BoundsPickerPool;
 	private _tabPickerPool: TabPickerPool;
 
 	public readonly id: number;
 
+	public static getInstance(): PickGroup {
+		return PickGroup._instance || (PickGroup._instance = new PickGroup());
+	}
 	/**
 	 * //TODO
 	 *
 	 * @param materialClassGL
 	 */
-	constructor(view: View) {
+	constructor() {
 		super();
 		this.id = UUID.Next();
-		this.view = view;
 		this._raycastPickerPool = new RaycastPickerPool(this);
 		this._boundsPickerPool = new BoundsPickerPool(this);
 		this._tabPickerPool = PickGroup._tabPickerPool || (PickGroup._tabPickerPool = new TabPickerPool());
-	}
-
-	public static clearAllInstances(): void {
-		for (const key in this._instancePool)
-			delete this._instancePool[key];
-	}
-
-	public static getInstance(view: View): PickGroup {
-		return this._instancePool[view.id] || (this._instancePool[view.id] = new PickGroup(view));
-	}
-
-	public static clearInstance(view: View): void {
-		delete this._instancePool[view.id];
 	}
 
 	public requestAbstraction(asset: IAsset): IAbstractionClass {

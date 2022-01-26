@@ -2,7 +2,6 @@ import { ColorTransform, Matrix3D, Point, Vector3D } from '@awayjs/core';
 import { HierarchicalProperty } from '../base/HierarchicalProperty';
 import { IPartitionContainer } from '../base/IPartitionContainer';
 import { INode } from './INode';
-import { View } from '../View';
 
 /**
  * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
@@ -13,8 +12,6 @@ import { View } from '../View';
 export interface ContainerNode extends INode
 {
 	readonly entity: IPartitionContainer;
-
-	readonly pool: View;
 
 	pickObjectNode: ContainerNode;
 

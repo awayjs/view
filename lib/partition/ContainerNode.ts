@@ -172,7 +172,7 @@ export class ContainerNode extends AbstractionBase {
 		return false;
 	}
 
-	public get pool(): View {
+	public get view(): View {
 		return <View> this._pool;
 	}
 

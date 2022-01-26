@@ -1,4 +1,4 @@
-import { IAbstractionPool, IAsset, Plane3D, Vector3D } from '@awayjs/core';
+import { IAsset, Plane3D, Vector3D } from '@awayjs/core';
 
 import { ContainerNode } from './ContainerNode';
 
@@ -6,6 +6,7 @@ import { IPartitionTraverser } from './IPartitionTraverser';
 import { PickGroup } from '../PickGroup';
 import { PartitionBase } from './PartitionBase';
 import { EntityNode } from './EntityNode';
+import { View } from '../View';
 
 /**
  * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
@@ -17,7 +18,7 @@ export interface INode extends IAsset
 {
 	readonly partition: PartitionBase;
 
-	readonly pool: IAbstractionPool;
+	//readonly view: View;
 
 	//bounds:BoundingVolumeBase;
 

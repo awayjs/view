@@ -8,6 +8,7 @@ import { ContainerNode } from './ContainerNode';
 import { PartitionBase } from './PartitionBase';
 import { PickGroup } from '../PickGroup';
 import { PickEntity } from '../base/PickEntity';
+import { View } from '../View';
 
 /**
  * @class away.partition.EntityNode
@@ -24,10 +25,6 @@ export class EntityNode extends AbstractionBase implements INode {
 
 	public get parent(): ContainerNode {
 		return this._parent;
-	}
-
-	public get pool(): IAbstractionPool {
-		return this._pool;
 	}
 
 	public get entity(): IPartitionEntity {

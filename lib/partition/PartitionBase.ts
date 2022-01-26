@@ -26,7 +26,6 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	private static _defaultProjection: PerspectiveProjection;
 
 	private _invalid: boolean;
-	private _localView: View;
 	private _localNode: ContainerNode;
 	private _children: Array<PartitionBase> = new Array<PartitionBase>();
 	private _updateQueue: Record<number, EntityNode> = {};
@@ -70,8 +69,10 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 				projection.transform.moveTo(0, 0, -1000);
 				projection.transform.lookAt(new Vector3D());
 			}
-			const view = new View(projection, this._rootNode.pool.stage, null, null, null, true);
+
+			const view = new View(projection, this._rootNode.view.stage);
 			view.backgroundAlpha = 0;
+
 			this._localNode = view.getNode(this._rootNode.container);
 			this._localNode.transformDisabled = true;
 			this.addChild(this._localNode.partition);
@@ -186,8 +187,10 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	public clear(): void {
 		super.clear();
 
-		this._localView.dispose();
-		this._localView = null;
+		if (this._localNode) {
+			this._localNode.clear();
+			this._localNode = null;
+		}
 
 		for (let i = 0; i < this._children.length; i++)
 			this._children[i].clear();

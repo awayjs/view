@@ -23,12 +23,13 @@ import {
 	ContextMode,
 	StageManager,
 } from '@awayjs/stage';
-import { IPartitionEntity } from './base/IPartitionEntity';
+
+import { IPartitionClass } from './partition/IPartitionClass';
 
 import { ViewEvent } from './events/ViewEvent';
-import { BasicPartition } from './partition/BasicPartition';
 import { ContainerNode } from './partition/ContainerNode';
-import { IPartitionClass } from './partition/IPartitionClass';
+import { IPartitionEntity } from './base/IPartitionEntity';
+import { BasicPartition } from './partition/BasicPartition';
 
 export class View extends AssetBase implements IAbstractionPool {
 	private _shareContext: boolean;
@@ -57,7 +58,7 @@ export class View extends AssetBase implements IAbstractionPool {
 	private _onInvalidateSizeDelegate: (event: StageEvent | AssetEvent) => void;
 	private _onInvalidateViewMatrix3DDelegate: (event: ProjectionEvent) => void;
 
-	partitionClass: IPartitionClass = BasicPartition;
+	public partitionClass: IPartitionClass = BasicPartition;
 
 	/**
      *
@@ -350,7 +351,7 @@ export class View extends AssetBase implements IAbstractionPool {
 		this._updatePixelRatio();
 	}
 
-	public requestAbstraction(asset: IPartitionEntity): IAbstractionClass {
+	public requestAbstraction(_asset: IPartitionEntity): IAbstractionClass {
 		return ContainerNode;
 	}
 
