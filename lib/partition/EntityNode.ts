@@ -1,4 +1,4 @@
-import { AbstractionBase, Plane3D, Vector3D, AssetEvent, IAbstractionPool } from '@awayjs/core';
+import { AbstractionBase, Plane3D, Vector3D, AssetEvent } from '@awayjs/core';
 
 import { IPartitionEntity } from '../base/IPartitionEntity';
 
@@ -24,10 +24,6 @@ export class EntityNode extends AbstractionBase implements INode {
 
 	public get parent(): ContainerNode {
 		return this._parent;
-	}
-
-	public get pool(): IAbstractionPool {
-		return this._pool;
 	}
 
 	public get entity(): IPartitionEntity {

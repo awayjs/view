@@ -87,8 +87,8 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		super(entity, pickGroup);
 
 		this.id = UUID.Next();
-		this._view = pickGroup.view;
 		this._node = entity.parent;
+		this._view = this._node.view;
 		this._pickGroup = pickGroup;
 		this._pickingCollision = new PickingCollision(entity, pickGroup);
 	}

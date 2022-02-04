@@ -8,6 +8,8 @@ import {
 	PerspectiveProjection,
 	ErrorBase,
 	AssetBase,
+	IAbstractionPool,
+	IAbstractionClass,
 } from '@awayjs/core';
 
 import {
@@ -22,12 +24,17 @@ import {
 	StageManager,
 } from '@awayjs/stage';
 
-import { ViewEvent } from './events/ViewEvent';
+import { IPartitionClass } from './partition/IPartitionClass';
 
-export class View extends AssetBase {
+import { ViewEvent } from './events/ViewEvent';
+import { ContainerNode } from './partition/ContainerNode';
+import { IPartitionEntity } from './base/IPartitionEntity';
+import { BasicPartition } from './partition/BasicPartition';
+
+export class View extends AssetBase implements IAbstractionPool {
 	private _shareContext: boolean;
 	private _rect: Rectangle = new Rectangle();
-	private _backgroundColor: number;
+	private _backgroundColor: number = 0;
 	private _backgroundRed: number = 0;
 	private _backgroundGreen: number = 0;
 	private _backgroundBlue: number = 0;
@@ -50,6 +57,8 @@ export class View extends AssetBase {
 	private _inverseViewMatrix3DDirty: boolean = true;
 	private _onInvalidateSizeDelegate: (event: StageEvent | AssetEvent) => void;
 	private _onInvalidateViewMatrix3DDelegate: (event: ProjectionEvent) => void;
+
+	public partitionClass: IPartitionClass = BasicPartition;
 
 	/**
      *
@@ -340,6 +349,14 @@ export class View extends AssetBase {
 		this._updateDimensions();
 		this._updateFocalLength();
 		this._updatePixelRatio();
+	}
+
+	public requestAbstraction(_asset: IPartitionEntity): IAbstractionClass {
+		return ContainerNode;
+	}
+
+	public getNode(entity: IPartitionEntity): ContainerNode {
+		return entity.getAbstraction<ContainerNode>(this);
 	}
 
 	public clear(

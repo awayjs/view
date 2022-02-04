@@ -198,7 +198,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	public getViewCollision(
 		x: number, y: number, shapeFlag: boolean = false, startingCollision: PickingCollision = null
 	) {
-		const view = this.pickGroup.view;
+		const view = this.rootNode.view;
 
 		//update ray
 		const rayPosition = view.unproject(x, y, 0, RaycastPicker._rayPosition);

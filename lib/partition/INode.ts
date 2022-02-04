@@ -1,4 +1,4 @@
-import { IAbstractionPool, IAsset, Plane3D, Vector3D } from '@awayjs/core';
+import { IAsset, Plane3D, Vector3D } from '@awayjs/core';
 
 import { ContainerNode } from './ContainerNode';
 
@@ -17,7 +17,7 @@ export interface INode extends IAsset
 {
 	readonly partition: PartitionBase;
 
-	readonly pool: IAbstractionPool;
+	//readonly view: View;
 
 	//bounds:BoundingVolumeBase;
 

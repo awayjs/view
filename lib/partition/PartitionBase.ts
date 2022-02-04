@@ -11,12 +11,10 @@ import {
 } from '@awayjs/core';
 
 import { IPartitionTraverser } from './IPartitionTraverser';
-import { ContainerNode, NodePool } from './ContainerNode';
+import { ContainerNode } from './ContainerNode';
 import { EntityNode } from './EntityNode';
 import { INode } from './INode';
 import { View } from '../View';
-import { Stage } from '@awayjs/stage';
-import { BasicPartition } from './BasicPartition';
 
 /**
  * @class away.partition.Partition
@@ -26,7 +24,6 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	private static _defaultProjection: PerspectiveProjection;
 
 	private _invalid: boolean;
-	private _localView: View;
 	private _localNode: ContainerNode;
 	private _children: Array<PartitionBase> = new Array<PartitionBase>();
 	private _updateQueue: Record<number, EntityNode> = {};
@@ -50,9 +47,9 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 		this._rootNode = rootNode;
 	}
 
-	public getLocalView(stage: Stage): View {
+	public getLocalNode(): ContainerNode {
 
-		if (!this._localView) {
+		if (!this._localNode) {
 			/**
 			* projection is not simple object
 			* not needed spawn it for every cached partition
@@ -70,22 +67,11 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 				projection.transform.moveTo(0, 0, -1000);
 				projection.transform.lookAt(new Vector3D());
 			}
-			this._localView = new View(projection, stage, null, null, null, true);
-			this._localView.backgroundAlpha = 0;
-		}
 
-		return this._localView;
-	}
+			const view = new View(projection, this._rootNode.view.stage);
+			view.backgroundAlpha = 0;
 
-	public clearLocalView(): void {
-		if (this._localView)
-			this._localView = null;
-	}
-
-	public getLocalNode(): ContainerNode {
-
-		if (!this._localNode) {
-			this._localNode = NodePool.getRootNode(this._rootNode.container, BasicPartition);
+			this._localNode = view.getNode(this._rootNode.container);
 			this._localNode.transformDisabled = true;
 			this.addChild(this._localNode.partition);
 		}
@@ -199,8 +185,10 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	public clear(): void {
 		super.clear();
 
-		this._localView.dispose();
-		this._localView = null;
+		if (this._localNode) {
+			this._localNode.clear();
+			this._localNode = null;
+		}
 
 		for (let i = 0; i < this._children.length; i++)
 			this._children[i].clear();
