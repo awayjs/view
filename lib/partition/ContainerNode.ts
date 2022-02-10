@@ -107,18 +107,15 @@ export class ContainerNode extends AbstractionBase {
 		if (!this._partition || this._partitionClass !== this.container.partitionClass) {
 			this._partitionClass = this.container.partitionClass;
 
-			if (this.parent === this) {
+			if (this.parent === this)
 				throw ('Self REF!!!');
-			}
 
-			this._partition = this.container.partitionClass
-				? new this.container.partitionClass(this)
-				: this._parent?.partition
+			this._partition = this._partitionClass
+				? new this._partitionClass(this) : this._parent?.partition
 				|| new (<View> this._pool).partitionClass(this);
 
-			if (this.container.isEntity()) {
+			if (this.container.isEntity())
 				this.invalidateEntity(this.container);
-			}
 		}
 
 		return this._partition;
