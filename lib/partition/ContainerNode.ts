@@ -724,7 +724,7 @@ export class ContainerNode extends AbstractionBase {
 	}
 
 	public isMouseDisabled(): boolean {
-		return !this.container.mouseEnabled || this.parent?.isMouseChildrenDisabled();
+		return this.isInvisible() || !this.container.mouseEnabled || this.parent?.isMouseChildrenDisabled();
 	}
 
 	public isMouseChildrenDisabled(): boolean {
