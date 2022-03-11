@@ -108,7 +108,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	 * @param node The Partition3DNode object to frustum-test.
 	 */
 	public enterNode(node: INode): boolean {
-		if (node.isInvisible() || node.getMaskId() != this._rootEntity.getMaskId())
+		if ((node.isInvisible() && node.getMaskId() == -1) || node.getMaskId() != this._rootEntity.getMaskId())
 			return false;
 
 		if ((<ContainerNode> node).pickObjectNode) {
