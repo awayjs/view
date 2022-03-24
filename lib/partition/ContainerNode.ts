@@ -616,7 +616,7 @@ export class ContainerNode extends AbstractionBase {
 	 */
 	public isRenderable(): boolean {
 		// if container is invisible - all child nodes automatically invisible to
-		return true;//!this.isInvisible() && this.getColorTransform()._isRenderable();
+		return  this.getMaskId() != -1 || !this.isInvisible() && this.getColorTransform()._isRenderable();
 	}
 
 	/**
