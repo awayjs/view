@@ -664,7 +664,7 @@ export class ContainerNode extends AbstractionBase {
 		}
 
 		if (this._entityNode)
-	  		this._entityNode.acceptTraverser(traverser);
+			this._entityNode.acceptTraverser(traverser);
 
 		for (let i: number = 0; i < this._numChildNodes; i++)
 			this._childNodes[i].acceptTraverser(traverser);
