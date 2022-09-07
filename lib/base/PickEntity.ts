@@ -157,10 +157,9 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 			|| this._node.container.assetType == '[asset Billboard]')
 			return true;
 
-		const len: number = this._pickables.length;
 		let shapeHit: boolean = false;
 
-		for (let i = 0; i < len; i++) {
+		for (let i = this._pickables.length - 1; i >= 0; i--) {
 			if (this._pickables[i].hitTestPoint(tempPoint.x, tempPoint.y, 0)) {
 				shapeHit = true;
 				break;
@@ -257,7 +256,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 	public isIntersectingShape(findClosestCollision: boolean): boolean {
 		let shapeHit: boolean = false;
-		for (let i: number = 0; i < this._pickables.length; i++) {
+		for (let i: number = this._pickables.length - 1; i >= 0; i--) {
 			if (this._pickables[i].testCollision(this._pickingCollision, findClosestCollision)) {
 				if (!findClosestCollision)
 					return true;

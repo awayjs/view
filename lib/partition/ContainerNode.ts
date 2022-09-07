@@ -662,11 +662,12 @@ export class ContainerNode extends AbstractionBase {
 				this._scrollRectNode.setParent(this);
 			}
 		}
-		for (let i: number = this._numChildNodes - 1; i >= 0; i--)
-			this._childNodes[i].acceptTraverser(traverser);
 
 		if (this._entityNode)
-			this._entityNode.acceptTraverser(traverser);
+	  		this._entityNode.acceptTraverser(traverser);
+
+		for (let i: number = 0; i < this._numChildNodes; i++)
+			this._childNodes[i].acceptTraverser(traverser);
 	}
 
 	public addChildAt(entity: IPartitionEntity, index: number): ContainerNode {

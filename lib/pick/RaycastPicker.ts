@@ -251,15 +251,15 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	}
 
 	public _collectEntities(collectedEntities: PickEntity[], dragNode: INode): void {
-		const len: number = this._pickers.length;
+
 		let picker: RaycastPicker;
-		for (let i = 0; i < len; i++)
+		for (let i = this._pickers.length - 1; i >= 0; i--)
 			if ((picker = this._pickers[i]).rootNode != dragNode)
 				picker._collectEntities(collectedEntities, dragNode);
 
 		//ensures that raycastPicker entities are always added last, for correct 2D picking
 		let entity: PickEntity;
-		for (let i = 0; i < this._entities.length; ++i) {
+		for (let i = this._entities.length - 1; i >= 0; i--) {
 			(entity = this._entities[i]).pickingCollision.rootNode = this.rootNode;
 			collectedEntities.push(entity);
 		}
