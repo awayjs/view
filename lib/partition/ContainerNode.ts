@@ -399,6 +399,9 @@ export class ContainerNode extends AbstractionBase {
 	}
 
 	public getMaskOwners(): ContainerNode[] {
+		if (this._transformDisabled)   
+			return null;
+
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.MASKS) {
 			const masks = this.getMasks(true);
 			this._maskOwners = (this._parent?.getMaskOwners() && this.getMaskId() == -1)
