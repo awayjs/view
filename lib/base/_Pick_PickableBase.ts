@@ -42,9 +42,13 @@ export class _Pick_PickableBase extends AbstractionBase {
 		this._node = pickEntity.node;
 		this._view = pickEntity.view;
 		this._pickGroup = pickEntity.pickGroup;
+
+		pickEntity.addPickable(this);
 	}
 
 	public onClear(event: AssetEvent): void {
+		(<PickEntity> this._pool).removePickable(this);
+
 		super.onClear(event);
 
 		//this.sourceEntity = null;
