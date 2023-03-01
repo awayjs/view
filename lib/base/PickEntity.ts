@@ -397,7 +397,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		this._activePickables.push(traversable.getAbstraction(this));
 	}
 
-	public addPickable(pickable:_Pick_PickableBase): void {
+	public addPickable(pickable: _Pick_PickableBase): void {
 		this._pickables.push(pickable);
 	}
 
