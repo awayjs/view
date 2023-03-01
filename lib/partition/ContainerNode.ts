@@ -579,6 +579,19 @@ export class ContainerNode extends AbstractionBase {
 			this.invalidateEntity(this.container);
 	}
 
+	public clear(): void {
+		super.clear();
+
+		if (this._entityNode)
+			this._entityNode.clear();
+
+		for (let i: number = 0; i < this._numChildNodes; i++)
+			this._childNodes[i].clear();
+
+		if (this._pickObject)
+			this._pickObjectNode.clear();
+	}
+
 	public isInFrustum(
 		_rootEntity: INode,
 		_planes: Array<Plane3D>,
