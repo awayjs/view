@@ -31,8 +31,6 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	protected _rootNode: ContainerNode;
 	protected _parent: PartitionBase;
 
-	public isUpdated: boolean = false;
-
 	public get parent(): PartitionBase {
 		return this._parent;
 	}
@@ -93,8 +91,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 		child.setParent(this);
 
 		// this.updateNode(child.rootNode);
-		if (!this._invalid)
-			this.invalidate();
+		this.invalidate();
 	}
 
 	public removeChild(child: PartitionBase): void {
@@ -106,8 +103,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 		child.setParent(null);
 
 		// this._rootNode.removeNode(child.rootNode);
-		if (!this._invalid)
-			this.invalidate();
+		this.invalidate();
 	}
 
 	public setParent(parent: PartitionBase): void {
@@ -115,15 +111,13 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	}
 
 	public traverse(traverser: IPartitionTraverser): void {
-		this.isUpdated = this._invalid;
 		this._invalid = false;
 
 		this._rootNode.acceptTraverser(traverser);
 	}
 
 	public invalidateEntity(entityNode: EntityNode): void {
-		if (!this._invalid)
-			this.invalidate();
+		this.invalidate();
 
 		this._updateQueue[entityNode.id] = entityNode;
 	}
@@ -147,8 +141,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	}
 
 	public clearEntity(entityNode: EntityNode): void {
-		if (!this._invalid)
-			this.invalidate();
+		this.invalidate();
 
 		delete this._updateQueue[entityNode.id];
 
@@ -174,6 +167,9 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	}
 
 	public invalidate(): void {
+		if (this._invalid)
+			return;
+
 		this._invalid = true;
 
 		super.invalidate();
