@@ -582,6 +582,9 @@ export class ContainerNode extends AbstractionBase {
 	public clear(): void {
 		super.clear();
 
+		if (this.partition != this._parent?.partition)
+			this._partition.invalidate();
+
 		if (this._entityNode)
 			this._entityNode.clear();
 
