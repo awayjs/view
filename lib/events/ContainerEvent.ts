@@ -20,7 +20,7 @@ export class ContainerEvent extends EventBase {
 	public static UPDATE_ENTITY: string = 'updateEntity';
 
 	/**
-	 * 
+	 *
 	 */
 	public readonly container: IPartitionContainer;
 
