@@ -10,6 +10,7 @@ import { PickGroup, RaycastPickerPool } from '../PickGroup';
 import { IPartitionEntity } from '../base/IPartitionEntity';
 import { EntityNode } from '../partition/EntityNode';
 import { ContainerNode } from '../partition/ContainerNode';
+import { IPartitionContainer } from '../base/IPartitionContainer';
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations. Performs
@@ -233,7 +234,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return collision;
 	}
 
-	public getObjectsUnderPoint(rayPosition: Vector3D, rayDirection: Vector3D): IPartitionEntity[] {
+	public getObjectsUnderPoint(rayPosition: Vector3D, rayDirection: Vector3D): IPartitionContainer[] {
 
 		if (!this._isIntersectingRayInternal(this.rootNode, rayPosition, rayDirection, true))
 			return [];
@@ -242,7 +243,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		this._collectEntities(this._collectedEntities, this._dragNode);
 
 		//console.log("entities: ", this._entities)
-		const colliders: IPartitionEntity[] = this._getColliders();
+		const colliders: IPartitionContainer[] = this._getColliders();
 
 		//discard collected pickers
 		this._collectedEntities.length = 0;
@@ -331,16 +332,16 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 
 		if (this._dragNode) {
 			if (this._dragNode.container.assetType == '[asset MovieClip]' && this._dragNode.container.adapter) {
-				(<any> this._dragNode.container.adapter).setDropTarget(bestCollision ? bestCollision.entityNode : null);
+				(<any> this._dragNode.container.adapter).setDropTarget(bestCollision ? bestCollision.containerNode : null);
 			}
 		}
 
 		return bestCollision;
 	}
 
-	private _getColliders(): IPartitionEntity[] {
+	private _getColliders(): IPartitionContainer[] {
 
-		const colliders: IPartitionEntity[] = [];
+		const colliders: IPartitionContainer[] = [];
 		let pickEntity: PickEntity;
 		const len: number = this._collectedEntities.length;
 		for (let i: number = 0; i < len; i++) {

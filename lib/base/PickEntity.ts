@@ -27,7 +27,6 @@ import { IBoundsPicker } from '../pick/IBoundsPicker';
 import { BoundsPickerEvent } from '../events/BoundsPickerEvent';
 
 import { View } from '../View';
-import { IPartitionEntity } from './IPartitionEntity';
 import { EntityNode } from '../partition/EntityNode';
 import { ContainerNode } from '../partition/ContainerNode';
 
@@ -91,7 +90,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		this._node = entity.parent;
 		this._view = this._node.view;
 		this._pickGroup = pickGroup;
-		this._pickingCollision = new PickingCollision(entity, pickGroup);
+		this._pickingCollision = new PickingCollision(this._node, pickGroup);
 	}
 
 	public getBoundingVolume(target: ContainerNode = null, type: BoundingVolumeType = null): BoundingVolumeBase {
@@ -269,16 +268,6 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		return shapeHit;
 	}
 
-	public getBoxBounds(
-		targetCoordinateSpace: IPartitionEntity = null, strokeFlag: boolean = false, fastFlag: boolean = false): Box {
-		return this._getBoxBoundsInternal(
-			targetCoordinateSpace
-				? targetCoordinateSpace.transform.matrix3D
-				: null,
-			strokeFlag,
-			fastFlag);
-	}
-
 	public _getBoxBoundsInternal(
 		matrix3D: Matrix3D = null,
 		strokeFlag: boolean = true,
@@ -322,16 +311,6 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		}
 
 		return target;
-	}
-
-	public getSphereBounds(
-		targetCoordinateSpace: IPartitionEntity = null, strokeFlag: boolean = false, fastFlag: boolean = false): Sphere {
-		return this._getSphereBoundsInternal(
-			null, targetCoordinateSpace
-				? targetCoordinateSpace.transform.matrix3D
-				: null,
-			strokeFlag,
-			fastFlag);
 	}
 
 	public _getSphereBoundsInternal(
@@ -444,6 +423,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	private _update(): void {
 		this._invalid = false;
 		this._node.container._acceptTraverser(this);
+		//---- changed (<EntityNode> this._asset).entity._acceptTraverser(this);
 	}
 
 	private _isIntersectingMasks(

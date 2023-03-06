@@ -1,4 +1,5 @@
 import { EventBase } from '@awayjs/core';
+import { IPartitionContainer } from '../base/IPartitionContainer';
 import { IPartitionEntity } from '../base/IPartitionEntity';
 
 export class ContainerEvent extends EventBase {
@@ -16,27 +17,22 @@ export class ContainerEvent extends EventBase {
 	/**
 	 *
 	 */
-	public static INVALIDATE_ENTITY: string = 'invalidateEntity';
+	public static UPDATE_ENTITY: string = 'updateEntity';
 
 	/**
-	 *
+	 * 
 	 */
-	public static CLEAR_ENTITY: string = 'clearEntity';
-
-	/**
-	 *
-	 */
-	public readonly entity: IPartitionEntity;
+	public readonly container: IPartitionContainer;
 
 	/**
 	 *
 	 */
 	public readonly index: number;
 
-	constructor(type: string, entity: IPartitionEntity = null, index: number = null) {
+	constructor(type: string, container: IPartitionContainer = null, index: number = null) {
 		super(type);
 
-		this.entity = entity;
+		this.container = container;
 
 		this.index = index;
 	}
@@ -46,6 +42,6 @@ export class ContainerEvent extends EventBase {
 	 * @return An exact duplicate of the current object.
 	 */
 	public clone(): ContainerEvent {
-		return new ContainerEvent(this.type, this.entity, this.index);
+		return new ContainerEvent(this.type, this.container, this.index);
 	}
 }

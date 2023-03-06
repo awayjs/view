@@ -1,15 +1,38 @@
-import { Rectangle } from '@awayjs/core';
+import { IAsset, Matrix3D, Rectangle, Transform } from '@awayjs/core';
 import { BlendMode } from '@awayjs/stage';
 
 import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
+import { ContainerNode } from '../partition/ContainerNode';
+import { IPartitionClass } from '../partition/IPartitionClass';
+import { BoundsPicker } from '../pick/BoundsPicker';
 import { AlignmentMode } from './AlignmentMode';
 import { IEntityTraverser } from './IEntityTraverser';
 import { IPartitionEntity } from './IPartitionEntity';
 import { OrientationMode } from './OrientationMode';
 
-export interface IPartitionContainer extends IPartitionEntity
+export interface IPartitionContainer extends IAsset
 {
-	readonly numChildren: number;
+	pickObjectFromTimeline: boolean;
+
+	partitionClass: IPartitionClass;
+
+	zOffset: number;
+
+	getBoundsPrimitive(picker: BoundsPicker): IPartitionContainer;
+
+	getScrollRectPrimitive(): IPartitionContainer;
+
+	castsShadows: boolean;
+
+	mouseEnabled: boolean;
+
+	boundsVisible: boolean;
+
+	transform: Transform;
+
+	_registrationMatrix3D: Matrix3D;
+
+	_iInternalUpdate(): void;
 
 	readonly maskId: number;
 
@@ -19,9 +42,7 @@ export interface IPartitionContainer extends IPartitionEntity
 
 	scale9Grid: Rectangle;
 
-	getChildAt(index: number): IPartitionEntity;
-
-	isEntity(): boolean;
+	getEntity(): IPartitionEntity;
 
 	getMouseCursor(): string;
 
@@ -33,7 +54,7 @@ export interface IPartitionContainer extends IPartitionEntity
 
 	maskMode: boolean;
 
-	masks: Array<IPartitionEntity>;
+	masks: Array<IPartitionContainer>;
 
 	blendMode: BlendMode;
 
@@ -48,7 +69,7 @@ export interface IPartitionContainer extends IPartitionEntity
 	 */
 	defaultBoundingVolume: BoundingVolumeType;
 
-	pickObject: IPartitionEntity;
+	pickObject: IPartitionContainer;
 
 	/**
 	 * @internal
@@ -60,10 +81,7 @@ export interface IPartitionContainer extends IPartitionEntity
 	 */
 	visible: boolean;
 
-	/**
-	 *
-	 * @param renderer
-	 * @private
-	 */
+	_initNode(node: ContainerNode);
+
 	_acceptTraverser(traverser: IEntityTraverser);
 }

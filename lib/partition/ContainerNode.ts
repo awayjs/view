@@ -62,8 +62,9 @@ export class ContainerNode extends AbstractionBase {
 	private _invalidateColorTransformEvent: ContainerNodeEvent;
 
 	private _entityNode: EntityNode;
+	private _entityDirty: boolean = true;
 	private _partitionClass: IPartitionClass;
-	private _pickObject: IPartitionEntity;
+	private _pickObject: IPartitionContainer;
 	private _pickObjectNode: ContainerNode;
 	private _scrollRect: Rectangle;
 	private _scrollRectNode: ContainerNode;
@@ -114,8 +115,7 @@ export class ContainerNode extends AbstractionBase {
 				? new this._partitionClass(this) : this._parent?.partition
 				|| new (<View> this._pool).partitionClass(this);
 
-			if (this.container.isEntity())
-				this.invalidateEntity(this.container);
+			this.invalidateEntity(this.container.getEntity());
 		}
 
 		return this._partition;
@@ -516,14 +516,11 @@ export class ContainerNode extends AbstractionBase {
 		this.container.addEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onEvent);
 		this.container.addEventListener(ContainerEvent.ADD_CHILD_AT, this._onEvent);
 		this.container.addEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onEvent);
-		this.container.addEventListener(ContainerEvent.INVALIDATE_ENTITY, this._onEvent);
-		this.container.addEventListener(ContainerEvent.CLEAR_ENTITY, this._onEvent);
+		this.container.addEventListener(ContainerEvent.UPDATE_ENTITY, this._onEvent);
 
-		for (let i: number = 0; i < container.numChildren; ++i)
-			this.addChildAt(container.getChildAt(i), this._numChildNodes);
+		container._initNode(this);
 
-		if (this.container.isEntity())
-			this.invalidateEntity(this.container);
+		this.invalidateEntity(this.container.getEntity());
 
 		this._hierarchicalPropsDirty = HierarchicalProperty.ALL;
 
@@ -532,14 +529,12 @@ export class ContainerNode extends AbstractionBase {
 
 	private _onEvent(e: ContainerEvent) {
 		switch (e.type) {
-			case ContainerEvent.CLEAR_ENTITY:
-				return this.clearEntity();
-			case ContainerEvent.INVALIDATE_ENTITY:
-				return this.invalidateEntity(e.entity);
+			case ContainerEvent.UPDATE_ENTITY:
+				return this.updateEntity();
 			case ContainerEvent.REMOVE_CHILD_AT:
 				return this.removeChildAt(e.index);
 			case ContainerEvent.ADD_CHILD_AT:
-				return this.addChildAt(e.entity, e.index);
+				return this.addChildAt(e.container, e.index);
 			case HeirarchicalEvent.INVALIDATE_PROPERTY:
 				return this.invalidateHierarchicalProperty((<HeirarchicalEvent> <any> e).property);
 		}
@@ -551,8 +546,7 @@ export class ContainerNode extends AbstractionBase {
 		this.container.removeEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onEvent);
 		this.container.removeEventListener(ContainerEvent.ADD_CHILD_AT, this._onEvent);
 		this.container.removeEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onEvent);
-		this.container.removeEventListener(ContainerEvent.INVALIDATE_ENTITY, this._onEvent);
-		this.container.removeEventListener(ContainerEvent.CLEAR_ENTITY, this._onEvent);
+		this.container.removeEventListener(ContainerEvent.UPDATE_ENTITY, this._onEvent);
 
 		if (this._entityNode)
 			this.clearEntity();
@@ -575,8 +569,7 @@ export class ContainerNode extends AbstractionBase {
 		if (this.partition != this._parent?.partition)
 			this._partition.invalidate();
 
-		if (this.container.isEntity())
-			this.invalidateEntity(this.container);
+		this.invalidateEntity(this.container.getEntity());
 	}
 
 	public clear(): void {
@@ -689,7 +682,7 @@ export class ContainerNode extends AbstractionBase {
 			this._childNodes[i].acceptTraverser(traverser);
 	}
 
-	public addChildAt(entity: IPartitionEntity, index: number): ContainerNode {
+	public addChildAt(entity: IPartitionContainer, index: number): ContainerNode {
 		const node = entity.getAbstraction<ContainerNode>(this._pool);
 
 		node.setParent(this);
@@ -716,19 +709,39 @@ export class ContainerNode extends AbstractionBase {
 		return node;
 	}
 
-	private invalidateEntity(entity: IPartitionEntity): void {
+	private invalidateEntity(entity: IPartitionEntity, invalidate: boolean = true): void {
+		if (!entity)
+			return;
+
 		if (this._entityNode == null) {
 			this._entityNode = entity.getAbstraction<EntityNode>(this.partition);
 			this._entityNode.setParent(this);
 		}
 
 		this._partition.invalidateEntity(this._entityNode);
+
+		//<---changed
+		// if (invalidate) {
+		// 	this._entityNode.invalidate();
+		// 	this._partition.invalidateEntity(this._entityNode);
+		// }
+		//---> changed
 	}
 
 	private clearEntity(): void {
 		this._partition.clearEntity(this._entityNode);
 		this._entityNode.setParent(null);
 		this._entityNode = null;
+	}
+
+	public updateEntity(): void {
+		const entity = this.container.getEntity();
+
+		if (entity) {
+			this.invalidateEntity(entity);
+		} else if (this._entityNode) {
+			this.clearEntity();
+		}
 	}
 
 	public startDrag(): void {
@@ -801,8 +814,7 @@ export class ContainerNode extends AbstractionBase {
 			this.dispatchEvent(this._invalidateMatrix3DEvent
 				|| (this._invalidateMatrix3DEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_MATRIX3D)));
 
-			if (this.container.isEntity())
-				this.invalidateEntity(this.container);
+			this.invalidateEntity(this.container.getEntity());
 		}
 	}
 
@@ -821,8 +833,7 @@ export class ContainerNode extends AbstractionBase {
 			if (this._parent.partition !== this.partition)
 				this._parent.partition.addChild(this.partition);
 
-			if (this.container.isEntity())
-				this.invalidateEntity(this.container);
+			this.invalidateEntity(this.container.getEntity());
 		}
 
 		this.invalidateHierarchicalProperty(HierarchicalProperty.ALL);

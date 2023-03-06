@@ -9,7 +9,7 @@ export {_IPick_PickableClass} from "./lib/base/_IPick_PickableClass";
 export {_Pick_PickableBase} from "./lib/base/_Pick_PickableBase";
 export {IPartitionEntity} from "./lib/base/IPartitionEntity";
 export {IPartitionContainer} from "./lib/base/IPartitionContainer";
-export {ITabEntity} from "./lib/base/ITabEntity";
+export {ITabContainer} from "./lib/base/ITabContainer";
 export {HierarchicalProperty} from "./lib/base/HierarchicalProperty";
 export {OrientationMode} from "./lib/base/OrientationMode";
 export {AlignmentMode} from "./lib/base/AlignmentMode";

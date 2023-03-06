@@ -35,8 +35,8 @@ export class EntityNode extends AbstractionBase implements INode {
 	}
 
 	public get boundsVisible(): boolean {
-		if (this._boundsVisible != (<IPartitionEntity> this._asset).boundsVisible) {
-			this._boundsVisible = (<IPartitionEntity> this._asset).boundsVisible;
+		if (this._boundsVisible != this._parent.container.boundsVisible) {
+			this._boundsVisible = this._parent.container.boundsVisible;
 
 			if (this._boundsVisible) {
 				this._boundsPrimitiveDirty = true;
@@ -58,7 +58,7 @@ export class EntityNode extends AbstractionBase implements INode {
 	 * @returns {boolean}
 	 */
 	public isCastingShadow(): boolean {
-		return (<IPartitionEntity> this._asset).castsShadows;
+		return this._parent.container.castsShadows;
 	}
 
 	public onClear(event: AssetEvent): void {
@@ -114,7 +114,7 @@ export class EntityNode extends AbstractionBase implements INode {
 		if (this._boundsPrimitiveDirty) {
 			this._boundsPrimitiveDirty = false;
 
-			this._boundsPrimitive = this.entity
+			this._boundsPrimitive = this.parent.container
 				.getBoundsPrimitive(pickGroup.getBoundsPicker(this.partition))
 				.getAbstraction<EntityNode>(this.partition);
 

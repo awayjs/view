@@ -125,7 +125,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	public updateEntity(entityNode: EntityNode): void {
 		//TODO: remove reliance on view
 		//required for controllers with autoUpdate set to true and queued events
-		entityNode.entity._iInternalUpdate();
+		entityNode.parent.container._iInternalUpdate();
 
 		this.updateNode(entityNode);
 	}

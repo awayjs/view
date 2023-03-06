@@ -19,9 +19,9 @@ export class PickingCollision {
 	public rootNode: ContainerNode;
 
 	/**
-	 * The entity to which this collision object belongs.
+	 * The container to which this collision object belongs.
 	 */
-	public entityNode: EntityNode;
+	public containerNode: ContainerNode;
 
 	/**
 	 * The pickGroup to which this collision object belongs.
@@ -88,8 +88,8 @@ export class PickingCollision {
 	 *
 	 * @param entity The entity to which this collision object belongs.
 	 */
-	constructor(entityNode: EntityNode, pickGroup: PickGroup) {
-		this.entityNode = entityNode;
+	constructor(containerNode: ContainerNode, pickGroup: PickGroup) {
+		this.containerNode = containerNode;
 		this.pickGroup = pickGroup;
 	}
 }

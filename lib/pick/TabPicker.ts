@@ -4,7 +4,7 @@ import { PartitionBase } from '../partition/PartitionBase';
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
 import { INode } from '../partition/INode';
 
-import { ITabEntity } from '../base/ITabEntity';
+import { ITabContainer } from '../base/ITabContainer';
 import { EntityNode } from '../partition/EntityNode';
 import { ContainerNode } from '../partition/ContainerNode';
 
@@ -290,20 +290,19 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser {
 	 * @param entity
 	 */
 	public applyEntity(entity: EntityNode): void {
-		const tabNode = entity;
-		const tabEntity = <ITabEntity> tabNode.entity;
-		if (tabEntity.tabEnabled) {
-			if (tabEntity.assetType != '[asset TextField]' || (<any> tabEntity).type == 'input') {
+		const tabContainer = <ITabContainer> entity.parent.container;
+		if (tabContainer.tabEnabled) {
+			if (tabContainer.assetType != '[asset TextField]' || (<any> tabContainer).type == 'input') {
 				// add the entity to the correct tab list.
-				if (tabEntity.tabIndex >= 0) {
-					if (this._customTabNodes.length < tabEntity.tabIndex)
-						this._customTabNodes.length = tabEntity.tabIndex;
-					if (!this._customTabNodes[tabEntity.tabIndex]) {
-						this._customTabNodes[tabEntity.tabIndex] = [];
+				if (tabContainer.tabIndex >= 0) {
+					if (this._customTabNodes.length < tabContainer.tabIndex)
+						this._customTabNodes.length = tabContainer.tabIndex;
+					if (!this._customTabNodes[tabContainer.tabIndex]) {
+						this._customTabNodes[tabContainer.tabIndex] = [];
 					}
-					this._customTabNodes[tabEntity.tabIndex].push(tabNode);
+					this._customTabNodes[tabContainer.tabIndex].push(entity);
 				} else {
-					this._tabNodes[this._tabNodes.length] = tabNode;
+					this._tabNodes[this._tabNodes.length] = entity;
 				}
 
 			}

@@ -26,9 +26,9 @@ import {
 
 import { IPartitionClass } from './partition/IPartitionClass';
 
+import { IPartitionContainer } from './base/IPartitionContainer';
 import { ViewEvent } from './events/ViewEvent';
 import { ContainerNode } from './partition/ContainerNode';
-import { IPartitionEntity } from './base/IPartitionEntity';
 import { BasicPartition } from './partition/BasicPartition';
 
 export class View extends AssetBase implements IAbstractionPool {
@@ -351,11 +351,11 @@ export class View extends AssetBase implements IAbstractionPool {
 		this._updatePixelRatio();
 	}
 
-	public requestAbstraction(_asset: IPartitionEntity): IAbstractionClass {
+	public requestAbstraction(_asset: IPartitionContainer): IAbstractionClass {
 		return ContainerNode;
 	}
 
-	public getNode(entity: IPartitionEntity): ContainerNode {
+	public getNode(entity: IPartitionContainer): ContainerNode {
 		return entity.getAbstraction<ContainerNode>(this);
 	}
 

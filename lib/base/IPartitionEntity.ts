@@ -8,49 +8,6 @@ import { IPartitionContainer } from './IPartitionContainer';
 
 export interface IPartitionEntity extends IAsset
 {
-	partitionClass: IPartitionClass;
-
-	parent: IPartitionContainer;
-
-	pickObjectFromTimeline: boolean;
-
-	_iInternalUpdate(): void;
-
-	_registrationMatrix3D: Matrix3D;
-
-	transform: Transform;
-
-	zOffset: number;
-
-	/**
-	 *
-	 */
-	defaultBoundingVolume: BoundingVolumeType;
-
-	/**
-	 *
-	 */
-	boundsVisible: boolean;
-
-	/**
-	 *
-	 */
-	getBoundsPrimitive(picker: BoundsPicker): IPartitionEntity;
-
-	/**
-	 *
-	 */
-	getScrollRectPrimitive(): IPartitionEntity;
-
-	/**
-	 *
-	 */
-	castsShadows: boolean;
-
-	/**
-	 * @internal
-	 */
-	mouseEnabled: boolean;
 
 	/**
 	 *
