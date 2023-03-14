@@ -111,11 +111,14 @@ export class ContainerNode extends AbstractionBase {
 			if (this.parent === this)
 				throw ('Self REF!!!');
 
+			if (this._partition && this._entityNode)
+				this.clearEntity();
+
 			this._partition = this._partitionClass
 				? new this._partitionClass(this) : this._parent?.partition
 				|| new (<View> this._pool).partitionClass(this);
 
-			this.invalidateEntity(this.container.getEntity());
+			this.invalidateEntity();
 		}
 
 		return this._partition;
@@ -516,11 +519,10 @@ export class ContainerNode extends AbstractionBase {
 		this.container.addEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onEvent);
 		this.container.addEventListener(ContainerEvent.ADD_CHILD_AT, this._onEvent);
 		this.container.addEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onEvent);
-		this.container.addEventListener(ContainerEvent.UPDATE_ENTITY, this._onEvent);
 
 		container._initNode(this);
 
-		this.invalidateEntity(this.container.getEntity());
+		this.invalidateEntity();
 
 		this._hierarchicalPropsDirty = HierarchicalProperty.ALL;
 
@@ -529,8 +531,6 @@ export class ContainerNode extends AbstractionBase {
 
 	private _onEvent(e: ContainerEvent) {
 		switch (e.type) {
-			case ContainerEvent.UPDATE_ENTITY:
-				return this.updateEntity();
 			case ContainerEvent.REMOVE_CHILD_AT:
 				return this.removeChildAt(e.index);
 			case ContainerEvent.ADD_CHILD_AT:
@@ -546,7 +546,8 @@ export class ContainerNode extends AbstractionBase {
 		this.container.removeEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onEvent);
 		this.container.removeEventListener(ContainerEvent.ADD_CHILD_AT, this._onEvent);
 		this.container.removeEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onEvent);
-		this.container.removeEventListener(ContainerEvent.UPDATE_ENTITY, this._onEvent);
+
+		this.partition.clearLocalNode();
 
 		if (this._entityNode)
 			this.clearEntity();
@@ -566,10 +567,12 @@ export class ContainerNode extends AbstractionBase {
 	public onInvalidate(event: AssetEvent): void {
 		super.onInvalidate(event);
 
+		// fire invalidation on the partition in cases where no entity exists
+		// (for example when CacheRenderer is active on the partition)
 		if (this.partition != this._parent?.partition)
 			this._partition.invalidate();
 
-		this.invalidateEntity(this.container.getEntity());
+		this.invalidateEntity();
 	}
 
 	public clear(): void {
@@ -709,39 +712,27 @@ export class ContainerNode extends AbstractionBase {
 		return node;
 	}
 
-	private invalidateEntity(entity: IPartitionEntity, invalidate: boolean = true): void {
-		if (!entity)
-			return;
+	private invalidateEntity(): void {
+		const entity = this.container.getEntity();
 
-		if (this._entityNode == null) {
-			this._entityNode = entity.getAbstraction<EntityNode>(this.partition);
-			this._entityNode.setParent(this);
+		//clear entity node if new entity is different
+		if (this._entityNode && this._entityNode.entity != entity)
+			this.clearEntity();
+
+		if (entity) {
+			//create new entity node if none exists
+			if (this._entityNode == null) {
+				this._entityNode = entity.getAbstraction<EntityNode>(this.partition);
+				this._entityNode.setParent(this);
+			}
+			this._partition.invalidateEntity(this._entityNode);
 		}
-
-		this._partition.invalidateEntity(this._entityNode);
-
-		//<---changed
-		// if (invalidate) {
-		// 	this._entityNode.invalidate();
-		// 	this._partition.invalidateEntity(this._entityNode);
-		// }
-		//---> changed
 	}
 
 	private clearEntity(): void {
 		this._partition.clearEntity(this._entityNode);
 		this._entityNode.setParent(null);
 		this._entityNode = null;
-	}
-
-	public updateEntity(): void {
-		const entity = this.container.getEntity();
-
-		if (entity) {
-			this.invalidateEntity(entity);
-		} else if (this._entityNode) {
-			this.clearEntity();
-		}
 	}
 
 	public startDrag(): void {
@@ -814,7 +805,8 @@ export class ContainerNode extends AbstractionBase {
 			this.dispatchEvent(this._invalidateMatrix3DEvent
 				|| (this._invalidateMatrix3DEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_MATRIX3D)));
 
-			this.invalidateEntity(this.container.getEntity());
+			if (this._entityNode)
+				this._partition.invalidateEntity(this._entityNode);
 		}
 	}
 
@@ -833,7 +825,8 @@ export class ContainerNode extends AbstractionBase {
 			if (this._parent.partition !== this.partition)
 				this._parent.partition.addChild(this.partition);
 
-			this.invalidateEntity(this.container.getEntity());
+			if (this._entityNode)
+				this._partition.invalidateEntity(this._entityNode);
 		}
 
 		this.invalidateHierarchicalProperty(HierarchicalProperty.ALL);

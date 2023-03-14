@@ -3,7 +3,6 @@ import { Point, Vector3D } from '@awayjs/core';
 import { ITraversable } from '../base/ITraversable';
 import { PickGroup } from '../PickGroup';
 import { ContainerNode } from '../partition/ContainerNode';
-import { EntityNode } from '../partition/EntityNode';
 
 /**
  * Value object ___ for a picking collision returned by a picking collider. Created as unique objects on display objects

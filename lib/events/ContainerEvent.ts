@@ -1,6 +1,5 @@
 import { EventBase } from '@awayjs/core';
 import { IPartitionContainer } from '../base/IPartitionContainer';
-import { IPartitionEntity } from '../base/IPartitionEntity';
 
 export class ContainerEvent extends EventBase {
 
@@ -13,11 +12,6 @@ export class ContainerEvent extends EventBase {
 	 *
 	 */
 	public static REMOVE_CHILD_AT: string = 'removeChildAt';
-
-	/**
-	 *
-	 */
-	public static UPDATE_ENTITY: string = 'updateEntity';
 
 	/**
 	 *
