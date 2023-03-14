@@ -82,6 +82,4 @@ export interface IPartitionContainer extends IAsset
 	visible: boolean;
 
 	_initNode(node: ContainerNode);
-
-	_acceptTraverser(traverser: IEntityTraverser);
 }

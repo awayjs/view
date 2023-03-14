@@ -422,8 +422,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 	private _update(): void {
 		this._invalid = false;
-		this._node.container._acceptTraverser(this);
-		//---- changed (<EntityNode> this._asset).entity._acceptTraverser(this);
+		(<EntityNode> this._asset).entity._acceptTraverser(this);
 	}
 
 	private _isIntersectingMasks(
