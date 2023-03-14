@@ -6,7 +6,6 @@ import { ContainerNode } from '../partition/ContainerNode';
 import { IPartitionClass } from '../partition/IPartitionClass';
 import { BoundsPicker } from '../pick/BoundsPicker';
 import { AlignmentMode } from './AlignmentMode';
-import { IEntityTraverser } from './IEntityTraverser';
 import { IPartitionEntity } from './IPartitionEntity';
 import { OrientationMode } from './OrientationMode';
 
