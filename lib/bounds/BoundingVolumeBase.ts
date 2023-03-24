@@ -29,6 +29,7 @@ export class BoundingVolumeBase extends AbstractionBase {
 		this._onInvalidateMatrix3DDelegate = (event: TransformEvent) => this._onInvalidateMatrix3D(event);
 
 		this._picker.addEventListener(BoundsPickerEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
+		this._picker.addBoundingVolume(this);
 
 		if (this._targetCoordinateSpace != this._picker.node) {
 			let targetEntity: ContainerNode = this._picker.node;
@@ -55,6 +56,7 @@ export class BoundingVolumeBase extends AbstractionBase {
 	public onClear(event: AssetEvent): void {
 		super.onClear(event);
 
+		this._picker.removeBoundingVolume(this);
 		this._picker.removeEventListener(BoundsPickerEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
 
 		if (this._targetCoordinateSpace != this._picker.node) {

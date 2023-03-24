@@ -46,6 +46,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	private static _pickPickableClassPool: Object = new Object();
 
 	private _activePickables: _Pick_PickableBase[] = [];
+	private _boundingVolumes: BoundingVolumeBase[] = [];
 	private _pickables: _Pick_PickableBase[] = [];
 	private _view: View;
 	private _node: ContainerNode;
@@ -376,6 +377,14 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		this._activePickables.push(traversable.getAbstraction(this));
 	}
 
+	public addBoundingVolume(boundingVolume: BoundingVolumeBase): void {
+		this._boundingVolumes.push(boundingVolume);
+	}
+
+	public removeBoundingVolume(boundingVolume: BoundingVolumeBase): void {
+		this._boundingVolumes.splice(this._boundingVolumes.indexOf(boundingVolume), 1);
+	}
+
 	public addPickable(pickable: _Pick_PickableBase): void {
 		this._pickables.push(pickable);
 	}
@@ -403,6 +412,9 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 			this._boundingVolumePools[key].dispose();
 			delete this._boundingVolumePools[key];
 		}
+
+		for (let i: number = this._boundingVolumes.length  - 1; i >= 0; i--)
+			this._boundingVolumes[i].onClear(event);
 
 		for (let i: number = this._pickables.length  - 1; i >= 0; i--)
 			this._pickables[i].onClear(event);

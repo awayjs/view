@@ -45,6 +45,8 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 	private _boundingVolumePools: Partial<Record<BoundingVolumeType, BoundingVolumePool>> = {};
 
+	private _boundingVolumes: BoundingVolumeBase[] = [];
+	
 	public get partition(): PartitionBase {
 		return this._partition;
 	}
@@ -250,17 +252,16 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	}
 
 	public traverse(): void {
+		this._invalid = false;
 		this._boundsPickers.length = 0;
 		this._partition.traverse(this);
 
-		this._invalid = false;
 	}
 
 	public getTraverser(partition: PartitionBase): IPartitionTraverser {
 		const traverser: BoundsPicker = this._pickGroup.getBoundsPicker(partition);
 
-		if (this._invalid)
-			this._boundsPickers.push(traverser);
+		this._boundsPickers.push(traverser);
 
 		return traverser;
 	}
@@ -308,6 +309,15 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 				? (fastFlag ? BoundingVolumeType.SPHERE_BOUNDS_FAST : BoundingVolumeType.SPHERE_BOUNDS)
 				: (fastFlag ? BoundingVolumeType.SPHERE_FAST : BoundingVolumeType.SPHERE))
 		).getSphere();
+	}
+
+	
+	public addBoundingVolume(boundingVolume: BoundingVolumeBase): void {
+		this._boundingVolumes.push(boundingVolume);
+	}
+
+	public removeBoundingVolume(boundingVolume: BoundingVolumeBase): void {
+		this._boundingVolumes.splice(this._boundingVolumes.indexOf(boundingVolume), 1);
 	}
 
 	public hitTestPoint(x: number, y: number, shapeFlag: boolean = false): boolean {
@@ -482,6 +492,9 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 	public onClear(event: AssetEvent): void {
 		super.onClear(event);
+
+		for (let i: number = this._boundingVolumes.length  - 1; i >= 0; i--)
+			this._boundingVolumes[i].onClear(event);
 
 		for (const key in this._boundingVolumePools) {
 			this._boundingVolumePools[key].dispose();

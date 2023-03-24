@@ -581,8 +581,10 @@ export class ContainerNode extends AbstractionBase {
 		if (this.partition != this._parent?.partition)
 			this._partition.invalidate();
 
-		if (this._entityNode)
-			this._entityNode.clear();
+		if (this._entityNode) {
+			this.clearEntity();
+			this._entityDirty = true;
+		}
 
 		for (let i: number = 0; i < this._numChildNodes; i++)
 			this._childNodes[i].clear();
@@ -651,6 +653,9 @@ export class ContainerNode extends AbstractionBase {
 	 * @param traverser
 	 */
 	public acceptTraverser(traverser: IPartitionTraverser): void {
+		if (this._entityDirty)
+			this.invalidateEntity();
+
 		if (this.partition.rootNode == this)
 			this.partition.updateEntities();
 
@@ -713,6 +718,8 @@ export class ContainerNode extends AbstractionBase {
 	}
 
 	private invalidateEntity(): void {
+		this._entityDirty = false;
+
 		const entity = this.container.getEntity();
 
 		//clear entity node if new entity is different
