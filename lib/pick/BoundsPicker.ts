@@ -46,7 +46,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	private _boundingVolumePools: Partial<Record<BoundingVolumeType, BoundingVolumePool>> = {};
 
 	private _boundingVolumes: BoundingVolumeBase[] = [];
-	
+
 	public get partition(): PartitionBase {
 		return this._partition;
 	}
@@ -311,7 +311,6 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		).getSphere();
 	}
 
-	
 	public addBoundingVolume(boundingVolume: BoundingVolumeBase): void {
 		this._boundingVolumes.push(boundingVolume);
 	}
