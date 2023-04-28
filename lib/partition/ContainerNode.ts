@@ -805,7 +805,7 @@ export class ContainerNode extends AbstractionBase {
 		if (this._pickObjectNode)
 			this._pickObjectNode.invalidateHierarchicalProperty(property);
 
-		if (propertyDirty & HierarchicalProperty.SCENE_TRANSFORM) {
+		if (property & HierarchicalProperty.SCENE_TRANSFORM) {
 			this._positionDirty = true;
 			this._inverseMatrix3DDirty = true;
 

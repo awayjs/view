@@ -277,6 +277,10 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		target: Box = null): Box
 	// eslint-disable-next-line brace-style
 	{
+		//TODO: this is required to reset invalidation on HierarchicalProperty.SCENE_TRANSFORM
+		//Should no longer be required once BoundsPicker uses isolated node trees
+		this._node.getMatrix3D();
+
 		if (this._invalid)
 			this._update();
 
