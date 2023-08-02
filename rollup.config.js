@@ -1,31 +1,26 @@
-var includePaths = require('rollup-plugin-includepaths');
+import nodeResolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import terser from '@rollup/plugin-terser';
 
-module.exports = {
-	entry: './dist/index.js',
-	sourceMap: true,
-	format: 'umd',
-	moduleName: 'AwayjsView',
+export default {
+	input: './dist/index.js',
+	output: {
+		name: 'AwayjsView',
+		globals: {
+			'@awayjs/core': 'AwayjsCore',
+			'@awayjs/stage': 'AwayjsStage'
+		},
+		sourcemap: true,
+		format: 'umd',
+		file: './bundle/awayjs-view.umd.js'
+	},
 	external: [
 		'@awayjs/core',
-		'@awayjs/graphics',
-		'@awayjs/scene',
-		'@awayjs/stage',
-		'@awayjs/renderer'
-	],
-	globals: {
-		'@awayjs/core': 'AwayjsCore',
-		'@awayjs/graphics': 'AwayjsGraphics',
-		'@awayjs/scene': 'AwayjsScene',
-		'@awayjs/stage': 'AwayjsStage',
-		'@awayjs/renderer': 'AwayjsRenderer'
-	},
-	targets: [
-		{ dest: './bundle/awayjs-view.umd.js'}
+		'@awayjs/stage'
 	],
 	plugins: [
-		includePaths({
-			include : {
-				"tslib": "./node_modules/tslib/tslib.es6.js"
-			}
-		}) ]
+		nodeResolve(),
+		commonjs(),
+		terser(),
+	]
 };
