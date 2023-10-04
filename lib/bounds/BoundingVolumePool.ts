@@ -15,7 +15,7 @@ export class BoundingVolumePool implements IAbstractionPool {
 		[BoundingVolumeType.SPHERE] : false,
 		[BoundingVolumeType.SPHERE_FAST] : false,
 		[BoundingVolumeType.SPHERE_BOUNDS] : true,
-		[BoundingVolumeType.SPHERE_FAST] : true,
+		[BoundingVolumeType.SPHERE_BOUNDS_FAST] : true,
 		[BoundingVolumeType.NULL] : false
 	}
 
@@ -27,7 +27,7 @@ export class BoundingVolumePool implements IAbstractionPool {
 		[BoundingVolumeType.SPHERE] : false,
 		[BoundingVolumeType.SPHERE_FAST] : true,
 		[BoundingVolumeType.SPHERE_BOUNDS] : false,
-		[BoundingVolumeType.SPHERE_FAST] : true,
+		[BoundingVolumeType.SPHERE_BOUNDS_FAST] : true,
 		[BoundingVolumeType.NULL] : false
 	}
 
@@ -39,7 +39,7 @@ export class BoundingVolumePool implements IAbstractionPool {
 		[BoundingVolumeType.SPHERE] : BoundingSphere,
 		[BoundingVolumeType.SPHERE_FAST] : BoundingSphere,
 		[BoundingVolumeType.SPHERE_BOUNDS] : BoundingSphere,
-		[BoundingVolumeType.SPHERE_FAST] : BoundingSphere,
+		[BoundingVolumeType.SPHERE_BOUNDS_FAST] : BoundingSphere,
 		[BoundingVolumeType.NULL] : NullBounds
 	}
 
