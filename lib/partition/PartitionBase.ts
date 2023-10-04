@@ -185,9 +185,6 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 			this._localNode.clear();
 			this._localNode = null;
 		}
-
-		for (let i = 0; i < this._children.length; i++)
-			this._children[i].clear();
 	}
 
 	public dispose(): void {
