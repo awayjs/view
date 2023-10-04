@@ -658,11 +658,11 @@ export class ContainerNode extends AbstractionBase {
 			this._entityDirty = false;
 
 			const entity = this.container.getEntity();
-	
+
 			//clear entity node if new entity is different
 			if (this._entityNode && this._entityNode.entity != entity)
 				this.clearEntity();
-	
+
 			if (entity) {
 				//create new entity node if none exists
 				if (this._entityNode == null) {
