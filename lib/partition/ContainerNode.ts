@@ -115,10 +115,13 @@ export class ContainerNode extends AbstractionBase {
 				this.clearEntity();
 
 			this._partition = this._partitionClass
-				? new this._partitionClass(this) : this._parent?.partition
-				|| new (<View> this._pool).partitionClass(this);
+				? new this._partitionClass(this)
+				: this._parent?.partition || new (<View> this._pool).partitionClass(this);
 
-			this.invalidateEntity();
+			if (this._partition != this._parent?.partition)
+				this._partition.invalidate();
+
+			this._entityDirty = true;
 		}
 
 		return this._partition;
@@ -522,8 +525,6 @@ export class ContainerNode extends AbstractionBase {
 
 		container._initNode(this);
 
-		this.invalidateEntity();
-
 		this._hierarchicalPropsDirty = HierarchicalProperty.ALL;
 
 		this._activeTransform = this.container.transform;
@@ -572,14 +573,14 @@ export class ContainerNode extends AbstractionBase {
 		if (this.partition != this._parent?.partition)
 			this._partition.invalidate();
 
-		this.invalidateEntity();
+		this._entityDirty = true;
 	}
 
 	public clear(): void {
 		super.clear();
 
 		if (this.partition != this._parent?.partition)
-			this._partition.invalidate();
+			this._partition.clear();
 
 		if (this._entityNode) {
 			this.clearEntity();
@@ -653,8 +654,24 @@ export class ContainerNode extends AbstractionBase {
 	 * @param traverser
 	 */
 	public acceptTraverser(traverser: IPartitionTraverser): void {
-		if (this._entityDirty)
-			this.invalidateEntity();
+		if (this._entityDirty) {
+			this._entityDirty = false;
+
+			const entity = this.container.getEntity();
+	
+			//clear entity node if new entity is different
+			if (this._entityNode && this._entityNode.entity != entity)
+				this.clearEntity();
+	
+			if (entity) {
+				//create new entity node if none exists
+				if (this._entityNode == null) {
+					this._entityNode = entity.getAbstraction<EntityNode>(this.partition);
+					this._entityNode.setParent(this);
+				}
+				this._partition.invalidateEntity(this._entityNode);
+			}
+		}
 
 		if (this.partition.rootNode == this)
 			this.partition.updateEntities();
@@ -715,25 +732,6 @@ export class ContainerNode extends AbstractionBase {
 		node.setParent(null);
 
 		return node;
-	}
-
-	private invalidateEntity(): void {
-		this._entityDirty = false;
-
-		const entity = this.container.getEntity();
-
-		//clear entity node if new entity is different
-		if (this._entityNode && this._entityNode.entity != entity)
-			this.clearEntity();
-
-		if (entity) {
-			//create new entity node if none exists
-			if (this._entityNode == null) {
-				this._entityNode = entity.getAbstraction<EntityNode>(this.partition);
-				this._entityNode.setParent(this);
-			}
-			this._partition.invalidateEntity(this._entityNode);
-		}
 	}
 
 	private clearEntity(): void {
@@ -832,8 +830,9 @@ export class ContainerNode extends AbstractionBase {
 			if (this._parent.partition !== this.partition)
 				this._parent.partition.addChild(this.partition);
 
-			if (this._entityNode)
-				this._partition.invalidateEntity(this._entityNode);
+			//don't think this is needed as ContainerNode is cleared every time setParent is null
+			// if (this._entityNode)
+			// 	this._partition.invalidateEntity(this._entityNode);
 		}
 
 		this.invalidateHierarchicalProperty(HierarchicalProperty.ALL);
