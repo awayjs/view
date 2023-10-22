@@ -21,7 +21,7 @@ import { EntityNode } from './EntityNode';
 import { HeirarchicalEvent } from '../events/HeirarchicalEvent';
 import { IPartitionContainer } from '../base/IPartitionContainer';
 import { ContainerEvent } from '../events/ContainerEvent';
-import { BlendMode } from '@awayjs/stage';
+import { BlendMode, Settings as StageSettings, isNativeBlend } from '@awayjs/stage';
 import { AlignmentMode } from '../base/AlignmentMode';
 import { OrientationMode } from '../base/OrientationMode';
 import { IPartitionClass } from './IPartitionClass';
@@ -68,7 +68,7 @@ export class ContainerNode extends AbstractionBase {
 	private _pickObjectNode: ContainerNode;
 	private _scrollRect: Rectangle;
 	private _scrollRectNode: ContainerNode;
-	private _renderToImage: boolean;
+	private _renderToImage: boolean = false;
 	private _isDragEntity: boolean;
 
 	private _position: Vector3D = new Vector3D();
@@ -156,7 +156,7 @@ export class ContainerNode extends AbstractionBase {
 		const renderToImage = this.isRenderable() && (
 			cacheAsBitmap ||
 			filters && filters.length > 0 ||
-			(blendMode && !(blendMode === BlendMode.LAYER || blendMode === BlendMode.NORMAL))
+			(blendMode && blendMode !== BlendMode.LAYER && blendMode !== BlendMode.NORMAL && (StageSettings.USE_NON_NATIVE_BLEND || isNativeBlend(blendMode)))
 		);
 
 		if (this._renderToImage !== renderToImage) {
