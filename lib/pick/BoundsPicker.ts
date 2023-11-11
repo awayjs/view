@@ -360,6 +360,8 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 			for (let i: number = 0; i < numPickers; ++i)
 				if (this._boundsPickers[i]._hitTestPointInternal(rootEntity, x, y, shapeFlag, maskFlag))
 					return true;
+
+		return false;
 	}
 
 	/**
