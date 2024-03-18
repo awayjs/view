@@ -223,7 +223,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 			return null;
 
 		//collect pickers
-		this._collectEntities(this._collectedEntities, this._dragNode);
+		this._collectEntities(this._collectedEntities);
 
 		//console.log("entities: ", this._entities)
 		const collision: PickingCollision = this._getPickingCollision(startingCollision);
@@ -251,7 +251,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return colliders;
 	}
 
-	public _collectEntities(collectedEntities: PickEntity[], dragNode: INode): void {
+	public _collectEntities(collectedEntities: PickEntity[], dragNode: INode = null): void {
 
 		let picker: RaycastPicker;
 		for (let i = this._pickers.length - 1; i >= 0; i--)
