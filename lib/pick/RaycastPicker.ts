@@ -112,10 +112,8 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		if ((node.isInvisible() && node.getMaskId() == -1) || node.getMaskId() != this._rootEntity.getMaskId())
 			return false;
 
-		if ((<ContainerNode> node).pickObjectNode) {
+		if ((<ContainerNode> node).pickObjectNode)
 			(<ContainerNode> node).pickObjectNode.partition.traverse(this);
-			return false;
-		}
 
 		return node.isIntersectingRay(
 			this._rootEntity, this._globalRayPosition, this._globalRayDirection, this.pickGroup);
