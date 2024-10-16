@@ -111,8 +111,6 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	}
 
 	public traverse(traverser: IPartitionTraverser): void {
-		this._invalid = false;
-
 		this._rootNode.acceptTraverser(traverser);
 	}
 
@@ -159,6 +157,8 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	}
 
 	public updateEntities(): void {
+		this._invalid = false;
+
 		for (const key in this._updateQueue)
 			this.updateEntity(this._updateQueue[key]);
 
