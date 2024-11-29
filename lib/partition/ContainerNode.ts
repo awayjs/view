@@ -79,6 +79,7 @@ export class ContainerNode extends AbstractionBase {
 	private _inverseMatrix3D: Matrix3D;
 	private _inverseMatrix3DDirty: boolean = true;
 	private _orientationMatrix: Matrix3D = new Matrix3D();
+	private _maskDisabled: boolean = false;
 	private _colorTransformDisabled: boolean = false;
 	private _transformDisabled: boolean = false;
 	private _activeTransform: Transform;
@@ -189,10 +190,19 @@ export class ContainerNode extends AbstractionBase {
 		return this._colorTransformDisabled;
 	}
 
+	public set maskDisabled(value: boolean) {
+		this._maskDisabled = value;
+	}
+
+	public get maskDisabled() {
+		return this._maskDisabled;
+	}
+
 	public set transformDisabled(value: boolean) {
 		if (this._transformDisabled == value)
 			return;
 
+		this._maskDisabled = value;
 		this._transformDisabled = value;
 		this._colorTransformDisabled = value;
 
@@ -407,13 +417,15 @@ export class ContainerNode extends AbstractionBase {
 	public getMaskOwners(): ContainerNode[] {
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.MASKS) {
 			const masks = this.getMasks(true);
-			this._maskOwners = (this._parent?.getMaskOwners() && this.getMaskId() == -1)
-				? masks.length
-					? this._parent.getMaskOwners().concat([this])
-					: this._parent.getMaskOwners().concat()
-				: masks.length
-					? [this]
-					: null;
+			this._maskOwners = this._maskDisabled
+				? null
+				: (this._parent?.getMaskOwners() && this.getMaskId() == -1)
+					? masks.length
+						? this._parent.getMaskOwners().concat([this])
+						: this._parent.getMaskOwners().concat()
+					: masks.length
+						? [this]
+						: null;
 
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.MASKS;
 		}
