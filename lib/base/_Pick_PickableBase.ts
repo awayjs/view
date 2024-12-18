@@ -35,8 +35,8 @@ export class _Pick_PickableBase extends AbstractionBase {
 	 * @param surface
 	 * @param renderer
 	 */
-	constructor(traversable: ITraversable, pickEntity: PickEntity) {
-		super(traversable, pickEntity);
+	public init(traversable: ITraversable, pickEntity: PickEntity): void {
+		super.init(traversable, pickEntity);
 
 		//store references
 		this._node = pickEntity.node;

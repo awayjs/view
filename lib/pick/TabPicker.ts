@@ -41,8 +41,8 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser {
 	 * @param findClosestCollision Determines whether the picker searches for the closest bounds collision along the ray,
 	 * or simply returns the first collision encountered. Defaults to false.
 	 */
-	constructor(partition: PartitionBase, pool: IAbstractionPool) {
-		super(partition, pool);
+	public init(partition: PartitionBase, pool: IAbstractionPool) {
+		super.init(partition, pool);
 
 		this._partition = partition;
 		this._entity = partition.rootNode;

@@ -9,7 +9,7 @@ import {
 	ErrorBase,
 	AssetBase,
 	IAbstractionPool,
-	IAbstractionClass,
+	IAbstraction,
 } from '@awayjs/core';
 
 import {
@@ -32,6 +32,8 @@ import { ContainerNode } from './partition/ContainerNode';
 import { BasicPartition } from './partition/BasicPartition';
 
 export class View extends AssetBase implements IAbstractionPool {
+	private static _store: IAbstraction[] = [];
+
 	private _shareContext: boolean;
 	private _rect: Rectangle = new Rectangle();
 	private _backgroundColor: number = 0;
@@ -351,8 +353,12 @@ export class View extends AssetBase implements IAbstractionPool {
 		this._updatePixelRatio();
 	}
 
-	public requestAbstraction(_asset: IPartitionContainer): IAbstractionClass {
-		return ContainerNode;
+	public requestAbstraction(_asset: IPartitionContainer): IAbstraction {
+		return View._store.length ? View._store.pop() : new ContainerNode();
+	}
+
+	public storeAbstraction(abstraction: IAbstraction): void {
+		View._store.push(abstraction);
 	}
 
 	public getNode(entity: IPartitionContainer): ContainerNode {

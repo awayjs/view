@@ -8,6 +8,7 @@ import {
 	CoordinateSystem,
 	Transform,
 	Vector3D,
+	IAbstraction,
 } from '@awayjs/core';
 
 import { IPartitionTraverser } from './IPartitionTraverser';
@@ -20,6 +21,7 @@ import { View } from '../View';
  * @class away.partition.Partition
  */
 export class PartitionBase extends AssetBase implements IAbstractionPool {
+	private static _store: Record<string,  IAbstraction[]> = {};
 	private static _abstractionClassPool: Record<string, IAbstractionClass> = {};
 	private static _defaultProjection: PerspectiveProjection;
 
@@ -201,8 +203,13 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	// 		this._children[i]._setScene(scene);
 	// }
 
-	public requestAbstraction(asset: IAsset): IAbstractionClass {
-		return PartitionBase._abstractionClassPool[asset.assetType];
+	public requestAbstraction(asset: IAsset): IAbstraction {
+		const store = PartitionBase._store[asset.assetType];
+		return store.length ? store.pop() : new PartitionBase._abstractionClassPool[asset.assetType]();
+	}
+
+	public storeAbstraction(abstraction: IAbstraction): void {
+		PartitionBase._store[abstraction.asset.assetType].push(abstraction);
 	}
 
 	/**
@@ -211,5 +218,6 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	 */
 	public static registerAbstraction(abstractionClass: IAbstractionClass, assetClass: IAssetClass): void {
 		PartitionBase._abstractionClassPool[assetClass.assetType] = abstractionClass;
+		PartitionBase._store[assetClass.assetType] = [];
 	}
 }

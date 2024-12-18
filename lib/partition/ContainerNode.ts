@@ -29,29 +29,6 @@ import { BasicPartition } from './BasicPartition';
 import { ContainerNodeEvent } from '../events/ContainerNodeEvent';
 import { View } from '../View';
 
-// export class NodePool implements IAbstractionPool {
-// 	public static getRootNode(entity: IPartitionContainer, partitionClass: IPartitionClass): ContainerNode {
-
-// 		return entity.getAbstraction<ContainerNode>(new NodePool(entity, partitionClass));
-// 	}
-
-// 	readonly id: number;
-// 	readonly partitionClass: IPartitionClass;
-
-// 	constructor(entity: IPartitionEntity, partitionClass: IPartitionClass) {
-// 		this.id = entity.id;
-// 		this.partitionClass = partitionClass;
-// 	}
-
-// 	public getNode(entity: IPartitionEntity): ContainerNode {
-// 		return entity.getAbstraction<ContainerNode>(this);
-// 	}
-
-// 	public requestAbstraction(_asset: IPartitionEntity): IAbstractionClass {
-// 		return ContainerNode;
-// 	}
-// }
-
 export class ContainerNode extends AbstractionBase {
 
 	private static _nullTransform: Transform = new Transform();
@@ -103,7 +80,12 @@ export class ContainerNode extends AbstractionBase {
 		return this._parent;
 	}
 
-	public readonly container: IPartitionContainer;
+	public get numChildNodes(): number
+	{
+		return this._numChildNodes;
+	}
+
+	public container: IPartitionContainer;
 
 	public get partition(): PartitionBase {
 		if (!this._partition || this._partitionClass !== this.container.partitionClass) {
@@ -522,8 +504,8 @@ export class ContainerNode extends AbstractionBase {
 		return null;
 	}
 
-	constructor(container: IPartitionContainer, pool: View) {
-		super(container, pool);
+	public init(container: IPartitionContainer, pool: View) {
+		super.init(container, pool);
 
 		this._onEvent = this._onEvent.bind(this);
 

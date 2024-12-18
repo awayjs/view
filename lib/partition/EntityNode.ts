@@ -49,8 +49,8 @@ export class EntityNode extends AbstractionBase implements INode {
 		return this._boundsVisible;
 	}
 
-	constructor(entity: IPartitionEntity, partition: PartitionBase) {
-		super(entity, partition);
+	public init(entity: IPartitionEntity, partition: PartitionBase): void {
+		super.init(entity, partition);
 	}
 
 	/**
@@ -65,6 +65,16 @@ export class EntityNode extends AbstractionBase implements INode {
 		(<PartitionBase> this._pool).clearEntity(this);
 
 		super.onClear(event);
+
+		this._parent = null;
+		this._boundsVisible = false;
+
+		if (this._boundsPrimitive) {
+			this._boundsPrimitive.setParent(null);
+			this._boundsPrimitive = null;
+		}
+		
+		this._boundsPrimitiveDirty = false;
 
 		this.clear();
 	}

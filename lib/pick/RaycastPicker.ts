@@ -1,4 +1,4 @@
-import { Vector3D, AbstractionBase } from '@awayjs/core';
+import { Vector3D, AbstractionBase, AssetEvent } from '@awayjs/core';
 
 import { PartitionBase } from '../partition/PartitionBase';
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
@@ -27,11 +27,11 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 
 	private _dragNode: ContainerNode;
 
-	public readonly partition: PartitionBase;
+	public partition: PartitionBase;
 
-	public readonly rootNode: ContainerNode;
+	public rootNode: ContainerNode;
 
-	public readonly pickGroup: PickGroup;
+	public pickGroup: PickGroup;
 
 	public shapeFlag: boolean = false;
 
@@ -52,12 +52,20 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	private _pickers: RaycastPicker[] = [];
 	private _collectedEntities: PickEntity[] = [];
 
-	constructor(partition: PartitionBase, pool: RaycastPickerPool) {
-		super(partition, pool);
+	public init(partition: PartitionBase, pool: RaycastPickerPool) {
+		super.init(partition, pool);
 
 		this.pickGroup = pool.pickGroup;
 		this.partition = partition;
 		this.rootNode = partition.rootNode;
+	}
+
+	public onClear(event: AssetEvent): void {
+		super.onClear(event);
+
+		this._entities.length = 0;
+		this._pickers.length = 0;
+		this._collectedEntities.length = 0;
 	}
 
 	public traverse(): void {

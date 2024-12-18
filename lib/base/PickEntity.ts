@@ -10,8 +10,7 @@ import {
 	AssetEvent,
 	Plane3D,
 	IAsset,
-	IAbstractionClass,
-	UUID
+	IAbstraction
 } from '@awayjs/core';
 
 import { ITraversable } from './ITraversable';
@@ -34,6 +33,8 @@ import { ContainerNode } from '../partition/ContainerNode';
  * @class away.pool.PickEntity
  */
 export class PickEntity extends AbstractionBase implements IAbstractionPool, IEntityTraverser, IBoundsPicker {
+	private static _store: Record<string,  IAbstraction[]> = {};
+
 	private _boundingVolumePools: NumberMap<BoundingVolumePool> = {};
 
 	private _pickingCollision: PickingCollision;
@@ -79,15 +80,12 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 	public shapeFlag: boolean = false;
 
-	public readonly id: number;
-
 	/**
 	 * //TODO
 	 */
-	constructor(entity: EntityNode, pickGroup: PickGroup) {
-		super(entity, pickGroup);
+	public init(entity: EntityNode, pickGroup: PickGroup) {
+		super.init(entity, pickGroup);
 
-		this.id = UUID.Next();
 		this._node = entity.parent;
 		this._view = this._node.view;
 		this._pickGroup = pickGroup;
@@ -422,10 +420,21 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 		for (let i: number = this._pickables.length  - 1; i >= 0; i--)
 			this._pickables[i].onClear(event);
+
+		this._activePickables = [];
+		this._orientedBoxBoundsDirty[0] = true;
+		this._orientedBoxBoundsDirty[1] = true;
+		this._orientedSphereBoundsDirty[0] = true;
+		this._orientedSphereBoundsDirty[1] = true;
 	}
 
-	public requestAbstraction(asset: IAsset): IAbstractionClass {
-		return PickEntity._pickPickableClassPool[asset.assetType];
+	public requestAbstraction(asset: IAsset): IAbstraction {
+		const store = PickEntity._store[asset.assetType];
+		return store.length ? store.pop() : new PickEntity._pickPickableClassPool[asset.assetType]();
+	}
+
+	public storeAbstraction(abstraction: IAbstraction): void {
+		PickEntity._store[abstraction.asset.assetType].push(abstraction);
 	}
 
 	/**
@@ -434,6 +443,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	 */
 	public static registerPickable(pickClass: _IPick_PickableClass, assetClass: IAssetClass): void {
 		PickEntity._pickPickableClassPool[assetClass.assetType] = pickClass;
+		PickEntity._store[assetClass.assetType] = [];
 	}
 
 	private _update(): void {

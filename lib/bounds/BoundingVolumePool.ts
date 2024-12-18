@@ -1,4 +1,4 @@
-import { IAbstractionPool, IAbstractionClass, IAsset, UUID } from '@awayjs/core';
+import { IAbstractionPool, IAbstractionClass, IAsset, UUID, IAbstraction } from '@awayjs/core';
 
 import { BoundingVolumeType } from './BoundingVolumeType';
 import { BoundingBox } from './BoundingBox';
@@ -7,6 +7,20 @@ import { NullBounds } from './NullBounds';
 import { IBoundsPicker } from '../pick/IBoundsPicker';
 
 export class BoundingVolumePool implements IAbstractionPool {
+	private static _boundingBoxStore: IAbstraction[] = [];
+	private static _boundingSphereStore: IAbstraction[] = [];
+	private static _nullStore: IAbstraction[] = [];
+	private static _storeDict: Object = {
+		[BoundingVolumeType.BOX] : BoundingVolumePool._boundingBoxStore,
+		[BoundingVolumeType.BOX_FAST] : BoundingVolumePool._boundingBoxStore,
+		[BoundingVolumeType.BOX_BOUNDS] : BoundingVolumePool._boundingBoxStore,
+		[BoundingVolumeType.BOX_BOUNDS_FAST] : BoundingVolumePool._boundingBoxStore,
+		[BoundingVolumeType.SPHERE] : BoundingVolumePool._boundingSphereStore,
+		[BoundingVolumeType.SPHERE_FAST] : BoundingVolumePool._boundingSphereStore,
+		[BoundingVolumeType.SPHERE_BOUNDS] : BoundingVolumePool._boundingSphereStore,
+		[BoundingVolumeType.SPHERE_BOUNDS_FAST] : BoundingVolumePool._boundingSphereStore,
+		[BoundingVolumeType.NULL] : BoundingVolumePool._nullStore
+	}
 	private static _strokeDict: Object = {
 		[BoundingVolumeType.BOX] : false,
 		[BoundingVolumeType.BOX_FAST] : false,
@@ -43,35 +57,33 @@ export class BoundingVolumePool implements IAbstractionPool {
 		[BoundingVolumeType.NULL] : NullBounds
 	}
 
-	private _picker: IBoundsPicker;
-	private _strokeFlag: boolean;
-	private _fastFlag: boolean;
-	private _boundingVolumeClass: IAbstractionClass;
+	private readonly _boundingVolumeClass: IAbstractionClass;
+	private readonly _store: IAbstraction[];
 
-	public get picker(): IBoundsPicker {
-		return this._picker;
-	}
+	public readonly picker: IBoundsPicker;
 
-	public get strokeFlag(): boolean {
-		return this._strokeFlag;
-	}
+	public readonly strokeFlag: boolean;
 
-	public get fastFlag(): boolean {
-		return this._fastFlag;
-	}
+	public readonly fastFlag: boolean;
 
 	public readonly id: number;
 
 	constructor(picker: IBoundsPicker, boundingVolumeType: BoundingVolumeType) {
 		this.id = UUID.Next();
-		this._picker = picker;
-		this._strokeFlag = BoundingVolumePool._strokeDict[boundingVolumeType];
-		this._fastFlag = BoundingVolumePool._fastDict[boundingVolumeType];
+		this.picker = picker;
+		this.strokeFlag = BoundingVolumePool._strokeDict[boundingVolumeType];
+		this.fastFlag = BoundingVolumePool._fastDict[boundingVolumeType];
 		this._boundingVolumeClass = BoundingVolumePool._boundsDict[boundingVolumeType];
+		this._store = BoundingVolumePool._storeDict[boundingVolumeType];
+
 	}
 
-	public requestAbstraction(asset: IAsset): IAbstractionClass {
-		return this._boundingVolumeClass;
+	public requestAbstraction(asset: IAsset): IAbstraction {
+		return this._store.length ? this._store.pop() : new this._boundingVolumeClass();
+	}
+
+	public storeAbstraction(abstraction: IAbstraction): void {
+		this._store.push(abstraction);
 	}
 
 	public dispose(): void {

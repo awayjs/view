@@ -17,8 +17,8 @@ export class BoundingVolumeBase extends AbstractionBase {
 	protected _fastFlag: boolean;
 	//protected _boundsPrimitive:Sprite;
 
-	constructor(asset: ContainerNode, pool: BoundingVolumePool) {
-		super(asset, pool);
+	public init(asset: ContainerNode, pool: BoundingVolumePool): void {
+		super.init(asset, pool);
 
 		this._targetCoordinateSpace = asset;
 		this._picker = pool.picker;
