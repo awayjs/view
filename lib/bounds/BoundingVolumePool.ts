@@ -21,6 +21,7 @@ export class BoundingVolumePool implements IAbstractionPool {
 		[BoundingVolumeType.SPHERE_BOUNDS_FAST] : BoundingVolumePool._boundingSphereStore,
 		[BoundingVolumeType.NULL] : BoundingVolumePool._nullStore
 	}
+
 	private static _strokeDict: Object = {
 		[BoundingVolumeType.BOX] : false,
 		[BoundingVolumeType.BOX_FAST] : false,

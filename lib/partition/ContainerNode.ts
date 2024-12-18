@@ -80,8 +80,7 @@ export class ContainerNode extends AbstractionBase {
 		return this._parent;
 	}
 
-	public get numChildNodes(): number
-	{
+	public get numChildNodes(): number {
 		return this._numChildNodes;
 	}
 

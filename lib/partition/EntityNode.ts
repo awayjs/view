@@ -73,7 +73,7 @@ export class EntityNode extends AbstractionBase implements INode {
 			this._boundsPrimitive.setParent(null);
 			this._boundsPrimitive = null;
 		}
-		
+
 		this._boundsPrimitiveDirty = false;
 
 		this.clear();
