@@ -10,8 +10,6 @@ import {
 	Rectangle,
 } from '@awayjs/core';
 
-import { IPartitionEntity } from '../base/IPartitionEntity';
-
 import { IPartitionTraverser } from './IPartitionTraverser';
 import { INode } from './INode';
 import { PartitionBase } from './PartitionBase';
@@ -45,7 +43,7 @@ export class ContainerNode extends AbstractionBase {
 	private _pickObjectNode: ContainerNode;
 	private _scrollRect: Rectangle;
 	private _scrollRectNode: ContainerNode;
-	private _renderToImage: boolean = false;
+	private _renderToImage: boolean;
 	private _isDragEntity: boolean;
 
 	private _position: Vector3D = new Vector3D();
@@ -71,7 +69,6 @@ export class ContainerNode extends AbstractionBase {
 	protected _parent: ContainerNode;
 	protected _childNodes: Array<ContainerNode> = new Array<ContainerNode>();
 	protected _numChildNodes: number = 0;
-	protected _debugEntity: IPartitionEntity;
 
 	public _hierarchicalPropsDirty: HierarchicalProperty = HierarchicalProperty.ALL;
 	public _collectionMark: number;// = 0;
@@ -90,7 +87,7 @@ export class ContainerNode extends AbstractionBase {
 		if (!this._partition || this._partitionClass !== this.container.partitionClass) {
 			this._partitionClass = this.container.partitionClass;
 
-			if (this.parent === this)
+			if (this._parent === this)
 				throw ('Self REF!!!');
 
 			if (this._partition && this._entityNode)
@@ -532,19 +529,23 @@ export class ContainerNode extends AbstractionBase {
 	}
 
 	public onClear(event: AssetEvent): void {
-		super.onClear(event);
-
 		this.container.removeEventListener(HeirarchicalEvent.INVALIDATE_PROPERTY, this._onEvent);
 		this.container.removeEventListener(ContainerEvent.ADD_CHILD_AT, this._onEvent);
 		this.container.removeEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onEvent);
 
 		this.partition.clearLocalNode();
 
-		if (this._entityNode)
-			this.clearEntity();
 
-		for (let i: number = 0; i < this._numChildNodes; i++)
-			this._childNodes[i].onClear(event);
+		if (this.partition !== this._parent?.partition)
+			this._partition.onClear(event);
+		else
+			this._partition = null;
+
+		if (this._entityNode) {
+			this._entityNode.setParent(null);
+			this._entityNode = null;
+			this._entityDirty = true;
+		}
 
 		if (this._pickObject) {
 			this._pickObject = null;
@@ -552,7 +553,26 @@ export class ContainerNode extends AbstractionBase {
 			this._pickObjectNode = null;
 		}
 
-		this.clear();
+		for (let i: number = 0; i < this._numChildNodes; i++)
+			this._childNodes[i].onClear(event);
+
+		this._scrollRect = null;
+		this._scrollRectNode = null;
+		this._renderToImage = false;
+		this._isDragEntity = false;
+		this._positionDirty = false;
+		this._scale9Container = null;
+		this._inverseMatrix3DDirty = true;
+		this._maskDisabled = false;
+		this._colorTransformDisabled = false;
+		this._transformDisabled = false;
+		this._maskOwners = null;
+		this._masks.length = 0;
+		this._parent = null;
+		this._childNodes.length = 0;
+		this._numChildNodes = 0;
+
+		super.onClear(event);
 	}
 
 	public onInvalidate(event: AssetEvent): void {

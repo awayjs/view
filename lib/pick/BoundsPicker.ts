@@ -47,6 +47,10 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 	private _boundingVolumes: BoundingVolumeBase[] = [];
 
+	private _pickGroup: PickGroup;
+
+	private _boundsPickers: IBoundsPicker[] = [];
+
 	public get partition(): PartitionBase {
 		return this._partition;
 	}
@@ -58,10 +62,6 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	public get node(): ContainerNode {
 		return this._node;
 	}
-
-	private _pickGroup: PickGroup;
-
-	private _boundsPickers: IBoundsPicker[] = [];
 
 	/**
 	 * Indicates the width of the display object, in pixels. The width is
@@ -501,6 +501,8 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 			this._boundingVolumePools[key].dispose();
 			delete this._boundingVolumePools[key];
 		}
+
+		this._boundsPickers.length = 0;
 	}
 
 	public dispose(): void {

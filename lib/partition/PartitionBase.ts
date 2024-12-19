@@ -9,6 +9,7 @@ import {
 	Transform,
 	Vector3D,
 	IAbstraction,
+	AssetEvent,
 } from '@awayjs/core';
 
 import { IPartitionTraverser } from './IPartitionTraverser';
@@ -27,7 +28,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 
 	private _invalid: boolean;
 	private _localNode: ContainerNode;
-	private _children: Array<PartitionBase> = new Array<PartitionBase>();
+	private _children: PartitionBase[] = [];
 	private _updateQueue: Record<number, EntityNode> = {};
 
 	protected _rootNode: ContainerNode;
@@ -81,7 +82,6 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 
 	public clearLocalNode(): void {
 		if (this._localNode) {
-			this.removeChild(this._localNode.partition);
 			this._localNode.onClear(null);
 			this._localNode = null;
 		}
@@ -183,14 +183,27 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 	public clear(): void {
 		super.clear();
 
-		if (this._localNode) {
+		if (this._localNode)
 			this._localNode.clear();
-			this._localNode = null;
-		}
 	}
 
-	public dispose(): void {
+	public onClear(event:AssetEvent) {
+		this._invalid = false;
+
+		this.clearLocalNode();
+
+		this.clear();
+
+		if (this._parent) {
+			this._parent.removeChild(this);
+			this._parent = null;
+		}
+
+
+		this._updateQueue = {};
 	}
+
+	
 
 	// public _setScene(scene: IPartitionEntity): void {
 	// 	if (this._scene == scene)
