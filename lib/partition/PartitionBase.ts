@@ -187,7 +187,7 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 			this._localNode.clear();
 	}
 
-	public onClear(event:AssetEvent) {
+	public onClear(event: AssetEvent) {
 		this._invalid = false;
 
 		this.clearLocalNode();
@@ -199,11 +199,8 @@ export class PartitionBase extends AssetBase implements IAbstractionPool {
 			this._parent = null;
 		}
 
-
 		this._updateQueue = {};
 	}
-
-	
 
 	// public _setScene(scene: IPartitionEntity): void {
 	// 	if (this._scene == scene)

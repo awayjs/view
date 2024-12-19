@@ -535,7 +535,6 @@ export class ContainerNode extends AbstractionBase {
 
 		this.partition.clearLocalNode();
 
-
 		if (this.partition !== this._parent?.partition)
 			this._partition.onClear(event);
 		else
