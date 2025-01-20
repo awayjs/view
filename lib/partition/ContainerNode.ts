@@ -654,11 +654,6 @@ export class ContainerNode extends AbstractionBase {
 		return true;
 	}
 
-	public dispose(): void {
-		this._parent = null;
-		this._childNodes = null;
-	}
-
 	/**
 	 * @param traverser
 	 */
