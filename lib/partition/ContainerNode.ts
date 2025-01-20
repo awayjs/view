@@ -739,7 +739,7 @@ export class ContainerNode extends AbstractionBase {
 	}
 
 	public getChildAt(index: number): ContainerNode {
-		return this._childNodes.length > index? this._childNodes[index] : null
+		return this._childNodes.length > index ? this._childNodes[index] : null;
 	}
 
 	private clearEntity(): void {
