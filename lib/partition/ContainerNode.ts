@@ -743,6 +743,10 @@ export class ContainerNode extends AbstractionBase {
 		return node;
 	}
 
+	public getChildAt(index: number): ContainerNode {
+		return this._childNodes.length > index? this._childNodes[index] : null
+	}
+
 	private clearEntity(): void {
 		this._partition.clearEntity(this._entityNode);
 		this._entityNode.setParent(null);
