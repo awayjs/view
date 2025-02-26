@@ -229,7 +229,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 			return null;
 
 		//collect pickers
-		this._collectEntities(this._collectedEntities);
+		this._collectEntities(this._collectedEntities, this._dragNode);
 
 		//console.log("entities: ", this._entities)
 		const collision: PickingCollision = this._getPickingCollision(startingCollision);
