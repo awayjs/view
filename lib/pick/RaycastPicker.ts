@@ -66,6 +66,10 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		this._entities.length = 0;
 		this._pickers.length = 0;
 		this._collectedEntities.length = 0;
+
+		this.pickGroup = null;
+		this.partition = null;
+		this.rootNode = null;
 	}
 
 	public traverse(): void {

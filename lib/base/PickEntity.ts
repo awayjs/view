@@ -421,6 +421,11 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		for (let i: number = this._pickables.length  - 1; i >= 0; i--)
 			this._pickables[i].onClear(event);
 
+		this._node = null;
+		this._view = null;
+		this._pickGroup = null;
+		this._pickingCollision = null;
+
 		this._activePickables = [];
 		this._orientedBoxBoundsDirty[0] = true;
 		this._orientedBoxBoundsDirty[1] = true;
