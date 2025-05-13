@@ -1,11 +1,9 @@
 import { Vector3D, AbstractionBase, IAbstractionPool } from '@awayjs/core';
 
-import { PartitionBase } from '../partition/PartitionBase';
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
 import { INode } from '../partition/INode';
 
 import { ITabContainer } from '../base/ITabContainer';
-import { EntityNode } from '../partition/EntityNode';
 import { ContainerNode } from '../partition/ContainerNode';
 
 /**
@@ -16,24 +14,18 @@ import { ContainerNode } from '../partition/ContainerNode';
  * @class away.pick.RaycastPicker
  */
 export class TabPicker extends AbstractionBase implements IPartitionTraverser {
-	protected _partition: PartitionBase;
-	protected _entity: ContainerNode;
-
-	public get partition(): PartitionBase {
-		return this._partition;
-	}
 
 	/**
      *
-     * @returns {IPartitionEntity}
+     * @returns {ContainerNode}
      */
-	public get entity(): ContainerNode {
-		return this._entity;
+	public get node(): INode {
+		return <INode> this._asset;
 	}
 
-	private _tabNodes: EntityNode[] = [];
-	private _customTabNodes: EntityNode[][] = [];
-	private _customTabNodesSorted: EntityNode[] = [];
+	private _tabNodes: ContainerNode[] = [];
+	private _customTabNodes: ContainerNode[][] = [];
+	private _customTabNodesSorted: ContainerNode[] = [];
 
 	/**
 	 * Creates a new <code>RaycastPicker</code> object.
@@ -41,11 +33,8 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser {
 	 * @param findClosestCollision Determines whether the picker searches for the closest bounds collision along the ray,
 	 * or simply returns the first collision encountered. Defaults to false.
 	 */
-	public init(partition: PartitionBase, pool: IAbstractionPool) {
-		super.init(partition, pool);
-
-		this._partition = partition;
-		this._entity = partition.rootNode;
+	public init(node: INode, pool: IAbstractionPool) {
+		super.init(node, pool);
 	}
 
 	private sortTabEnabledEntities(): void {
@@ -54,7 +43,7 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser {
 
 		const snapGridY: number = 10;
 		let len: number = 0;
-		const orderedOnY: EntityNode[][] = [];
+		const orderedOnY: ContainerNode[][] = [];
 		let i: number = 0;
 		let e: number = 0;
 		if (this._customTabNodes.length > 0) {
@@ -108,17 +97,17 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser {
 		this._tabNodes.length = 0;
 		this._customTabNodes.length = 0;
 		this._customTabNodesSorted.length = 0;
-		this._partition.traverse(this);
+		(<INode> this._asset).acceptTraverser(this);
 
 		this.sortTabEnabledEntities();
 		this._invalid = false;
 	}
 
-	public getTraverser(partition: PartitionBase): IPartitionTraverser {
+	public getTraverser(node: ContainerNode): IPartitionTraverser {
 		return this;
 	}
 
-	public getNextTabEntity(currentFocus: EntityNode): EntityNode {
+	public getNextTabEntity(currentFocus: ContainerNode): ContainerNode {
 		if (this._invalid)
 			this.traverse();
 
@@ -193,7 +182,7 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser {
 
 	}
 
-	public getPrevTabEntity(currentFocus: EntityNode): EntityNode {
+	public getPrevTabEntity(currentFocus: ContainerNode): ContainerNode {
 		if (this._invalid)
 			this.traverse();
 
@@ -289,8 +278,8 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser {
 	 *
 	 * @param entity
 	 */
-	public applyEntity(entity: EntityNode): void {
-		const tabContainer = <ITabContainer> entity.parent.container;
+	public applyEntity(node: ContainerNode): void {
+		const tabContainer = <ITabContainer> node.container;
 		if (tabContainer.tabEnabled) {
 			if (tabContainer.assetType != '[asset TextField]' || (<any> tabContainer).type == 'input') {
 				// add the entity to the correct tab list.
@@ -300,9 +289,9 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser {
 					if (!this._customTabNodes[tabContainer.tabIndex]) {
 						this._customTabNodes[tabContainer.tabIndex] = [];
 					}
-					this._customTabNodes[tabContainer.tabIndex].push(entity);
+					this._customTabNodes[tabContainer.tabIndex].push(node);
 				} else {
-					this._tabNodes[this._tabNodes.length] = entity;
+					this._tabNodes[this._tabNodes.length] = node;
 				}
 
 			}

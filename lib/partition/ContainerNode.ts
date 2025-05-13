@@ -8,26 +8,24 @@ import {
 	Point,
 	Transform,
 	Rectangle,
+	PerspectiveProjection,
+	CoordinateSystem,
 } from '@awayjs/core';
 
 import { IPartitionTraverser } from './IPartitionTraverser';
 import { INode } from './INode';
-import { PartitionBase } from './PartitionBase';
 import { PickGroup } from '../PickGroup';
 import { HierarchicalProperty } from '../base/HierarchicalProperty';
-import { EntityNode } from './EntityNode';
 import { HeirarchicalEvent } from '../events/HeirarchicalEvent';
 import { IPartitionContainer } from '../base/IPartitionContainer';
 import { ContainerEvent } from '../events/ContainerEvent';
 import { BlendMode, Settings as StageSettings, isNativeBlend } from '@awayjs/stage';
 import { AlignmentMode } from '../base/AlignmentMode';
 import { OrientationMode } from '../base/OrientationMode';
-import { IPartitionClass } from './IPartitionClass';
-import { BasicPartition } from './BasicPartition';
 import { ContainerNodeEvent } from '../events/ContainerNodeEvent';
 import { View } from '../View';
 
-export class ContainerNode extends AbstractionBase {
+export class ContainerNode extends AbstractionBase implements INode {
 
 	private static _nullTransform: Transform = new Transform();
 	private static _tempVector3D: Vector3D = new Vector3D();
@@ -36,14 +34,12 @@ export class ContainerNode extends AbstractionBase {
 	private _invalidateMatrix3DEvent: ContainerNodeEvent;
 	private _invalidateColorTransformEvent: ContainerNodeEvent;
 
-	private _entityNode: EntityNode;
-	private _entityDirty: boolean = true;
-	private _partitionClass: IPartitionClass;
+	private _localNode: ContainerNode;
 	private _pickObject: IPartitionContainer;
 	private _pickObjectNode: ContainerNode;
 	private _scrollRect: Rectangle;
 	private _scrollRectNode: ContainerNode;
-	private _renderToImage: boolean;
+	private _renderToImage: boolean = false;
 	private _isDragEntity: boolean;
 
 	private _position: Vector3D = new Vector3D();
@@ -65,7 +61,6 @@ export class ContainerNode extends AbstractionBase {
 	private _maskOwners: ContainerNode[];
 	private _masks: ContainerNode[] = [];
 
-	protected _partition: PartitionBase;
 	protected _parent: ContainerNode;
 	protected _childNodes: Array<ContainerNode> = new Array<ContainerNode>();
 	protected _numChildNodes: number = 0;
@@ -83,35 +78,11 @@ export class ContainerNode extends AbstractionBase {
 
 	public container: IPartitionContainer;
 
-	public get partition(): PartitionBase {
-		if (!this._partition || this._partitionClass !== this.container.partitionClass) {
-			this._partitionClass = this.container.partitionClass;
-
-			if (this._parent === this)
-				throw ('Self REF!!!');
-
-			if (this._partition && this._entityNode)
-				this.clearEntity();
-
-			this._partition = this._partitionClass
-				? new this._partitionClass(this)
-				: this._parent?.partition || new (<View> this._pool).partitionClass(this);
-
-			if (this._partition != this._parent?.partition)
-				this._partition.invalidate();
-
-			this._entityDirty = true;
-		}
-
-		return this._partition;
-	}
-
 	public get pickObjectNode(): ContainerNode {
 		if (this._pickObject != this.container.pickObject) {
 			this._pickObject = this.container.pickObject;
 
 			if (this._pickObject) {
-				this._pickObject.partitionClass = BasicPartition;
 				this._pickObjectNode = this._pickObject.getAbstraction<ContainerNode>(this._pool);
 
 				if (this._pickObject.pickObjectFromTimeline)
@@ -142,7 +113,7 @@ export class ContainerNode extends AbstractionBase {
 			this._renderToImage = renderToImage;
 
 			if (!this._renderToImage)
-				this.partition.clearLocalNode();
+				this.clearLocalNode();
 		}
 
 		return this._renderToImage;
@@ -256,32 +227,37 @@ export class ContainerNode extends AbstractionBase {
 
 	public getMatrix3D(): Matrix3D {
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.SCENE_TRANSFORM) {
+
 			this._matrix3D.copyFrom(this._activeTransform.matrix3D);
 
-			if (this.container._registrationMatrix3D) {
-
-				this._matrix3D.prepend(this.container._registrationMatrix3D);
-
-				if (this.container.alignmentMode != AlignmentMode.REGISTRATION_POINT) {
-					this._matrix3D.appendTranslation(
-						-this.container._registrationMatrix3D._rawData[12] * this._activeTransform.scale.x,
-						-this.container._registrationMatrix3D._rawData[13] * this._activeTransform.scale.y,
-						-this.container._registrationMatrix3D._rawData[14] * this._activeTransform.scale.z);
+			if (!this._transformDisabled) {
+				if (this.container._registrationMatrix3D) {
+	
+					this._matrix3D.prepend(this.container._registrationMatrix3D);
+	
+					if (this.container.alignmentMode != AlignmentMode.REGISTRATION_POINT) {
+						this._matrix3D.appendTranslation(
+							-this.container._registrationMatrix3D._rawData[12] * this._activeTransform.scale.x,
+							-this.container._registrationMatrix3D._rawData[13] * this._activeTransform.scale.y,
+							-this.container._registrationMatrix3D._rawData[14] * this._activeTransform.scale.z);
+					}
 				}
+	
+				if (this._parent)
+					this._matrix3D.append(this._parent.getMatrix3D());
+	
+				// scrollRect-masks are childs of the object that have the scrollRect applied
+				// to support scrolling we need to:
+				// 		- move objects with scrollRect by negative scrollRect position
+				// 		- move scrollRect-masks by positive scrollRect position
+	
+				if (!this.container.maskMode && this.container.scrollRect)
+					this._matrix3D.prependTranslation(-this.container.scrollRect.x, -this.container.scrollRect.y, 0);
+				else if (this.container.maskMode && this.container.scrollRect)
+					this._matrix3D.prependTranslation(this.container.scrollRect.x, this.container.scrollRect.y, 0);
+	
 			}
 
-			if (this._parent)
-				this._matrix3D.append(this._parent.getMatrix3D());
-
-			// scrollRect-masks are childs of the object that have the scrollRect applied
-			// to support scrolling we need to:
-			// 		- move objects with scrollRect by negative scrollRect position
-			// 		- move scrollRect-masks by positive scrollRect position
-
-			if (!this.container.maskMode && this.container.scrollRect)
-				this._matrix3D.prependTranslation(-this.container.scrollRect.x, -this.container.scrollRect.y, 0);
-			else if (this.container.maskMode && this.container.scrollRect)
-				this._matrix3D.prependTranslation(this.container.scrollRect.x, this.container.scrollRect.y, 0);
 
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.SCENE_TRANSFORM;
 
@@ -383,7 +359,7 @@ export class ContainerNode extends AbstractionBase {
 			this._masks.length = len;
 
 			for (let i = 0; i < len; i++) {
-				this._masks[i] = (<View> this._pool).getNode(this.container.masks[i]).partition.rootNode;
+				this._masks[i] = (<View> this._pool).getNode(this.container.masks[i]);
 			}
 		} else {
 			this._masks.length = 0;
@@ -496,7 +472,7 @@ export class ContainerNode extends AbstractionBase {
 		return target;
 	}
 
-	public getBoundsPrimitive(_pickGroup: PickGroup): EntityNode {
+	public getBoundsPrimitive(_pickGroup: PickGroup): ContainerNode {
 		return null;
 	}
 
@@ -517,6 +493,42 @@ export class ContainerNode extends AbstractionBase {
 		this._activeTransform = this.container.transform;
 	}
 
+	public getLocalNode(): ContainerNode {
+
+		if (!this._localNode) {
+			/**
+			* projection is not simple object
+			* not needed spawn it for every cached partition
+			* it has 3 matrices = 100 bytes + Transform,
+			* that have 4 matrices + a lot of vectors (16 bytes) = 300 bytes,
+			* And this is under heavy extending. 1 projection allocate more that 4kb per instance
+			*/
+			const projection = new PerspectiveProjection();
+			projection.coordinateSystem = CoordinateSystem.LEFT_HANDED;
+			projection.originX = -1;
+			projection.originY = -1;
+			projection.transform = new Transform();
+			projection.transform.moveTo(0, 0, -1000);
+			projection.transform.lookAt(new Vector3D());
+
+			const view = new View(projection, this.view.stage);
+			view.backgroundAlpha = 0;
+
+			this._localNode = view.getNode(this.container);
+			this._localNode.transformDisabled = true;
+			this._localNode.setParent(this);
+		}
+
+		return this._localNode;
+	}
+
+	public clearLocalNode(): void {
+		if (this._localNode) {
+			this._localNode.onClear(null);
+			this._localNode = null;
+		}
+	}
+	
 	private _onEvent(e: ContainerEvent) {
 		switch (e.type) {
 			case ContainerEvent.REMOVE_CHILD_AT:
@@ -533,18 +545,7 @@ export class ContainerNode extends AbstractionBase {
 		this.container.removeEventListener(ContainerEvent.ADD_CHILD_AT, this._onEvent);
 		this.container.removeEventListener(ContainerEvent.REMOVE_CHILD_AT, this._onEvent);
 
-		this.partition.clearLocalNode();
-
-		if (this.partition !== this._parent?.partition)
-			this._partition.onClear(event);
-		else
-			this._partition = null;
-
-		if (this._entityNode) {
-			this._entityNode.setParent(null);
-			this._entityNode = null;
-			this._entityDirty = true;
-		}
+		this.clearLocalNode();
 
 		if (this._pickObject) {
 			this._pickObject = null;
@@ -554,6 +555,9 @@ export class ContainerNode extends AbstractionBase {
 
 		for (let i: number = 0; i < this._numChildNodes; i++)
 			this._childNodes[i].onClear(event);
+
+		this._childNodes.length = 0;
+		this._numChildNodes = 0;
 
 		this._scrollRect = null;
 		this._scrollRectNode = null;
@@ -568,33 +572,21 @@ export class ContainerNode extends AbstractionBase {
 		this._maskOwners = null;
 		this._masks.length = 0;
 		this._parent = null;
-		this._childNodes.length = 0;
-		this._numChildNodes = 0;
 
 		super.onClear(event);
+
+		super.clear();
 	}
 
 	public onInvalidate(event: AssetEvent): void {
-		super.onInvalidate(event);
-
-		// fire invalidation on the partition in cases where no entity exists
-		// (for example when CacheRenderer is active on the partition)
-		if (this.partition != this._parent?.partition)
-			this._partition.invalidate();
-
-		this._entityDirty = true;
+		this.invalidate();
 	}
 
 	public clear(): void {
 		super.clear();
 
-		if (this.partition != this._parent?.partition)
-			this._partition.clear();
-
-		if (this._entityNode) {
-			this.clearEntity();
-			this._entityDirty = true;
-		}
+		if (this._localNode)
+			this._localNode.clear();
 
 		for (let i: number = 0; i < this._numChildNodes; i++)
 			this._childNodes[i].clear();
@@ -611,6 +603,18 @@ export class ContainerNode extends AbstractionBase {
 	): boolean {
 
 		return !this.isInvisible();
+	}
+
+	public invalidate(): void {
+		if (this._invalid)
+			return;
+
+		this._invalid = true;
+
+		super.invalidate();
+
+		if (this._parent)
+			this._parent.invalidate();
 	}
 
 	/**
@@ -658,30 +662,10 @@ export class ContainerNode extends AbstractionBase {
 	 * @param traverser
 	 */
 	public acceptTraverser(traverser: IPartitionTraverser): void {
-		if (this._entityDirty) {
-			this._entityDirty = false;
-
-			const entity = this.container.getEntity();
-
-			//clear entity node if new entity is different
-			if (this._entityNode && this._entityNode.entity != entity)
-				this.clearEntity();
-
-			if (entity) {
-				//create new entity node if none exists
-				if (this._entityNode == null) {
-					this._entityNode = entity.getAbstraction<EntityNode>(this.partition);
-					this._entityNode.setParent(this);
-				}
-				this._partition.invalidateEntity(this._entityNode);
-			}
-		}
-
-		if (this.partition.rootNode == this)
-			this.partition.updateEntities();
-
+		this._invalid = false;
+		
 		//get the sub-traverser for the partition, if different, terminate this traversal
-		if (traverser.partition !== this.partition && traverser !== traverser.getTraverser(this.partition))
+		if (traverser.node != this && traverser !== traverser.getTraverser(this))
 			return;
 
 		if (!traverser.enterNode(this))
@@ -704,8 +688,7 @@ export class ContainerNode extends AbstractionBase {
 			}
 		}
 
-		if (this._entityNode)
-			this._entityNode.acceptTraverser(traverser);
+		traverser.applyEntity(this);
 
 		for (let i: number = 0; i < this._numChildNodes; i++)
 			this._childNodes[i].acceptTraverser(traverser);
@@ -723,6 +706,8 @@ export class ContainerNode extends AbstractionBase {
 
 		this._numChildNodes++;
 
+		this.invalidate();
+
 		return node;
 	}
 
@@ -735,17 +720,13 @@ export class ContainerNode extends AbstractionBase {
 
 		node.setParent(null);
 
+		this.invalidate();
+
 		return node;
 	}
 
 	public getChildAt(index: number): ContainerNode {
 		return this._childNodes.length > index ? this._childNodes[index] : null;
-	}
-
-	private clearEntity(): void {
-		this._partition.clearEntity(this._entityNode);
-		this._entityNode.setParent(null);
-		this._entityNode = null;
 	}
 
 	public startDrag(): void {
@@ -774,7 +755,7 @@ export class ContainerNode extends AbstractionBase {
 		return this._mouseChildrenDisabled;
 	}
 
-	public isDescendant(node: ContainerNode): boolean {
+	public isDescendant(node: INode): boolean {
 		let parent: INode = this;
 		while (parent.parent) {
 			parent = parent.parent;
@@ -783,10 +764,6 @@ export class ContainerNode extends AbstractionBase {
 		}
 
 		return false;
-	}
-
-	public isAncestor(node: ContainerNode): boolean {
-		return node.isDescendant(this);
 	}
 
 	public invalidateHierarchicalProperty(property: HierarchicalProperty): void {
@@ -811,6 +788,9 @@ export class ContainerNode extends AbstractionBase {
 		if (this._pickObjectNode)
 			this._pickObjectNode.invalidateHierarchicalProperty(property);
 
+		if (this._localNode)
+			this._localNode.invalidateHierarchicalProperty(property);
+
 		if (property & HierarchicalProperty.SCENE_TRANSFORM) {
 			this._positionDirty = true;
 			this._inverseMatrix3DDirty = true;
@@ -818,30 +798,16 @@ export class ContainerNode extends AbstractionBase {
 			this.dispatchEvent(this._invalidateMatrix3DEvent
 				|| (this._invalidateMatrix3DEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_MATRIX3D)));
 
-			if (this._entityNode)
-				this._partition.invalidateEntity(this._entityNode);
+			this.invalidate();
 		}
 	}
 
 	public setParent(parent: ContainerNode): void {
 
-		if (this._parent) {
-			if (this._parent.partition !== this.partition)
-				this._parent.partition.removeChild(this.partition);
-
+		if (this._parent)
 			this.clear();
-		}
 
 		this._parent = parent;
-
-		if (this._parent) {
-			if (this._parent.partition !== this.partition)
-				this._parent.partition.addChild(this.partition);
-
-			//don't think this is needed as ContainerNode is cleared every time setParent is null
-			// if (this._entityNode)
-			// 	this._partition.invalidateEntity(this._entityNode);
-		}
 
 		this.invalidateHierarchicalProperty(HierarchicalProperty.ALL);
 	}

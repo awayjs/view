@@ -3,7 +3,6 @@ import { BlendMode } from '@awayjs/stage';
 
 import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
 import { ContainerNode } from '../partition/ContainerNode';
-import { IPartitionClass } from '../partition/IPartitionClass';
 import { BoundsPicker } from '../pick/BoundsPicker';
 import { AlignmentMode } from './AlignmentMode';
 import { IPartitionEntity } from './IPartitionEntity';
@@ -12,8 +11,6 @@ import { OrientationMode } from './OrientationMode';
 export interface IPartitionContainer extends IAsset
 {
 	pickObjectFromTimeline: boolean;
-
-	partitionClass: IPartitionClass;
 
 	zOffset: number;
 
@@ -30,8 +27,6 @@ export interface IPartitionContainer extends IAsset
 	transform: Transform;
 
 	_registrationMatrix3D: Matrix3D;
-
-	_iInternalUpdate(): void;
 
 	readonly maskId: number;
 

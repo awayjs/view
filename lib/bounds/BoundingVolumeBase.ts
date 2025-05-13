@@ -6,6 +6,7 @@ import { BoundingVolumePool } from './BoundingVolumePool';
 import { IBoundsPicker } from '../pick/IBoundsPicker';
 import { ContainerNode } from '../partition/ContainerNode';
 import { ContainerNodeEvent } from '../events/ContainerNodeEvent';
+import { INode } from '../partition/INode';
 
 export class BoundingVolumeBase extends AbstractionBase {
 	private _onInvalidateBoundsDelegate: (event: BoundsPickerEvent) => void;
@@ -32,7 +33,7 @@ export class BoundingVolumeBase extends AbstractionBase {
 		this._picker.addBoundingVolume(this);
 
 		if (this._targetCoordinateSpace != this._picker.node) {
-			let targetEntity: ContainerNode = this._picker.node;
+			let targetEntity: INode = this._picker.node;
 
 			while (targetEntity && targetEntity != this._targetCoordinateSpace) {
 				targetEntity.container.transform.addEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
@@ -60,7 +61,7 @@ export class BoundingVolumeBase extends AbstractionBase {
 		this._picker.removeEventListener(BoundsPickerEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
 
 		if (this._targetCoordinateSpace != this._picker.node) {
-			let targetEntity: ContainerNode = this._picker.node;
+			let targetEntity: INode = this._picker.node;
 
 			while (targetEntity && targetEntity != this._targetCoordinateSpace) {
 				targetEntity.container.transform.removeEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);

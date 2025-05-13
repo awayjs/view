@@ -1,6 +1,5 @@
-import { EntityNode } from './EntityNode';
+import { ContainerNode } from './ContainerNode';
 import { INode } from './INode';
-import { PartitionBase } from './PartitionBase';
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.
@@ -11,9 +10,9 @@ import { PartitionBase } from './PartitionBase';
  */
 export interface IPartitionTraverser
 {
-	partition: PartitionBase;
+	node: INode;
 
-	getTraverser(partition: PartitionBase): IPartitionTraverser;
+	getTraverser(node: ContainerNode): IPartitionTraverser;
 
 	/**
 	 * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
@@ -26,5 +25,5 @@ export interface IPartitionTraverser
 	 *
 	 * @param entity
 	 */
-	applyEntity(entity: EntityNode): void;
+	applyEntity(node: INode): void;
 }

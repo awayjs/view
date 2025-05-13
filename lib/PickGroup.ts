@@ -2,9 +2,9 @@ import { EventDispatcher, IAbstraction, IAbstractionPool, IAsset, IAssetClass, U
 
 import { PickEntity } from './base/PickEntity';
 import { RaycastPicker } from './pick/RaycastPicker';
-import { PartitionBase } from './partition/PartitionBase';
 import { BoundsPicker } from './pick/BoundsPicker';
 import { TabPicker } from './pick/TabPicker';
+import { INode } from './partition/INode';
 
 /**
  * @class away.pool.PickGroup
@@ -45,16 +45,16 @@ export class PickGroup extends EventDispatcher implements IAbstractionPool {
 		PickGroup._store.push(abstraction);
 	}
 
-	public getRaycastPicker(partition: PartitionBase): RaycastPicker {
-		return partition.getAbstraction<RaycastPicker>(this._raycastPickerPool);
+	public getRaycastPicker(node: INode): RaycastPicker {
+		return node.getAbstraction<RaycastPicker>(this._raycastPickerPool);
 	}
 
-	public getBoundsPicker(partition: PartitionBase): BoundsPicker {
-		return partition.getAbstraction<BoundsPicker>(this._boundsPickerPool);
+	public getBoundsPicker(node: INode): BoundsPicker {
+		return node.getAbstraction<BoundsPicker>(this._boundsPickerPool);
 	}
 
-	public getTabPicker(partition: PartitionBase): TabPicker {
-		return partition.getAbstraction<TabPicker>(this._tabPickerPool);
+	public getTabPicker(node: INode): TabPicker {
+		return node.getAbstraction<TabPicker>(this._tabPickerPool);
 	}
 }
 

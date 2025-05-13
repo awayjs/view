@@ -1,6 +1,5 @@
 import { Vector3D, AbstractionBase, AssetEvent } from '@awayjs/core';
 
-import { PartitionBase } from '../partition/PartitionBase';
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
 import { INode } from '../partition/INode';
 
@@ -8,7 +7,6 @@ import { PickingCollision } from './PickingCollision';
 import { PickEntity } from '../base/PickEntity';
 import { PickGroup, RaycastPickerPool } from '../PickGroup';
 import { IPartitionEntity } from '../base/IPartitionEntity';
-import { EntityNode } from '../partition/EntityNode';
 import { ContainerNode } from '../partition/ContainerNode';
 import { IPartitionContainer } from '../base/IPartitionContainer';
 
@@ -27,9 +25,9 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 
 	private _dragNode: ContainerNode;
 
-	public partition: PartitionBase;
-
-	public rootNode: ContainerNode;
+	public get node(): INode {
+		return <INode> this._asset;
+	};
 
 	public pickGroup: PickGroup;
 
@@ -42,7 +40,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	 */
 	public layeredView: boolean; //TODO: something to enable this correctly
 
-	private _rootEntity: ContainerNode;
+	private _rootNode: INode;
 	private _shapeFlag: boolean;
 	private _globalRayPosition: Vector3D;
 	private _globalRayDirection: Vector3D;
@@ -52,12 +50,10 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	private _pickers: RaycastPicker[] = [];
 	private _collectedEntities: PickEntity[] = [];
 
-	public init(partition: PartitionBase, pool: RaycastPickerPool) {
-		super.init(partition, pool);
+	public init(node: ContainerNode, pool: RaycastPickerPool) {
+		super.init(node, pool);
 
 		this.pickGroup = pool.pickGroup;
-		this.partition = partition;
-		this.rootNode = partition.rootNode;
 	}
 
 	public onClear(event: AssetEvent): void {
@@ -68,22 +64,20 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		this._collectedEntities.length = 0;
 
 		this.pickGroup = null;
-		this.partition = null;
-		this.rootNode = null;
 	}
 
 	public traverse(): void {
 		this._entities.length = 0;
 		this._pickers.length = 0;
-		this.partition.traverse(this);
+		(<INode> this._asset).acceptTraverser(this);
 	}
 
-	public getTraverser(partition: PartitionBase): IPartitionTraverser {
-		if (!partition.rootNode.isMouseDisabled() || partition.rootNode.isDragEntity()) {
-			const traverser: RaycastPicker = this.pickGroup.getRaycastPicker(partition);
+	public getTraverser(node: ContainerNode): IPartitionTraverser {
+		if (!node.isMouseDisabled() || node.isDragEntity()) {
+			const traverser: RaycastPicker = this.pickGroup.getRaycastPicker(node);
 
 			if (traverser._isIntersectingRayInternal(
-				this._rootEntity,
+				this._rootNode,
 				this._globalRayPosition,
 				this._globalRayDirection,
 				this._shapeFlag)
@@ -120,15 +114,16 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	 *
 	 * @param node The Partition3DNode object to frustum-test.
 	 */
-	public enterNode(node: INode): boolean {
-		if ((node.isInvisible() && node.getMaskId() == -1) || node.getMaskId() != this._rootEntity.getMaskId())
+	public enterNode(node: ContainerNode): boolean {
+		if ((node.isInvisible() && node.getMaskId() == -1) || node.getMaskId() != this._rootNode.getMaskId())
 			return false;
 
 		if ((<ContainerNode> node).pickObjectNode)
-			(<ContainerNode> node).pickObjectNode.partition.traverse(this);
+			(<ContainerNode> node).pickObjectNode.acceptTraverser(this);
 
-		return node.isIntersectingRay(
-			this._rootEntity, this._globalRayPosition, this._globalRayDirection, this.pickGroup);
+		return true;
+		// return node.isIntersectingRay(
+		// 	this._rootNode, this._globalRayPosition, this._globalRayDirection, this.pickGroup);
 	}
 
 	/**
@@ -139,16 +134,16 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		globalRayDirection: Vector3D,
 		shapeFlag: boolean = false
 	): boolean {
-		return this._isIntersectingRayInternal(this.rootNode, globalRayPosition, globalRayDirection, shapeFlag);
+		return this._isIntersectingRayInternal(<INode> this._asset, globalRayPosition, globalRayDirection, shapeFlag);
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	public _isIntersectingRayInternal(
-		rootEntity: ContainerNode, globalRayPosition: Vector3D, globalRayDirection: Vector3D, shapeFlag: boolean
+		rootNode: INode, globalRayPosition: Vector3D, globalRayDirection: Vector3D, shapeFlag: boolean
 	): boolean {
-		this._rootEntity = rootEntity;
+		this._rootNode = rootNode;
 		this._globalRayPosition = globalRayPosition;
 		this._globalRayDirection = globalRayDirection;
 		this._shapeFlag = this.shapeFlag || shapeFlag;
@@ -209,7 +204,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	public getViewCollision(
 		x: number, y: number, shapeFlag: boolean = false, startingCollision: PickingCollision = null
 	) {
-		const view = this.rootNode.view;
+		const view = (<INode> this._asset).view;
 
 		//update ray
 		const rayPosition = view.unproject(x, y, 0, RaycastPicker._rayPosition);
@@ -229,7 +224,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		startingCollision: PickingCollision
 	) {
 		//early out if no collisions detected
-		if (!this._isIntersectingRayInternal(this.rootNode, rayPosition, rayDirection, shapeFlag))
+		if (!this._isIntersectingRayInternal(<INode> this._asset, rayPosition, rayDirection, shapeFlag))
 			return null;
 
 		//collect pickers
@@ -246,7 +241,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 
 	public getObjectsUnderPoint(rayPosition: Vector3D, rayDirection: Vector3D): IPartitionContainer[] {
 
-		if (!this._isIntersectingRayInternal(this.rootNode, rayPosition, rayDirection, true))
+		if (!this._isIntersectingRayInternal(<INode> this._asset, rayPosition, rayDirection, true))
 			return [];
 
 		//collect pickers
@@ -265,13 +260,13 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 
 		let picker: RaycastPicker;
 		for (let i = this._pickers.length - 1; i >= 0; i--)
-			if ((picker = this._pickers[i]).rootNode != dragNode)
+			if ((picker = this._pickers[i]).node != dragNode)
 				picker._collectEntities(collectedEntities, dragNode);
 
 		//ensures that raycastPicker entities are always added last, for correct 2D picking
 		let entity: PickEntity;
 		for (let i = this._entities.length - 1; i >= 0; i--) {
-			(entity = this._entities[i]).pickingCollision.rootNode = this.rootNode;
+			(entity = this._entities[i]).pickingCollision.rootNode = <INode> this._asset;
 			collectedEntities.push(entity);
 		}
 	}
@@ -382,11 +377,14 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	 *
 	 * @param entity
 	 */
-	public applyEntity(entity: EntityNode): void {
+	public applyEntity(node: INode): void {
+		if (node.container.getEntity()) {
+			const entity = node.getAbstraction<PickEntity>(this.pickGroup);
 
-		if (!this.isIgnored(entity.entity)) {
-			const pickEntity: PickEntity = entity.getAbstraction<PickEntity>(this.pickGroup);
-			this._entities.push(pickEntity);
+			if (entity._isIntersectingRayInternal(this._rootNode, this._globalRayPosition, this._globalRayDirection))
+				this._entities.push(entity);
+		} else {
+			node.clearAbstraction(this.pickGroup);
 		}
 	}
 }

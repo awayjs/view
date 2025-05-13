@@ -13,19 +13,6 @@ import { ContainerNode } from '../partition/ContainerNode';
  */
 export class _Pick_PickableBase extends AbstractionBase {
 
-	/**
-	 *
-	 */
-	protected _view: View;
-
-	/**
-	 *
-	 */
-	protected _pickGroup: PickGroup;
-
-	/**
-	 *
-	 */
 	protected _node: ContainerNode;
 
 	/**
@@ -38,10 +25,8 @@ export class _Pick_PickableBase extends AbstractionBase {
 	public init(traversable: ITraversable, pickEntity: PickEntity): void {
 		super.init(traversable, pickEntity);
 
-		//store references
+		//store node references
 		this._node = pickEntity.node;
-		this._view = pickEntity.view;
-		this._pickGroup = pickEntity.pickGroup;
 
 		pickEntity.addPickable(this);
 	}
@@ -50,9 +35,6 @@ export class _Pick_PickableBase extends AbstractionBase {
 		(<PickEntity> this._pool).removePickable(this);
 
 		super.onClear(event);
-
-		//this.sourceEntity = null;
-		this._view = null;
 	}
 
 	public hitTestPoint(x: number, y: number, z: number): boolean {

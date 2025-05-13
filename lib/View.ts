@@ -24,12 +24,9 @@ import {
 	StageManager,
 } from '@awayjs/stage';
 
-import { IPartitionClass } from './partition/IPartitionClass';
-
 import { IPartitionContainer } from './base/IPartitionContainer';
 import { ViewEvent } from './events/ViewEvent';
 import { ContainerNode } from './partition/ContainerNode';
-import { BasicPartition } from './partition/BasicPartition';
 
 export class View extends AssetBase implements IAbstractionPool {
 	private static _store: IAbstraction[] = [];
@@ -59,8 +56,6 @@ export class View extends AssetBase implements IAbstractionPool {
 	private _inverseViewMatrix3DDirty: boolean = true;
 	private _onInvalidateSizeDelegate: (event: StageEvent | AssetEvent) => void;
 	private _onInvalidateViewMatrix3DDelegate: (event: ProjectionEvent) => void;
-
-	public partitionClass: IPartitionClass = BasicPartition;
 
 	/**
      *

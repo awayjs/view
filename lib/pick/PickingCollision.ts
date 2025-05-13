@@ -3,6 +3,7 @@ import { Point, Vector3D } from '@awayjs/core';
 import { ITraversable } from '../base/ITraversable';
 import { PickGroup } from '../PickGroup';
 import { ContainerNode } from '../partition/ContainerNode';
+import { INode } from '../partition/INode';
 
 /**
  * Value object ___ for a picking collision returned by a picking collider. Created as unique objects on display objects
@@ -15,7 +16,7 @@ export class PickingCollision {
 	/**
 	 *
 	 */
-	public rootNode: ContainerNode;
+	public rootNode: INode;
 
 	/**
 	 * The container to which this collision object belongs.

@@ -25,9 +25,8 @@ import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
 import { IBoundsPicker } from '../pick/IBoundsPicker';
 import { BoundsPickerEvent } from '../events/BoundsPickerEvent';
 
-import { View } from '../View';
-import { EntityNode } from '../partition/EntityNode';
 import { ContainerNode } from '../partition/ContainerNode';
+import { INode } from '../partition/INode';
 
 /**
  * @class away.pool.PickEntity
@@ -49,9 +48,6 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	private _activePickables: _Pick_PickableBase[] = [];
 	private _boundingVolumes: BoundingVolumeBase[] = [];
 	private _pickables: _Pick_PickableBase[] = [];
-	private _view: View;
-	private _node: ContainerNode;
-	private _pickGroup: PickGroup;
 
 	public get pickingCollision(): PickingCollision {
 		return this._pickingCollision;
@@ -60,22 +56,15 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	/**
 	 *
 	 */
-	public get view(): View {
-		return this._view;
-	}
-
-	/**
-	 *
-	 */
 	public get node(): ContainerNode {
-		return this._node;
+		return (<ContainerNode> this._asset);
 	}
 
 	/**
 	 *
 	 */
 	public get pickGroup(): PickGroup {
-		return this._pickGroup;
+		return (<PickGroup> this._pool);
 	}
 
 	public shapeFlag: boolean = false;
@@ -83,21 +72,17 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	/**
 	 * //TODO
 	 */
-	public init(entity: EntityNode, pickGroup: PickGroup) {
-		super.init(entity, pickGroup);
-
-		this._node = entity.parent;
-		this._view = this._node.view;
-		this._pickGroup = pickGroup;
-		this._pickingCollision = new PickingCollision(this._node, pickGroup);
+	public init(node: ContainerNode, pickGroup: PickGroup) {
+		super.init(node, pickGroup);
+		this._pickingCollision = new PickingCollision(this.node, this.pickGroup);
 	}
 
 	public getBoundingVolume(target: ContainerNode = null, type: BoundingVolumeType = null): BoundingVolumeBase {
 		if (target == null)
-			target = this._node;
+			target = this.node;
 
 		if (type == null)
-			type = this._node.container.defaultBoundingVolume;
+			type = this.node.container.defaultBoundingVolume;
 
 		const pool: BoundingVolumePool = this._boundingVolumePools[type]
 									|| (this._boundingVolumePools[type] = new BoundingVolumePool(this, type));
@@ -124,7 +109,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	 *         with the specified point; <code>false</code> otherwise.
 	 */
 	public hitTestPoint(x: number, y: number, shapeFlag: boolean = false): boolean {
-		return this._hitTestPointInternal(this._node, x, y, shapeFlag, false);
+		return this._hitTestPointInternal(<ContainerNode> this._asset, x, y, shapeFlag, false);
 	}
 
 	public _hitTestPointInternal(
@@ -134,7 +119,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	// eslint-disable-next-line brace-style
 	{
 
-		if (this._node.getMaskId() != -1 && (!maskFlag || !shapeFlag))//allow masks for bounds hit tests
+		if ((<ContainerNode> this._asset).getMaskId() != -1 && (!maskFlag || !shapeFlag))//allow masks for bounds hit tests
 			return false;
 
 		if (this._invalid)
@@ -142,7 +127,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 		//set local tempPoint for later reference
 		const tempPoint: Point = new Point(x,y);
-		this._node.globalToLocal(tempPoint, tempPoint);
+		this.node.globalToLocal(tempPoint, tempPoint);
 
 		//early out for box test
 		const box: Box = this._getBoxBoundsInternal(null, false, true);
@@ -152,8 +137,8 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 		//early out for non-shape tests
 		if (!shapeFlag
-			|| this._node.container.assetType == '[asset TextField]'
-			|| this._node.container.assetType == '[asset Billboard]')
+			|| (<ContainerNode> this._asset).container.assetType == '[asset TextField]'
+			|| (<ContainerNode> this._asset).container.assetType == '[asset Billboard]')
 			return true;
 
 		let shapeHit: boolean = false;
@@ -169,31 +154,31 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 			return false;
 
 		//do the mask thang
-		const maskOwners: ContainerNode[] = this._node.getMaskOwners();
+		const maskOwners: ContainerNode[] = this.node.getMaskOwners();
 		if (maskOwners) {
 			const numOwners: number = maskOwners.length;
-			let entity: ContainerNode;
+			let node: ContainerNode;
 			let masks: ContainerNode[];
 			let numMasks: number;
 			let maskHit: boolean;
 
 			for (let i = 0; i < numOwners; i++) {
-				entity = maskOwners[i];
-				if (!entity.isDescendant(rootEntity))
+				node = maskOwners[i];
+				if (!node.isDescendant(rootEntity))
 					continue;
 
-				masks = entity.getMasks();
+				masks = node.getMasks();
 				numMasks = masks.length;
 				maskHit = false;
 				for (let j: number = 0; j < numMasks; j++) {
-					entity = masks[j];
-					if (!entity.isDescendant(rootEntity))
+					node = masks[j];
+					if (!node.isDescendant(rootEntity))
 						continue;
 
 					// todo: figure out why a mask can be null here!
-					if (entity
-						&& this._pickGroup
-							.getBoundsPicker(entity.partition)
+					if (node
+						&& this.pickGroup
+							.getBoundsPicker(node)
 							._hitTestPointInternal(rootEntity, x, y, shapeFlag, true)
 					) {
 						maskHit = true;
@@ -210,7 +195,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	}
 
 	public isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean {
-		return this._isInFrustumInternal(this._node, planes, numPlanes);
+		return this._isInFrustumInternal(<ContainerNode> this._asset, planes, numPlanes);
 	}
 
 	public _isInFrustumInternal(rootEntity: ContainerNode, planes: Array<Plane3D>, numPlanes: number): boolean {
@@ -221,16 +206,16 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	 * @inheritDoc
 	 */
 	public isIntersectingRay(globalRayPosition: Vector3D, globalRayDirection: Vector3D): boolean {
-		return this._isIntersectingRayInternal(this._node, globalRayPosition, globalRayDirection);
+		return this._isIntersectingRayInternal(<ContainerNode> this._asset, globalRayPosition, globalRayDirection);
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	public _isIntersectingRayInternal(
-		rootEntity: ContainerNode, globalRayPosition: Vector3D, globalRayDirection: Vector3D): boolean {
+		rootEntity: INode, globalRayPosition: Vector3D, globalRayDirection: Vector3D): boolean {
 
-		const invMatrix: Matrix3D = this._node.getInverseMatrix3D();
+		const invMatrix: Matrix3D = (<ContainerNode> this._asset).getInverseMatrix3D();
 		invMatrix.transformVector(globalRayPosition, this._pickingCollision.rayPosition);
 		invMatrix.deltaTransformVector(globalRayDirection, this._pickingCollision.rayDirection);
 
@@ -277,7 +262,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	{
 		//TODO: this is required to reset invalidation on HierarchicalProperty.SCENE_TRANSFORM
 		//Should no longer be required once BoundsPicker uses isolated node trees
-		this._node.getMatrix3D();
+		(<ContainerNode> this._asset).getMatrix3D();
 
 		if (this._invalid)
 			this._update();
@@ -421,9 +406,6 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		for (let i: number = this._pickables.length  - 1; i >= 0; i--)
 			this._pickables[i].onClear(event);
 
-		this._node = null;
-		this._view = null;
-		this._pickGroup = null;
 		this._pickingCollision = null;
 
 		this._activePickables = [];
@@ -453,38 +435,39 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 	private _update(): void {
 		this._invalid = false;
-		(<EntityNode> this._asset).entity._acceptTraverser(this);
+		const entity = (<ContainerNode> this._asset).container.getEntity();
+		entity._acceptTraverser(this);
 	}
 
 	private _isIntersectingMasks(
-		rootEntity: ContainerNode, globalRayPosition: Vector3D, globalRayDirection: Vector3D): boolean {
+		rootEntity: INode, globalRayPosition: Vector3D, globalRayDirection: Vector3D): boolean {
 
 		//horrible hack for 2d masks
 		//do the mask thang
-		const maskOwners: ContainerNode[] = this._node.getMaskOwners();
+		const maskOwners: ContainerNode[] = this.node.getMaskOwners();
 		if (maskOwners) {
 			const numOwners: number = maskOwners.length;
-			let entity: ContainerNode;
+			let node: ContainerNode;
 			let masks: ContainerNode[];
 			let numMasks: number;
 			let maskHit: boolean;
 			for (let i: number = 0; i < numOwners; i++) {
-				entity = maskOwners[i];
-				if (!entity.isDescendant(rootEntity))
+				node = maskOwners[i];
+				if (!node.isDescendant(rootEntity))
 					continue;
 
-				masks = entity.getMasks();
+				masks = node.getMasks();
 				numMasks = masks.length;
 				maskHit = false;
 				for (let j: number = 0; j < numMasks; j++) {
-					entity = masks[j];
-					if (!entity.isDescendant(rootEntity))
+					node = masks[j];
+					if (!node.isDescendant(rootEntity))
 						continue;
 
 					// todo: figure out why a mask can be null here!
-					if (entity
-							&& this._pickGroup
-								.getRaycastPicker(entity.partition)
+					if (node
+							&& this.pickGroup
+								.getRaycastPicker(node)
 								._getCollisionInternal(globalRayPosition, globalRayDirection, true, true, null)) {
 						maskHit = true;
 						break;
