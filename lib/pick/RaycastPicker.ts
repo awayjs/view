@@ -27,7 +27,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 
 	public get node(): INode {
 		return <INode> this._asset;
-	};
+	}
 
 	public pickGroup: PickGroup;
 

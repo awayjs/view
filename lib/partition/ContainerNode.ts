@@ -232,9 +232,9 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 			if (!this._transformDisabled) {
 				if (this.container._registrationMatrix3D) {
-	
+
 					this._matrix3D.prepend(this.container._registrationMatrix3D);
-	
+
 					if (this.container.alignmentMode != AlignmentMode.REGISTRATION_POINT) {
 						this._matrix3D.appendTranslation(
 							-this.container._registrationMatrix3D._rawData[12] * this._activeTransform.scale.x,
@@ -242,22 +242,21 @@ export class ContainerNode extends AbstractionBase implements INode {
 							-this.container._registrationMatrix3D._rawData[14] * this._activeTransform.scale.z);
 					}
 				}
-	
+
 				if (this._parent)
 					this._matrix3D.append(this._parent.getMatrix3D());
-	
+
 				// scrollRect-masks are childs of the object that have the scrollRect applied
 				// to support scrolling we need to:
 				// 		- move objects with scrollRect by negative scrollRect position
 				// 		- move scrollRect-masks by positive scrollRect position
-	
+
 				if (!this.container.maskMode && this.container.scrollRect)
 					this._matrix3D.prependTranslation(-this.container.scrollRect.x, -this.container.scrollRect.y, 0);
 				else if (this.container.maskMode && this.container.scrollRect)
 					this._matrix3D.prependTranslation(this.container.scrollRect.x, this.container.scrollRect.y, 0);
-	
-			}
 
+			}
 
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.SCENE_TRANSFORM;
 
@@ -528,7 +527,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 			this._localNode = null;
 		}
 	}
-	
+
 	private _onEvent(e: ContainerEvent) {
 		switch (e.type) {
 			case ContainerEvent.REMOVE_CHILD_AT:
@@ -663,7 +662,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 	 */
 	public acceptTraverser(traverser: IPartitionTraverser): void {
 		this._invalid = false;
-		
+
 		//get the sub-traverser for the partition, if different, terminate this traversal
 		if (traverser.node != this && traverser !== traverser.getTraverser(this))
 			return;
