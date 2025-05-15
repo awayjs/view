@@ -78,7 +78,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 		this._pickingCollision = new PickingCollision(this.node, this.pickGroup);
 
-		this._pickables = new WeakAssetSet("_Pick_PickableBase");
+		this._pickables = new WeakAssetSet('_Pick_PickableBase');
 	}
 
 	public getBoundingVolume(target: ContainerNode = null, type: BoundingVolumeType = null): BoundingVolumeBase {
