@@ -1,7 +1,7 @@
 import { IAsset } from '@awayjs/core';
 import { IEntityTraverser } from './IEntityTraverser';
 
-export interface IPartitionEntity extends IAsset
+export interface IEntity extends IAsset
 {
 
 	/**

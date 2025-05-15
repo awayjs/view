@@ -5,18 +5,18 @@ import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
 import { ContainerNode } from '../partition/ContainerNode';
 import { BoundsPicker } from '../pick/BoundsPicker';
 import { AlignmentMode } from './AlignmentMode';
-import { IPartitionEntity } from './IPartitionEntity';
+import { IEntity } from './IEntity';
 import { OrientationMode } from './OrientationMode';
 
-export interface IPartitionContainer extends IAsset
+export interface IContainer extends IAsset
 {
 	pickObjectFromTimeline: boolean;
 
 	zOffset: number;
 
-	getBoundsPrimitive(picker: BoundsPicker): IPartitionContainer;
+	getBoundsPrimitive(picker: BoundsPicker): IContainer;
 
-	getScrollRectPrimitive(): IPartitionContainer;
+	getScrollRectPrimitive(): IContainer;
 
 	castsShadows: boolean;
 
@@ -36,7 +36,7 @@ export interface IPartitionContainer extends IAsset
 
 	scale9Grid: Rectangle;
 
-	getEntity(): IPartitionEntity;
+	getEntity(): IEntity;
 
 	getMouseCursor(): string;
 
@@ -48,7 +48,7 @@ export interface IPartitionContainer extends IAsset
 
 	maskMode: boolean;
 
-	masks: Array<IPartitionContainer>;
+	masks: Array<IContainer>;
 
 	blendMode: BlendMode;
 
@@ -63,7 +63,7 @@ export interface IPartitionContainer extends IAsset
 	 */
 	defaultBoundingVolume: BoundingVolumeType;
 
-	pickObject: IPartitionContainer;
+	pickObject: IContainer;
 
 	/**
 	 * @internal
