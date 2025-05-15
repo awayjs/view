@@ -10,7 +10,8 @@ import {
 	AssetEvent,
 	Plane3D,
 	IAsset,
-	IAbstraction
+	IAbstraction,
+	WeakAssetSet
 } from '@awayjs/core';
 
 import { ITraversable } from './ITraversable';
@@ -47,7 +48,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 	private _activePickables: _Pick_PickableBase[] = [];
 	private _boundingVolumes: BoundingVolumeBase[] = [];
-	private _pickables: _Pick_PickableBase[] = [];
+	private _pickables: WeakAssetSet;
 
 	public get pickingCollision(): PickingCollision {
 		return this._pickingCollision;
@@ -57,7 +58,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	 *
 	 */
 	public get node(): ContainerNode {
-		return (<ContainerNode> this._asset);
+		return <ContainerNode> this._asset;
 	}
 
 	/**
@@ -74,15 +75,18 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	 */
 	public init(node: ContainerNode, pickGroup: PickGroup) {
 		super.init(node, pickGroup);
+
 		this._pickingCollision = new PickingCollision(this.node, this.pickGroup);
+
+		this._pickables = new WeakAssetSet("_Pick_PickableBase");
 	}
 
 	public getBoundingVolume(target: ContainerNode = null, type: BoundingVolumeType = null): BoundingVolumeBase {
 		if (target == null)
-			target = this.node;
+			target = <ContainerNode> this._asset;
 
 		if (type == null)
-			type = this.node.container.defaultBoundingVolume;
+			type = (<ContainerNode> this._asset).container.defaultBoundingVolume;
 
 		const pool: BoundingVolumePool = this._boundingVolumePools[type]
 									|| (this._boundingVolumePools[type] = new BoundingVolumePool(this, type));
@@ -127,7 +131,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 		//set local tempPoint for later reference
 		const tempPoint: Point = new Point(x,y);
-		this.node.globalToLocal(tempPoint, tempPoint);
+		(<ContainerNode> this._asset).globalToLocal(tempPoint, tempPoint);
 
 		//early out for box test
 		const box: Box = this._getBoxBoundsInternal(null, false, true);
@@ -154,7 +158,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 			return false;
 
 		//do the mask thang
-		const maskOwners: ContainerNode[] = this.node.getMaskOwners();
+		const maskOwners: ContainerNode[] = (<ContainerNode> this._asset).getMaskOwners();
 		if (maskOwners) {
 			const numOwners: number = maskOwners.length;
 			let node: ContainerNode;
@@ -373,11 +377,11 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	}
 
 	public addPickable(pickable: _Pick_PickableBase): void {
-		this._pickables.push(pickable);
+		this._pickables.add(pickable);
 	}
 
 	public removePickable(pickable: _Pick_PickableBase): void {
-		this._pickables.splice(this._pickables.indexOf(pickable), 1);
+		this._pickables.remove(pickable);
 	}
 
 	public onInvalidate(event: AssetEvent): void {
@@ -403,11 +407,10 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		for (let i: number = this._boundingVolumes.length  - 1; i >= 0; i--)
 			this._boundingVolumes[i].onClear(event);
 
-		for (let i: number = this._pickables.length  - 1; i >= 0; i--)
-			this._pickables[i].onClear(event);
+		this._pickables.forEach((pickable: _Pick_PickableBase) => pickable.onClear(event));
 
 		this._pickingCollision = null;
-
+		this._pickables = null;
 		this._activePickables = [];
 		this._orientedBoxBoundsDirty[0] = true;
 		this._orientedBoxBoundsDirty[1] = true;
@@ -444,7 +447,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 
 		//horrible hack for 2d masks
 		//do the mask thang
-		const maskOwners: ContainerNode[] = this.node.getMaskOwners();
+		const maskOwners: ContainerNode[] = (<ContainerNode> this._asset).getMaskOwners();
 		if (maskOwners) {
 			const numOwners: number = maskOwners.length;
 			let node: ContainerNode;
