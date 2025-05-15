@@ -2,18 +2,16 @@ import { AssetEvent, AbstractionBase, Matrix3D, Vector3D, AbstractMethodError, S
 
 import { ITraversable } from './ITraversable';
 import { PickEntity } from './PickEntity';
-import { PickGroup } from '../PickGroup';
 import { PickingCollision } from '../pick/PickingCollision';
-
-import { View } from '../View';
-import { ContainerNode } from '../partition/ContainerNode';
 
 /**
  * @class RenderableListItem
  */
 export class _Pick_PickableBase extends AbstractionBase {
 
-	protected _node: ContainerNode;
+	public get entity(): PickEntity {
+		return this._useWeak ? (<WeakRef<PickEntity>> this._pool).deref() : <PickEntity> this._pool;
+	}
 
 	/**
 	 *
@@ -22,17 +20,14 @@ export class _Pick_PickableBase extends AbstractionBase {
 	 * @param surface
 	 * @param renderer
 	 */
-	public init(traversable: ITraversable, pickEntity: PickEntity): void {
-		super.init(traversable, pickEntity);
+	public init(traversable: ITraversable, entity: PickEntity): void {
+		super.init(traversable, entity, true);
 
-		//store node references
-		this._node = pickEntity.node;
-
-		pickEntity.addPickable(this);
+		entity.addPickable(this);
 	}
 
 	public onClear(event: AssetEvent): void {
-		(<PickEntity> this._pool).removePickable(this);
+		this.entity?.removePickable(this);
 
 		super.onClear(event);
 	}
