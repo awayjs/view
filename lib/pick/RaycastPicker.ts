@@ -6,9 +6,9 @@ import { INode } from '../partition/INode';
 import { PickingCollision } from './PickingCollision';
 import { PickEntity } from '../base/PickEntity';
 import { PickGroup, RaycastPickerPool } from '../PickGroup';
-import { IPartitionEntity } from '../base/IPartitionEntity';
+import { IEntity } from '../base/IEntity';
 import { ContainerNode } from '../partition/ContainerNode';
-import { IPartitionContainer } from '../base/IPartitionContainer';
+import { IContainer } from '../base/IContainer';
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations. Performs
@@ -44,7 +44,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	private _shapeFlag: boolean;
 	private _globalRayPosition: Vector3D;
 	private _globalRayDirection: Vector3D;
-	private _ignoredEntities: Array<IPartitionEntity>;
+	private _ignoredEntities: Array<IEntity>;
 
 	private _entities: PickEntity[] = [];
 	private _pickers: RaycastPicker[] = [];
@@ -239,7 +239,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return collision;
 	}
 
-	public getObjectsUnderPoint(rayPosition: Vector3D, rayDirection: Vector3D): IPartitionContainer[] {
+	public getObjectsUnderPoint(rayPosition: Vector3D, rayDirection: Vector3D): IContainer[] {
 
 		if (!this._isIntersectingRayInternal(<INode> this._asset, rayPosition, rayDirection, true))
 			return [];
@@ -248,7 +248,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		this._collectEntities(this._collectedEntities, this._dragNode);
 
 		//console.log("entities: ", this._entities)
-		const colliders: IPartitionContainer[] = this._getColliders();
+		const colliders: IContainer[] = this._getColliders();
 
 		//discard collected pickers
 		this._collectedEntities.length = 0;
@@ -271,11 +271,11 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		}
 	}
 
-	public setIgnoreList(entities: Array<IPartitionEntity>): void {
+	public setIgnoreList(entities: Array<IEntity>): void {
 		this._ignoredEntities = entities;
 	}
 
-	private isIgnored(entity: IPartitionEntity): boolean {
+	private isIgnored(entity: IEntity): boolean {
 		if (this._ignoredEntities) {
 			const len: number = this._ignoredEntities.length;
 			for (let i: number = 0; i < len; i++)
@@ -344,9 +344,9 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		return bestCollision;
 	}
 
-	private _getColliders(): IPartitionContainer[] {
+	private _getColliders(): IContainer[] {
 
-		const colliders: IPartitionContainer[] = [];
+		const colliders: IContainer[] = [];
 		let pickEntity: PickEntity;
 		const len: number = this._collectedEntities.length;
 		for (let i: number = 0; i < len; i++) {

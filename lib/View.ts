@@ -24,7 +24,7 @@ import {
 	StageManager,
 } from '@awayjs/stage';
 
-import { IPartitionContainer } from './base/IPartitionContainer';
+import { IContainer } from './base/IContainer';
 import { ViewEvent } from './events/ViewEvent';
 import { ContainerNode } from './partition/ContainerNode';
 
@@ -348,7 +348,7 @@ export class View extends AssetBase implements IAbstractionPool {
 		this._updatePixelRatio();
 	}
 
-	public requestAbstraction(_asset: IPartitionContainer): IAbstraction {
+	public requestAbstraction(_asset: IContainer): IAbstraction {
 		return View._store.length ? View._store.pop() : new ContainerNode();
 	}
 
@@ -356,7 +356,7 @@ export class View extends AssetBase implements IAbstractionPool {
 		View._store.push(abstraction);
 	}
 
-	public getNode(entity: IPartitionContainer): ContainerNode {
+	public getNode(entity: IContainer): ContainerNode {
 		return entity.getAbstraction<ContainerNode>(this);
 	}
 

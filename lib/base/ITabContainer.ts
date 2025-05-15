@@ -1,6 +1,6 @@
-import { IPartitionContainer } from './IPartitionContainer';
+import { IContainer } from './IContainer';
 
-export interface ITabContainer extends IPartitionContainer
+export interface ITabContainer extends IContainer
 {
 
 	tabEnabled: boolean;

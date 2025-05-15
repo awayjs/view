@@ -48,7 +48,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 	/**
      *
-     * @returns {IPartitionEntity}
+     * @returns {ContainerNode}
      */
 	public get node(): ContainerNode {
 		return <ContainerNode> this._asset;

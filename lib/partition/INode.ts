@@ -4,7 +4,7 @@ import { ContainerNode } from './ContainerNode';
 
 import { IPartitionTraverser } from './IPartitionTraverser';
 import { PickGroup } from '../PickGroup';
-import { IPartitionContainer } from '../base/IPartitionContainer';
+import { IContainer } from '../base/IContainer';
 import { View } from '../View';
 
 /**
@@ -19,9 +19,9 @@ export interface INode extends IAsset
 
 	//bounds:BoundingVolumeBase;
 
-	//pickObject: IPartitionEntity;
+	//pickObject: IEntity;
 
-	container: IPartitionContainer;
+	container: IContainer;
 
 	boundsVisible: boolean;
 
