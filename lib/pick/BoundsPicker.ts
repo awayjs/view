@@ -507,6 +507,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		if (node.container.getEntity())
 			this._boundsPickers.push(node.getAbstraction<PickEntity>(this._pickGroup));
 		else
-			node.clearAbstraction(this._pickGroup);
+			//check if we have a PickEntity abstraction and if so, clear it!
+			node.checkAbstraction(this._pickGroup)?.onClear(null);
 	}
 }

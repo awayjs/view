@@ -384,7 +384,8 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 			if (entity._isIntersectingRayInternal(this._rootNode, this._globalRayPosition, this._globalRayDirection))
 				this._entities.push(entity);
 		} else {
-			node.clearAbstraction(this.pickGroup);
+			//check if we have a PickEntity abstraction and if so, clear it!
+			node.checkAbstraction(this.pickGroup)?.onClear(null);
 		}
 	}
 }
