@@ -86,8 +86,4 @@ export class BoundingVolumePool implements IAbstractionPool {
 	public storeAbstraction(abstraction: IAbstraction): void {
 		this._store.push(abstraction);
 	}
-
-	public dispose(): void {
-
-	}
 }

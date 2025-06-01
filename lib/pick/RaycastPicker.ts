@@ -59,6 +59,8 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	public onClear(event: AssetEvent): void {
 		super.onClear(event);
 
+		this._dragNode = null;
+		this._rootNode = null;
 		this._entities.length = 0;
 		this._pickers.length = 0;
 		this._collectedEntities.length = 0;

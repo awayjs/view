@@ -5,7 +5,8 @@ import {
 	AbstractionBase,
 	AssetEvent,
 	Plane3D,
-	Point
+	Point,
+	WeakAssetSet
 } from '@awayjs/core';
 
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
@@ -18,7 +19,6 @@ import { BoundingVolumeBase } from '../bounds/BoundingVolumeBase';
 import { BoundingBox } from '../bounds/BoundingBox';
 import { BoundingSphere } from '../bounds/BoundingSphere';
 import { IBoundsPicker } from './IBoundsPicker';
-import { BoundsPickerEvent } from '../events/BoundsPickerEvent';
 import { PickEntity } from '../base/PickEntity';
 import { ContainerNode } from '../partition/ContainerNode';
 
@@ -38,9 +38,9 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 	public static MINIMAL_SCALE = 0.00001;
 
-	private _boundingVolumePools: Partial<Record<BoundingVolumeType, BoundingVolumePool>> = {};
+	private _boundingVolumePools: Partial<Record<BoundingVolumeType, BoundingVolumePool>>;
 
-	private _boundingVolumes: BoundingVolumeBase[] = [];
+	private _boundingVolumes: WeakAssetSet;
 
 	private _pickGroup: PickGroup;
 
@@ -233,12 +233,15 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		super.init(node, pool);
 
 		this._pickGroup = pool.pickGroup;
+
+		this._boundingVolumes = new WeakAssetSet('BoundingVolumeBase');
+		this._boundingVolumePools = {};
 	}
 
 	public onInvalidate(event: AssetEvent): void {
 		super.onInvalidate(event);
 
-		this.dispatchEvent(new BoundsPickerEvent(BoundsPickerEvent.INVALIDATE_BOUNDS, this));
+		this._boundingVolumes.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onInvalidate(event));
 	}
 
 	public traverse(): void {
@@ -302,11 +305,11 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	}
 
 	public addBoundingVolume(boundingVolume: BoundingVolumeBase): void {
-		this._boundingVolumes.push(boundingVolume);
+		this._boundingVolumes.add(boundingVolume);
 	}
 
 	public removeBoundingVolume(boundingVolume: BoundingVolumeBase): void {
-		this._boundingVolumes.splice(this._boundingVolumes.indexOf(boundingVolume), 1);
+		this._boundingVolumes.remove(boundingVolume);
 	}
 
 	public hitTestPoint(x: number, y: number, shapeFlag: boolean = false): boolean {
@@ -484,19 +487,11 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	public onClear(event: AssetEvent): void {
 		super.onClear(event);
 
-		for (let i: number = this._boundingVolumes.length  - 1; i >= 0; i--)
-			this._boundingVolumes[i].onClear(event);
+		this._boundingVolumes.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onClear(event));
 
-		for (const key in this._boundingVolumePools) {
-			this._boundingVolumePools[key].dispose();
-			delete this._boundingVolumePools[key];
-		}
+		this._boundingVolumePools = null;
 
 		this._boundsPickers.length = 0;
-	}
-
-	public dispose(): void {
-		//TODO
 	}
 
 	/**

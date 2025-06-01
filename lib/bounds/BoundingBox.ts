@@ -100,18 +100,20 @@ export class BoundingBox extends BoundingVolumeBase {
 	public _update(): void {
 		super._update();
 
+		const picker = this.pool.picker;
+
 		let matrix3D: Matrix3D;
-		if (this._targetCoordinateSpace != this._picker.node) {
-			if (this._targetCoordinateSpace == this._picker.node.parent) {
-				matrix3D = this._picker.node.container.transform.matrix3D;
+		if (this._targetCoordinateSpace != picker.node) {
+			if (this._targetCoordinateSpace == picker.node.parent) {
+				matrix3D = picker.node.container.transform.matrix3D;
 			} else {
-				matrix3D = this._picker.node.getMatrix3D().clone();
+				matrix3D = picker.node.getMatrix3D().clone();
 
 				matrix3D.append(this._targetCoordinateSpace.getInverseMatrix3D());
 			}
 		}
 
-		this._box = this._picker._getBoxBoundsInternal(matrix3D, this._strokeFlag, this._fastFlag, this._box);
+		this._box = picker._getBoxBoundsInternal(matrix3D, this._strokeFlag, this._fastFlag, this._box);
 
 		if (this._box == null)
 			return;

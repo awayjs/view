@@ -1,39 +1,36 @@
 import { Plane3D, Vector3D, AbstractMethodError, AbstractionBase, AssetEvent, TransformEvent } from '@awayjs/core';
 
-import { BoundsPickerEvent } from '../events/BoundsPickerEvent';
-
 import { BoundingVolumePool } from './BoundingVolumePool';
-import { IBoundsPicker } from '../pick/IBoundsPicker';
 import { ContainerNode } from '../partition/ContainerNode';
 import { ContainerNodeEvent } from '../events/ContainerNodeEvent';
 import { INode } from '../partition/INode';
 
 export class BoundingVolumeBase extends AbstractionBase {
-	private _onInvalidateBoundsDelegate: (event: BoundsPickerEvent) => void;
 	private _onInvalidateMatrix3DDelegate: (event: TransformEvent) => void;
 
 	protected _targetCoordinateSpace: ContainerNode;
-	protected _picker: IBoundsPicker;
 	protected _strokeFlag: boolean;
 	protected _fastFlag: boolean;
 	//protected _boundsPrimitive:Sprite;
+	
+	public get pool(): BoundingVolumePool {
+		return this._useWeak ? (<WeakRef<BoundingVolumePool>> this._pool).deref() : <BoundingVolumePool> this._pool;
+	}
 
 	public init(asset: ContainerNode, pool: BoundingVolumePool): void {
-		super.init(asset, pool);
+		super.init(asset, pool, true);
 
+		const picker = this.pool.picker;
 		this._targetCoordinateSpace = asset;
-		this._picker = pool.picker;
 		this._strokeFlag = pool.strokeFlag;
 		this._fastFlag = pool.fastFlag;
 
-		this._onInvalidateBoundsDelegate = (event: BoundsPickerEvent) => this._onInvalidateBounds(event);
 		this._onInvalidateMatrix3DDelegate = (event: TransformEvent) => this._onInvalidateMatrix3D(event);
 
-		this._picker.addEventListener(BoundsPickerEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
-		this._picker.addBoundingVolume(this);
+		picker.addBoundingVolume(this);
 
-		if (this._targetCoordinateSpace != this._picker.node) {
-			let targetEntity: INode = this._picker.node;
+		if (this._targetCoordinateSpace != picker.node) {
+			let targetEntity: INode = picker.node;
 
 			while (targetEntity && targetEntity != this._targetCoordinateSpace) {
 				targetEntity.container.transform.addEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
@@ -46,34 +43,33 @@ export class BoundingVolumeBase extends AbstractionBase {
 		}
 	}
 
-	public _onInvalidateBounds(event: BoundsPickerEvent): void {
-		this._invalid = true;
-	}
-
 	public _onInvalidateMatrix3D(event: TransformEvent): void {
 		this._invalid = true;
 	}
 
 	public onClear(event: AssetEvent): void {
-		super.onClear(event);
+		const picker = this.pool?.picker;
 
-		this._picker.removeBoundingVolume(this);
-		this._picker.removeEventListener(BoundsPickerEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
+		if (picker) {
+			picker.removeBoundingVolume(this);
 
-		if (this._targetCoordinateSpace != this._picker.node) {
-			let targetEntity: INode = this._picker.node;
+			if (this._targetCoordinateSpace != picker.node) {
+				let targetEntity: INode = picker.node;
 
-			while (targetEntity && targetEntity != this._targetCoordinateSpace) {
-				targetEntity.container.transform.removeEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
-				targetEntity = targetEntity.parent;
+				while (targetEntity && targetEntity != this._targetCoordinateSpace) {
+					targetEntity.container.transform.removeEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+					targetEntity = targetEntity.parent;
+				}
+
+				if (!targetEntity) //case when targetCoordinateSpace is not part of the same displaylist ancestry
+					this._targetCoordinateSpace.removeEventListener(ContainerNodeEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
 			}
-
-			if (!targetEntity) //case when targetCoordinateSpace is not part of the same displaylist ancestry
-				this._targetCoordinateSpace.removeEventListener(ContainerNodeEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
 		}
+		
 
 		this._targetCoordinateSpace = null;
-		this._picker = null;
+
+		super.onClear(event);
 		//this._boundsPrimitive = null;
 	}
 

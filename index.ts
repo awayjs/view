@@ -21,7 +21,6 @@ export {BoundingVolumePool} from "./lib/bounds/BoundingVolumePool";
 export {BoundingVolumeType} from "./lib/bounds/BoundingVolumeType";
 export {NullBounds} from "./lib/bounds/NullBounds";
 
-export {BoundsPickerEvent} from "./lib/events/BoundsPickerEvent";
 export {ContainerNodeEvent} from "./lib/events/ContainerNodeEvent";
 export {ViewEvent} from "./lib/events/ViewEvent";
 

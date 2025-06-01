@@ -24,7 +24,6 @@ import { BoundingVolumePool } from '../bounds/BoundingVolumePool';
 import { BoundingVolumeBase } from '../bounds/BoundingVolumeBase';
 import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
 import { IBoundsPicker } from '../pick/IBoundsPicker';
-import { BoundsPickerEvent } from '../events/BoundsPickerEvent';
 
 import { ContainerNode } from '../partition/ContainerNode';
 import { INode } from '../partition/INode';
@@ -35,7 +34,11 @@ import { INode } from '../partition/INode';
 export class PickEntity extends AbstractionBase implements IAbstractionPool, IEntityTraverser, IBoundsPicker {
 	private static _store: Record<string,  IAbstraction[]> = {};
 
-	private _boundingVolumePools: NumberMap<BoundingVolumePool> = {};
+	public static MINIMAL_SCALE = 0.00001;
+
+	private _boundingVolumePools: Partial<Record<BoundingVolumeType, BoundingVolumePool>>;
+
+	private _boundingVolumes: WeakAssetSet;
 
 	private _pickingCollision: PickingCollision;
 
@@ -47,7 +50,6 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	private static _pickPickableClassPool: Object = new Object();
 
 	private _activePickables: _Pick_PickableBase[] = [];
-	private _boundingVolumes: BoundingVolumeBase[] = [];
 	private _pickables: WeakAssetSet;
 
 	public get pickingCollision(): PickingCollision {
@@ -77,6 +79,9 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		super.init(node, pickGroup);
 
 		this._pickingCollision = new PickingCollision(this.node, this.pickGroup);
+
+		this._boundingVolumes = new WeakAssetSet('BoundingVolumeBase');
+		this._boundingVolumePools = {};
 
 		this._pickables = new WeakAssetSet('_Pick_PickableBase');
 	}
@@ -369,11 +374,11 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	}
 
 	public addBoundingVolume(boundingVolume: BoundingVolumeBase): void {
-		this._boundingVolumes.push(boundingVolume);
+		this._boundingVolumes.add(boundingVolume);
 	}
 
 	public removeBoundingVolume(boundingVolume: BoundingVolumeBase): void {
-		this._boundingVolumes.splice(this._boundingVolumes.indexOf(boundingVolume), 1);
+		this._boundingVolumes.remove(boundingVolume);
 	}
 
 	public addPickable(pickable: _Pick_PickableBase): void {
@@ -393,19 +398,15 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		this._orientedSphereBoundsDirty[0] = true;
 		this._orientedSphereBoundsDirty[1] = true;
 
-		this.dispatchEvent(new BoundsPickerEvent(BoundsPickerEvent.INVALIDATE_BOUNDS, this));
+		this._boundingVolumes.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onInvalidate(event));
 	}
 
 	public onClear(event: AssetEvent): void {
 		super.onClear(event);
 
-		for (const key in this._boundingVolumePools) {
-			this._boundingVolumePools[key].dispose();
-			delete this._boundingVolumePools[key];
-		}
+		this._boundingVolumes.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onClear(event));
 
-		for (let i: number = this._boundingVolumes.length  - 1; i >= 0; i--)
-			this._boundingVolumes[i].onClear(event);
+		this._boundingVolumePools = null;
 
 		this._pickables.forEach((pickable: _Pick_PickableBase) => pickable.onClear(event));
 
