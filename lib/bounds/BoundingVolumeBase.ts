@@ -12,7 +12,7 @@ export class BoundingVolumeBase extends AbstractionBase {
 	protected _strokeFlag: boolean;
 	protected _fastFlag: boolean;
 	//protected _boundsPrimitive:Sprite;
-	
+
 	public get pool(): BoundingVolumePool {
 		return this._useWeak ? (<WeakRef<BoundingVolumePool>> this._pool).deref() : <BoundingVolumePool> this._pool;
 	}
@@ -65,7 +65,6 @@ export class BoundingVolumeBase extends AbstractionBase {
 					this._targetCoordinateSpace.removeEventListener(ContainerNodeEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
 			}
 		}
-		
 
 		this._targetCoordinateSpace = null;
 
