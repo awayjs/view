@@ -325,7 +325,7 @@ export class View extends AssetBase implements IAbstractionPool {
 		super();
 
 		this._components[0] = this._offset;
-		this._components[3] = this._scale;
+		this._components[2] = this._scale;
 
 		this._onInvalidateSizeDelegate = (event: StageEvent | AssetEvent) => this._onInvalidateSize(event);
 		this._onInvalidateViewMatrix3DDelegate = (event: ProjectionEvent) => this._onInvalidateViewMatrix3D(event);

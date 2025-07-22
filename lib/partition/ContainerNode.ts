@@ -274,7 +274,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 		if ((<IContainer> this._asset).orientationMode == OrientationMode.CAMERA_PLANE) {
 			const comps: Array<Vector3D> = cameraTransform.decompose();
 			comps[0].copyFrom(this.getPosition());
-			comps[3].copyFrom(this._activeTransform.scale);
+			comps[2].copyFrom(this._activeTransform.scale);
 
 			(this._orientationMatrix || (this._orientationMatrix = new Matrix3D())).recompose(comps);
 

@@ -112,7 +112,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 		// decompose matrix for grabbing transformed scale of transform
 		// this is target scale that applied (real?) by width
-		const realScale = matrix.decompose()[3];
+		const realScale = matrix.decompose()[2];
 
 		transform.scaleTo(
 			realScale.x,
@@ -181,7 +181,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 			1
 		);
 
-		const realScale = matrix.decompose()[3];
+		const realScale = matrix.decompose()[2];
 
 		transform.scaleTo(
 			realScale.x,
