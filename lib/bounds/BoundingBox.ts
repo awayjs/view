@@ -7,14 +7,7 @@ import { BoundingVolumeBase } from './BoundingVolumeBase';
  * This is useful for most sprites.
  */
 export class BoundingBox extends BoundingVolumeBase {
-	private _matrix3D: Matrix3D;
 	private _box: Box;
-	private _x: number = 0;
-	private _y: number = 0;
-	private _z: number = 0;
-	private _width: number = 0;
-	private _height: number = 0;
-	private _depth: number = 0;
 	private _centerX: number = 0;
 	private _centerY: number = 0;
 	private _centerZ: number = 0;
@@ -26,8 +19,6 @@ export class BoundingBox extends BoundingVolumeBase {
 	 * @inheritDoc
 	 */
 	public nullify(): void {
-		this._x = this._y = this._z = 0;
-		this._width = this._height = this._depth = 0;
 		this._centerX = this._centerY = this._centerZ = 0;
 		this._halfExtentsX = this._halfExtentsY = this._halfExtentsZ = 0;
 	}
