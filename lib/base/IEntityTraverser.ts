@@ -1,4 +1,4 @@
-import { ITraversable } from './ITraversable';
+import { IAsset } from '@awayjs/core';
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations. Performs
@@ -14,5 +14,5 @@ export interface IEntityTraverser
 	/**
 	 *
 	 */
-	applyTraversable(traversable: ITraversable): void
+	applyTraversable(traversable: IAsset): void
 }

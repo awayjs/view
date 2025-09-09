@@ -10,6 +10,8 @@ import { OrientationMode } from './OrientationMode';
 
 export interface IContainer extends IAsset
 {
+	_containerNodes: Record<number, ContainerNode>;
+
 	pickObjectFromTimeline: boolean;
 
 	zOffset: number;

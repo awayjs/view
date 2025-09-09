@@ -1,4 +1,4 @@
-import { Plane3D, Vector3D, AbstractMethodError, AbstractionBase, AssetEvent, TransformEvent } from '@awayjs/core';
+import { Plane3D, Vector3D, AbstractMethodError, AbstractionBase, TransformEvent } from '@awayjs/core';
 
 import { BoundingVolumePool } from './BoundingVolumePool';
 import { ContainerNode } from '../partition/ContainerNode';
@@ -47,7 +47,7 @@ export class BoundingVolumeBase extends AbstractionBase {
 		this._invalid = true;
 	}
 
-	public onClear(event: AssetEvent): void {
+	public onClear(): void {
 		const picker = this.pool?.picker;
 
 		if (picker) {
@@ -68,7 +68,7 @@ export class BoundingVolumeBase extends AbstractionBase {
 
 		this._targetCoordinateSpace = null;
 
-		super.onClear(event);
+		super.onClear();
 		//this._boundsPrimitive = null;
 	}
 

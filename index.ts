@@ -2,7 +2,7 @@ console.debug("AwayJS - View - 0.6.78");
 
 
 
-export {ITraversable} from "./lib/base/ITraversable";
+export {IPickable} from "./lib/base/IPickable";
 export {PickEntity} from "./lib/base/PickEntity";
 export {IEntityTraverser} from "./lib/base/IEntityTraverser";
 export {_IPick_PickableClass} from "./lib/base/_IPick_PickableClass";

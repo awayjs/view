@@ -1,13 +1,17 @@
-import { AssetEvent, AbstractionBase, Matrix3D, Vector3D, AbstractMethodError, Sphere, Box } from '@awayjs/core';
+import { AbstractionBase, Matrix3D, Vector3D, AbstractMethodError, Sphere, Box } from '@awayjs/core';
 
-import { ITraversable } from './ITraversable';
 import { PickEntity } from './PickEntity';
 import { PickingCollision } from '../pick/PickingCollision';
+import { IPickable } from './IPickable';
 
 /**
  * @class RenderableListItem
  */
 export class _Pick_PickableBase extends AbstractionBase {
+	protected _orientedBoxBounds: Box;
+	protected _orientedBoxBoundsDirty: boolean = true;
+	protected _orientedSphereBounds: Sphere;
+	protected _orientedSphereBoundsDirty = true;
 
 	public get entity(): PickEntity {
 		return this._useWeak ? (<WeakRef<PickEntity>> this._pool).deref() : <PickEntity> this._pool;
@@ -20,16 +24,36 @@ export class _Pick_PickableBase extends AbstractionBase {
 	 * @param surface
 	 * @param renderer
 	 */
-	public init(traversable: ITraversable, entity: PickEntity): void {
-		super.init(traversable, entity, true);
+	public init(pickable: IPickable, entity: PickEntity): void {
+		super.init(pickable, entity, true);
 
 		entity.addPickable(this);
+
+		pickable._pickObjects[entity.id] = this;
 	}
 
-	public onClear(event: AssetEvent): void {
-		this.entity?.removePickable(this);
+	public onInvalidate(): void {
+		super.onInvalidate();
 
-		super.onClear(event);
+		this._orientedBoxBoundsDirty = true;
+		this._orientedSphereBoundsDirty = true;
+	}
+
+	public onClear(): void {
+		const entity = this.entity;
+		if (entity) {
+			entity.removePickable(this);
+			delete (<IPickable> this.asset)._pickObjects[entity.id];
+		} else {
+			delete (<IPickable> this.asset)._pickObjects[this._poolId];
+		}
+
+		this._orientedBoxBounds = null;
+		this._orientedBoxBoundsDirty = true;
+		this._orientedSphereBounds = null;
+		this._orientedSphereBoundsDirty = true;
+
+		super.onClear();
 	}
 
 	public hitTestPoint(x: number, y: number, z: number): boolean {
@@ -46,5 +70,10 @@ export class _Pick_PickableBase extends AbstractionBase {
 
 	public testCollision(collision: PickingCollision, closestFlag: boolean): boolean {
 		throw new AbstractMethodError();
+	}
+
+	public _onInvalidateElements(): void {
+		this._orientedBoxBoundsDirty = true;
+		this._orientedSphereBoundsDirty = true;
 	}
 }

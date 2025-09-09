@@ -7,14 +7,11 @@ import {
 	Sphere,
 	AbstractionBase,
 	Point,
-	AssetEvent,
 	Plane3D,
 	IAsset,
-	IAbstraction,
 	WeakAssetSet
 } from '@awayjs/core';
 
-import { ITraversable } from './ITraversable';
 import { PickGroup } from '../PickGroup';
 import { _Pick_PickableBase } from './_Pick_PickableBase';
 import { _IPick_PickableClass } from './_IPick_PickableClass';
@@ -27,12 +24,13 @@ import { IBoundsPicker } from '../pick/IBoundsPicker';
 
 import { ContainerNode } from '../partition/ContainerNode';
 import { INode } from '../partition/INode';
+import { IPickable } from './IPickable';
 
 /**
  * @class away.pool.PickEntity
  */
 export class PickEntity extends AbstractionBase implements IAbstractionPool, IEntityTraverser, IBoundsPicker {
-	private static _store: Record<string,  IAbstraction[]> = {};
+	private static _store: Record<string,  _Pick_PickableBase[]> = {};
 
 	public static MINIMAL_SCALE = 0.00001;
 
@@ -47,7 +45,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	private _orientedSphereBounds: Sphere[] = [];
 	private _orientedSphereBoundsDirty: boolean[] = [true, true];
 
-	private static _pickPickableClassPool: Object = new Object();
+	private static _pickPickableClassPool: Record<string,  _IPick_PickableClass> = {};
 
 	private _activePickables: _Pick_PickableBase[] = [];
 	private _pickables: WeakAssetSet;
@@ -368,9 +366,9 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		return target;
 	}
 
-	public applyTraversable(traversable: ITraversable): void {
-		//is the traversable a mask?
-		this._activePickables.push(traversable.getAbstraction(this));
+	public applyTraversable(pickable: IPickable): void {
+		//is the pickable a mask?
+		this._activePickables.push(pickable.getAbstraction(this));
 	}
 
 	public addBoundingVolume(boundingVolume: BoundingVolumeBase): void {
@@ -389,8 +387,8 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		this._pickables.remove(pickable);
 	}
 
-	public onInvalidate(event: AssetEvent): void {
-		super.onInvalidate(event);
+	public onInvalidate(): void {
+		super.onInvalidate();
 
 		this._activePickables = [];
 		this._orientedBoxBoundsDirty[0] = true;
@@ -398,17 +396,17 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		this._orientedSphereBoundsDirty[0] = true;
 		this._orientedSphereBoundsDirty[1] = true;
 
-		this._boundingVolumes.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onInvalidate(event));
+		this._boundingVolumes.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onInvalidate());
 	}
 
-	public onClear(event: AssetEvent): void {
-		super.onClear(event);
+	public onClear(): void {
+		super.onClear();
 
-		this._boundingVolumes.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onClear(event));
+		this._boundingVolumes.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onClear());
 
 		this._boundingVolumePools = null;
 
-		this._pickables.forEach((pickable: _Pick_PickableBase) => pickable.onClear(event));
+		this._pickables.forEach((pickable: _Pick_PickableBase) => pickable.onClear());
 
 		this._pickingCollision = null;
 		this._pickables = null;
@@ -419,12 +417,12 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		this._orientedSphereBoundsDirty[1] = true;
 	}
 
-	public requestAbstraction(asset: IAsset): IAbstraction {
+	public requestAbstraction(asset: IAsset): _Pick_PickableBase {
 		const store = PickEntity._store[asset.assetType];
 		return store.length ? store.pop() : new PickEntity._pickPickableClassPool[asset.assetType]();
 	}
 
-	public storeAbstraction(abstraction: IAbstraction): void {
+	public storeAbstraction(abstraction: _Pick_PickableBase): void {
 		PickEntity._store[abstraction.asset.assetType].push(abstraction);
 	}
 

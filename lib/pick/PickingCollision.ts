@@ -1,9 +1,9 @@
 import { Point, Vector3D } from '@awayjs/core';
 
-import { ITraversable } from '../base/ITraversable';
 import { PickGroup } from '../PickGroup';
 import { ContainerNode } from '../partition/ContainerNode';
 import { INode } from '../partition/INode';
+import { IPickable } from '../base/IPickable';
 
 /**
  * Value object ___ for a picking collision returned by a picking collider. Created as unique objects on display objects
@@ -29,9 +29,9 @@ export class PickingCollision {
 	public pickGroup: PickGroup;
 
 	/**
-	 * The traversable associated with a collision.
+	 * The pickable associated with a collision.
 	 */
-	public traversable: ITraversable;
+	public pickable: IPickable;
 
 	/**
 	 * The local position of the collision on the renderable's surface.

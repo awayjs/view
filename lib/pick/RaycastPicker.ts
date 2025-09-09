@@ -1,4 +1,4 @@
-import { Vector3D, AbstractionBase, AssetEvent } from '@awayjs/core';
+import { Vector3D, AbstractionBase } from '@awayjs/core';
 
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
 import { INode } from '../partition/INode';
@@ -56,8 +56,8 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 		this.pickGroup = pool.pickGroup;
 	}
 
-	public onClear(event: AssetEvent): void {
-		super.onClear(event);
+	public onClear(): void {
+		super.onClear();
 
 		this._dragNode = null;
 		this._rootNode = null;
@@ -387,7 +387,7 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 				this._entities.push(entity);
 		} else {
 			//check if we have a PickEntity abstraction and if so, clear it!
-			node.checkAbstraction(this.pickGroup)?.onClear(null);
+			node.checkAbstraction(this.pickGroup)?.onClear();
 		}
 	}
 }

@@ -2,7 +2,6 @@ import {
 	Plane3D,
 	Vector3D,
 	AbstractionBase,
-	AssetEvent,
 	Matrix3D,
 	ColorTransform,
 	Point,
@@ -479,6 +478,8 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		container._initNode(this);
 
+		container._containerNodes[pool.id] = this;
+
 		this._hierarchicalPropsDirty = HierarchicalProperty.ALL;
 
 		this._activeTransform = (<IContainer> this._asset).transform;
@@ -515,12 +516,14 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 	public clearLocalNode(): void {
 		if (this._localNode) {
-			this._localNode.onClear(null);
+			this._localNode.onClear();
 			this._localNode = null;
 		}
 	}
 
-	public onClear(event: AssetEvent): void {
+	public onClear(): void {
+
+		delete (<IContainer> this._asset)._containerNodes[this.view.id];
 
 		this.clearLocalNode();
 
@@ -531,7 +534,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 		}
 
 		for (let i: number = 0; i < this._numChildNodes; i++)
-			this._childNodes[i].onClear(event);
+			this._childNodes[i].onClear();
 
 		this._childNodes.length = 0;
 		this._numChildNodes = 0;
@@ -552,10 +555,10 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		super.clear();
 
-		super.onClear(event);
+		super.onClear();
 	}
 
-	public onInvalidate(event: AssetEvent): void {
+	public onInvalidate(): void {
 		this.invalidate();
 	}
 

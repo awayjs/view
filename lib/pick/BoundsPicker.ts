@@ -3,7 +3,6 @@ import {
 	Matrix3D,
 	Box, Sphere,
 	AbstractionBase,
-	AssetEvent,
 	Plane3D,
 	Point,
 	WeakAssetSet
@@ -238,10 +237,10 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		this._boundingVolumePools = {};
 	}
 
-	public onInvalidate(event: AssetEvent): void {
-		super.onInvalidate(event);
+	public onInvalidate(): void {
+		super.onInvalidate();
 
-		this._boundingVolumes.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onInvalidate(event));
+		this._boundingVolumes.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onInvalidate());
 	}
 
 	public traverse(): void {
@@ -484,10 +483,10 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		return this.getBoundingVolume(node).isInFrustum(planes, numPlanes);
 	}
 
-	public onClear(event: AssetEvent): void {
-		super.onClear(event);
+	public onClear(): void {
+		super.onClear();
 
-		this._boundingVolumes.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onClear(event));
+		this._boundingVolumes.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onClear());
 
 		this._boundingVolumePools = null;
 
@@ -503,6 +502,6 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 			this._boundsPickers.push(node.getAbstraction<PickEntity>(this._pickGroup));
 		else
 			//check if we have a PickEntity abstraction and if so, clear it!
-			node.checkAbstraction(this._pickGroup)?.onClear(null);
+			node.checkAbstraction(this._pickGroup)?.onClear();
 	}
 }
