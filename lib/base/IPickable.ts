@@ -8,5 +8,5 @@ import { _Pick_PickableBase } from './_Pick_PickableBase';
  */
 export interface IPickable extends IAsset
 {
-    _pickObjects: Record<number, _Pick_PickableBase>;
+	_pickObjects: Record<number, _Pick_PickableBase>;
 }
