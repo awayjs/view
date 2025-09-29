@@ -56,6 +56,7 @@ export class View extends AssetBase implements IAbstractionPool {
 	private _inverseViewMatrix3DDirty: boolean = true;
 	private _onInvalidateSizeDelegate: (event: StageEvent | AssetEvent) => void;
 	private _onInvalidateViewMatrix3DDelegate: (event: ProjectionEvent) => void;
+	private _onInvalidateFrustumMatrix3DDelegate: (event: ProjectionEvent) => void;
 
 	/**
      *
@@ -258,12 +259,20 @@ export class View extends AssetBase implements IAbstractionPool {
 			ProjectionEvent.INVALIDATE_VIEW_MATRIX3D,
 			this._onInvalidateViewMatrix3DDelegate
 		);
+		this._projection.removeEventListener(
+			ProjectionEvent.INVALIDATE_FRUSTUM_MATRIX3D,
+			this._onInvalidateFrustumMatrix3DDelegate
+		);
 
 		this._projection = value;
 
 		this._projection.addEventListener(
 			ProjectionEvent.INVALIDATE_VIEW_MATRIX3D,
 			this._onInvalidateViewMatrix3DDelegate
+		);
+		this._projection.addEventListener(
+			ProjectionEvent.INVALIDATE_FRUSTUM_MATRIX3D,
+			this._onInvalidateFrustumMatrix3DDelegate
 		);
 
 		this._invalidateViewMatrix3D();
@@ -329,12 +338,17 @@ export class View extends AssetBase implements IAbstractionPool {
 
 		this._onInvalidateSizeDelegate = (event: StageEvent | AssetEvent) => this._onInvalidateSize(event);
 		this._onInvalidateViewMatrix3DDelegate = (event: ProjectionEvent) => this._onInvalidateViewMatrix3D(event);
+		this._onInvalidateFrustumMatrix3DDelegate = (event: ProjectionEvent) => this._onInvalidateFrustumMatrix3D(event);
 
 		this._projection = projection || new PerspectiveProjection();
 
 		this._projection.addEventListener(
 			ProjectionEvent.INVALIDATE_VIEW_MATRIX3D,
 			this._onInvalidateViewMatrix3DDelegate);
+
+		this._projection.addEventListener(
+			ProjectionEvent.INVALIDATE_FRUSTUM_MATRIX3D,
+			this._onInvalidateFrustumMatrix3DDelegate);
 
 		if (stage)
 			this._shareContext = true;
@@ -437,6 +451,13 @@ export class View extends AssetBase implements IAbstractionPool {
 
 	private _onInvalidateViewMatrix3D(event: ProjectionEvent): void {
 		this._invalidateViewMatrix3D();
+	}
+
+	private _onInvalidateFrustumMatrix3D(event: ProjectionEvent): void {
+		this._frustumMatrix3DDirty = true;
+
+		if (!this.preserveFocalLength)
+			this._updateFocalLength();
 	}
 
 	private _updateTarget(value: ImageBase): void {
