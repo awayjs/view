@@ -549,8 +549,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 		this._maskDisabled = false;
 		this._colorTransformDisabled = false;
 		this._transformDisabled = false;
-		this._maskOwners = null;
-		this._masks.length = 0;
+
 		this._parent = null;
 
 		super.clear();
@@ -564,6 +563,9 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 	public clear(): void {
 		super.clear();
+
+		this._maskOwners = null;
+		this._masks.length = 0;
 
 		if (this._localNode)
 			this._localNode.clear();
