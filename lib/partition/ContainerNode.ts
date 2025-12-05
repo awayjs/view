@@ -527,6 +527,11 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		this.clearLocalNode();
 
+		for (let i: number = 0; i < this._masks.length; i++)
+			this._masks[i].onClear();
+
+		this._masks.length = 0;
+
 		if (this._pickObject) {
 			this._pickObject = null;
 			this._pickObjectNode.setParent(null);
@@ -565,7 +570,9 @@ export class ContainerNode extends AbstractionBase implements INode {
 		super.clear();
 
 		this._maskOwners = null;
-		this._masks.length = 0;
+
+		for (let i: number = 0; i < this._masks.length; i++)
+			this._masks[i].clear();
 
 		if (this._localNode)
 			this._localNode.clear();
