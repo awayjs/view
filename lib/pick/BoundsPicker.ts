@@ -236,7 +236,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	public onInvalidate(): void {
 		super.onInvalidate();
 
-		for (var key in this._boundingVolumePools)
+		for (const key in this._boundingVolumePools)
 			this._boundingVolumePools[key].abstractions.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onInvalidate());
 	}
 
@@ -479,7 +479,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	public onClear(): void {
 		super.onClear();
 
-		for (var key in this._boundingVolumePools)
+		for (const key in this._boundingVolumePools)
 			this._boundingVolumePools[key].abstractions.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onClear());
 
 		this._boundingVolumePools = null;

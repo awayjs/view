@@ -93,7 +93,7 @@ export class BoundingBox extends BoundingVolumeBase {
 	public _update(): void {
 		super._update();
 
-		const targetCoordinateSpace: ContainerNode = <ContainerNode> this._asset
+		const targetCoordinateSpace: ContainerNode = <ContainerNode> this._asset;
 		const picker = (<BoundingVolumePool> this._pool).picker;
 
 		let matrix3D: Matrix3D;

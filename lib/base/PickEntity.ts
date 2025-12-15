@@ -382,14 +382,14 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		this._orientedSphereBoundsDirty[0] = true;
 		this._orientedSphereBoundsDirty[1] = true;
 
-		for (var key in this._boundingVolumePools)
+		for (const key in this._boundingVolumePools)
 			this._boundingVolumePools[key].abstractions.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onInvalidate());
 	}
 
 	public onClear(): void {
 		super.onClear();
 
-		for (var key in this._boundingVolumePools)
+		for (const key in this._boundingVolumePools)
 			this._boundingVolumePools[key].abstractions.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onClear());
 
 		this._boundingVolumePools = null;
