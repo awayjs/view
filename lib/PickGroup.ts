@@ -1,4 +1,4 @@
-import { EventDispatcher, IAbstraction, IAbstractionPool, IAsset, IAssetClass, UUID } from '@awayjs/core';
+import { AbstractionSet, EventDispatcher, IAbstraction, IAbstractionPool, IAsset, IAssetClass, UUID } from '@awayjs/core';
 
 import { PickEntity } from './base/PickEntity';
 import { RaycastPicker } from './pick/RaycastPicker';
@@ -20,6 +20,8 @@ export class PickGroup extends EventDispatcher implements IAbstractionPool {
 
 	public readonly id: number;
 
+	public readonly abstractions: AbstractionSet;
+
 	public static getInstance(): PickGroup {
 		return PickGroup._instance || (PickGroup._instance = new PickGroup());
 	}
@@ -32,6 +34,7 @@ export class PickGroup extends EventDispatcher implements IAbstractionPool {
 	constructor() {
 		super();
 		this.id = UUID.Next();
+		this.abstractions = new AbstractionSet(this);
 		this._raycastPickerPool = new RaycastPickerPool(this);
 		this._boundsPickerPool = new BoundsPickerPool(this);
 		this._tabPickerPool = PickGroup._tabPickerPool || (PickGroup._tabPickerPool = new TabPickerPool());
@@ -46,27 +49,30 @@ export class PickGroup extends EventDispatcher implements IAbstractionPool {
 	}
 
 	public getRaycastPicker(node: INode): RaycastPicker {
-		return node.getAbstraction<RaycastPicker>(this._raycastPickerPool);
+		return this._raycastPickerPool.abstractions.getAbstraction<RaycastPicker>(node);
 	}
 
 	public getBoundsPicker(node: INode): BoundsPicker {
-		return node.getAbstraction<BoundsPicker>(this._boundsPickerPool);
+		return this._boundsPickerPool.abstractions.getAbstraction<BoundsPicker>(node);
 	}
 
 	public getTabPicker(node: INode): TabPicker {
-		return node.getAbstraction<TabPicker>(this._tabPickerPool);
+		return this._tabPickerPool.abstractions.getAbstraction<TabPicker>(node);
 	}
 }
 
 export class RaycastPickerPool implements IAbstractionPool {
 	private static _store: IAbstraction[] = [];
 
-	public readonly pickGroup: PickGroup;
-
 	public readonly id: number;
+
+	public readonly abstractions: AbstractionSet;
+
+	public readonly pickGroup: PickGroup;
 
 	constructor(pickGroup: PickGroup) {
 		this.id = UUID.Next();
+		this.abstractions = new AbstractionSet(this);
 		this.pickGroup = pickGroup;
 	}
 
@@ -82,12 +88,15 @@ export class RaycastPickerPool implements IAbstractionPool {
 export class BoundsPickerPool implements IAbstractionPool {
 	private static _store: IAbstraction[] = [];
 
-	public readonly pickGroup: PickGroup;
-
 	public readonly id: number;
+
+	public readonly abstractions: AbstractionSet;
+
+	public readonly pickGroup: PickGroup;
 
 	constructor(pickGroup: PickGroup) {
 		this.id = UUID.Next();
+		this.abstractions = new AbstractionSet(this);
 		this.pickGroup = pickGroup;
 	}
 
@@ -105,8 +114,11 @@ class TabPickerPool implements IAbstractionPool {
 
 	public readonly id: number;
 
+	public readonly abstractions: AbstractionSet;
+
 	constructor() {
 		this.id = UUID.Next();
+		this.abstractions = new AbstractionSet(this);
 	}
 
 	public requestAbstraction(assetClass: IAssetClass): IAbstraction {

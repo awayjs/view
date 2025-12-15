@@ -1,6 +1,8 @@
 import { Box, Matrix3D, PlaneClassification, Plane3D, Vector3D } from '@awayjs/core';
 
 import { BoundingVolumeBase } from './BoundingVolumeBase';
+import { BoundingVolumePool } from './BoundingVolumePool';
+import { ContainerNode } from '../partition/ContainerNode';
 
 /**
  * BoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.
@@ -91,16 +93,17 @@ export class BoundingBox extends BoundingVolumeBase {
 	public _update(): void {
 		super._update();
 
-		const picker = this.pool.picker;
+		const targetCoordinateSpace: ContainerNode = <ContainerNode> this._asset
+		const picker = (<BoundingVolumePool> this._pool).picker;
 
 		let matrix3D: Matrix3D;
-		if (this._targetCoordinateSpace != picker.node) {
-			if (this._targetCoordinateSpace == picker.node.parent) {
+		if (targetCoordinateSpace != picker.node) {
+			if (targetCoordinateSpace == picker.node.parent) {
 				matrix3D = picker.node.container.transform.matrix3D;
 			} else {
 				matrix3D = picker.node.getMatrix3D().clone();
 
-				matrix3D.append(this._targetCoordinateSpace.getInverseMatrix3D());
+				matrix3D.append(targetCoordinateSpace.getInverseMatrix3D());
 			}
 		}
 

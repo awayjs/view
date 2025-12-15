@@ -265,10 +265,12 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 			if ((picker = this._pickers[i]).node != dragNode)
 				picker._collectEntities(collectedEntities, dragNode);
 
+		const node: INode = (<INode> this._asset);
+
 		//ensures that raycastPicker entities are always added last, for correct 2D picking
 		let entity: PickEntity;
 		for (let i = this._entities.length - 1; i >= 0; i--) {
-			(entity = this._entities[i]).pickingCollision.rootNode = <INode> this._asset;
+			(entity = this._entities[i]).pickingCollision.rootNode = node;
 			collectedEntities.push(entity);
 		}
 	}
@@ -381,13 +383,13 @@ export class RaycastPicker extends AbstractionBase implements IPartitionTraverse
 	 */
 	public applyEntity(node: INode): void {
 		if (node.container.getEntity()) {
-			const entity = node.getAbstraction<PickEntity>(this.pickGroup);
+			const entity = this.pickGroup.abstractions.getAbstraction<PickEntity>(node);
 
 			if (entity._isIntersectingRayInternal(this._rootNode, this._globalRayPosition, this._globalRayDirection))
 				this._entities.push(entity);
 		} else {
 			//check if we have a PickEntity abstraction and if so, clear it!
-			node.checkAbstraction(this.pickGroup)?.onClear();
+			 this.pickGroup.abstractions.checkAbstraction(node)?.onClear();
 		}
 	}
 }

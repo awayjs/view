@@ -1,4 +1,4 @@
-import { IAbstractionPool, IAbstractionClass, IAsset, UUID, IAbstraction } from '@awayjs/core';
+import { IAbstractionPool, IAbstractionClass, IAsset, UUID, IAbstraction, AbstractionSet } from '@awayjs/core';
 
 import { BoundingVolumeType } from './BoundingVolumeType';
 import { BoundingBox } from './BoundingBox';
@@ -69,8 +69,11 @@ export class BoundingVolumePool implements IAbstractionPool {
 
 	public readonly id: number;
 
+	public readonly abstractions: AbstractionSet;
+
 	constructor(picker: IBoundsPicker, boundingVolumeType: BoundingVolumeType) {
 		this.id = UUID.Next();
+		this.abstractions = new AbstractionSet(this);
 		this.picker = picker;
 		this.strokeFlag = BoundingVolumePool._strokeDict[boundingVolumeType];
 		this.fastFlag = BoundingVolumePool._fastDict[boundingVolumeType];

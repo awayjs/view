@@ -8,8 +8,7 @@ import {
 	Transform,
 	Rectangle,
 	PerspectiveProjection,
-	CoordinateSystem,
-	IAbstractionPool,
+	CoordinateSystem
 } from '@awayjs/core';
 
 import { IPartitionTraverser } from './IPartitionTraverser';
@@ -51,7 +50,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 	private _maskDisabled: boolean = false;
 	private _colorTransformDisabled: boolean = false;
 	private _transformDisabled: boolean = false;
-	private _activeTransform: Transform;
 
 	private _invisible: boolean;
 	private _maskId: number = -1;
@@ -75,15 +73,16 @@ export class ContainerNode extends AbstractionBase implements INode {
 	}
 
 	public get container(): IContainer {
-		return <IContainer> this._asset;
+		return this._useWeak ? (<WeakRef<IContainer>> this._asset).deref() : <IContainer> this._asset;
 	}
 
 	public get pickObjectNode(): ContainerNode {
-		if (this._pickObject != (<IContainer> this._asset).pickObject) {
-			this._pickObject = (<IContainer> this._asset).pickObject;
+		const container = this.container;
+		if (this._pickObject != container.pickObject) {
+			this._pickObject = container.pickObject;
 
 			if (this._pickObject) {
-				this._pickObjectNode = this._pickObject.getAbstraction<ContainerNode>(<IAbstractionPool> this._pool);
+				this._pickObjectNode = this._pool.abstractions.getAbstraction<ContainerNode>(this._pickObject);
 
 				if (this._pickObject.pickObjectFromTimeline)
 					this._pickObjectNode.setParent(this);
@@ -98,7 +97,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 	}
 
 	public get renderToImage(): boolean {
-		const { blendMode, filters, cacheAsBitmap } = <IContainer> this._asset;
+		const { blendMode, filters, cacheAsBitmap } = this.container;
 
 		const renderToImage = this.isRenderable() && (
 			cacheAsBitmap ||
@@ -151,12 +150,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 		this._maskDisabled = value;
 		this._transformDisabled = value;
 		this._colorTransformDisabled = value;
-
-		if (this._transformDisabled) {
-			this._activeTransform = ContainerNode._nullTransform;
-		} else {
-			this._activeTransform = (<IContainer> this._asset).transform;
-		}
 	}
 
 	public get transformDisabled(): boolean {
@@ -165,9 +158,8 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 	public getScale9Container(): IContainer {
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.SCALE9) {
-			this._scale9Container = (<IContainer> this._asset).scale9Grid
-				? (<IContainer> this._asset)
-				: this._parent?.getScale9Container();
+			const container: IContainer = this.container;
+			this._scale9Container = container.scale9Grid ? container : this._parent?.getScale9Container();
 
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.SCALE9;
 		}
@@ -180,12 +172,13 @@ export class ContainerNode extends AbstractionBase implements INode {
 	 */
 	public getPosition(): Vector3D {
 		if (this._positionDirty) {
-			if ((<IContainer> this._asset)._registrationMatrix3D &&
-				(<IContainer> this._asset).alignmentMode === AlignmentMode.REGISTRATION_POINT
+			const container: IContainer = this.container;
+			if (container._registrationMatrix3D &&
+				container.alignmentMode === AlignmentMode.REGISTRATION_POINT
 			) {
-				this._position.x = -(<IContainer> this._asset)._registrationMatrix3D._rawData[12];
-				this._position.y = -(<IContainer> this._asset)._registrationMatrix3D._rawData[13];
-				this._position.z = -(<IContainer> this._asset)._registrationMatrix3D._rawData[14];
+				this._position.x = -container._registrationMatrix3D._rawData[12];
+				this._position.y = -container._registrationMatrix3D._rawData[13];
+				this._position.z = -container._registrationMatrix3D._rawData[14];
 				this._position = this.getMatrix3D().transformVector(
 					this._position,
 					this._position);
@@ -224,19 +217,20 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 	public getMatrix3D(): Matrix3D {
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.SCENE_TRANSFORM) {
-
-			this._matrix3D.copyFrom(this._activeTransform.matrix3D);
+			const container: IContainer = this.container;
 
 			if (!this._transformDisabled) {
-				if ((<IContainer> this._asset)._registrationMatrix3D) {
+				this._matrix3D.copyFrom(container.transform.matrix3D);
 
-					this._matrix3D.prepend((<IContainer> this._asset)._registrationMatrix3D);
+				if (container._registrationMatrix3D) {
 
-					if ((<IContainer> this._asset).alignmentMode != AlignmentMode.REGISTRATION_POINT) {
+					this._matrix3D.prepend(container._registrationMatrix3D);
+
+					if (container.alignmentMode != AlignmentMode.REGISTRATION_POINT) {
 						this._matrix3D.appendTranslation(
-							-(<IContainer> this._asset)._registrationMatrix3D._rawData[12] * this._activeTransform.scale.x,
-							-(<IContainer> this._asset)._registrationMatrix3D._rawData[13] * this._activeTransform.scale.y,
-							-(<IContainer> this._asset)._registrationMatrix3D._rawData[14] * this._activeTransform.scale.z);
+							-container._registrationMatrix3D._rawData[12] * container.transform.scale.x,
+							-container._registrationMatrix3D._rawData[13] * container.transform.scale.y,
+							-container._registrationMatrix3D._rawData[14] * container.transform.scale.z);
 					}
 				}
 
@@ -248,18 +242,20 @@ export class ContainerNode extends AbstractionBase implements INode {
 				// 		- move objects with scrollRect by negative scrollRect position
 				// 		- move scrollRect-masks by positive scrollRect position
 
-				if (!(<IContainer> this._asset).maskMode && (<IContainer> this._asset).scrollRect)
-					this._matrix3D.prependTranslation(-(<IContainer> this._asset).scrollRect.x, -(<IContainer> this._asset).scrollRect.y, 0);
-				else if ((<IContainer> this._asset).maskMode && (<IContainer> this._asset).scrollRect)
-					this._matrix3D.prependTranslation((<IContainer> this._asset).scrollRect.x, (<IContainer> this._asset).scrollRect.y, 0);
+				if (!container.maskMode && container.scrollRect)
+					this._matrix3D.prependTranslation(-container.scrollRect.x, -container.scrollRect.y, 0);
+				else if (container.maskMode && container.scrollRect)
+					this._matrix3D.prependTranslation(container.scrollRect.x, container.scrollRect.y, 0);
 
+			} else {
+				this._matrix3D.copyFrom(ContainerNode._nullTransform.matrix3D);
 			}
 
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.SCENE_TRANSFORM;
 
 			//TODO: refactor controller API
-			if ((<IContainer> this._asset)['_iController'])
-				(<IContainer> this._asset)['_iController'].updateController();
+			if (container['_iController'])
+				container['_iController'].updateController();
 		}
 
 		return this._matrix3D;
@@ -269,23 +265,24 @@ export class ContainerNode extends AbstractionBase implements INode {
 	 *
 	 */
 	public getRenderMatrix3D(cameraTransform: Matrix3D): Matrix3D {
+		const container: IContainer = this.container;
 
-		if ((<IContainer> this._asset).orientationMode == OrientationMode.CAMERA_PLANE) {
+		if (container.orientationMode == OrientationMode.CAMERA_PLANE) {
 			const comps: Array<Vector3D> = cameraTransform.decompose();
 			comps[0].copyFrom(this.getPosition());
-			comps[2].copyFrom(this._activeTransform.scale);
+			comps[2].copyFrom(container.transform.scale);
 
 			(this._orientationMatrix || (this._orientationMatrix = new Matrix3D())).recompose(comps);
 
 			//add in case of registration point
-			if ((<IContainer> this._asset)._registrationMatrix3D) {
-				this._orientationMatrix.prepend((<IContainer> this._asset)._registrationMatrix3D);
+			if (container._registrationMatrix3D) {
+				this._orientationMatrix.prepend(container._registrationMatrix3D);
 
-				if ((<IContainer> this._asset).alignmentMode != AlignmentMode.REGISTRATION_POINT)
+				if (container.alignmentMode != AlignmentMode.REGISTRATION_POINT)
 					this._orientationMatrix.appendTranslation(
-						-(<IContainer> this._asset)._registrationMatrix3D._rawData[12] * this._activeTransform.scale.x,
-						-(<IContainer> this._asset)._registrationMatrix3D._rawData[13] * this._activeTransform.scale.y,
-						-(<IContainer> this._asset)._registrationMatrix3D._rawData[14] * this._activeTransform.scale.z);
+						-container._registrationMatrix3D._rawData[12] * container.transform.scale.x,
+						-container._registrationMatrix3D._rawData[13] * container.transform.scale.y,
+						-container._registrationMatrix3D._rawData[14] * container.transform.scale.z);
 			}
 
 			return this._orientationMatrix;
@@ -299,6 +296,8 @@ export class ContainerNode extends AbstractionBase implements INode {
 		}
 
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.COLOR_TRANSFORM) {
+			const container: IContainer = this.container;
+
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.COLOR_TRANSFORM;
 
 			if (this._colorTransformDisabled) {
@@ -311,14 +310,14 @@ export class ContainerNode extends AbstractionBase implements INode {
 			if (this._parent && this._parent.getColorTransform()) {
 				this._colorTransform.copyFrom(this._parent.getColorTransform());
 				// we MUST prepend real transform in cached phase, but reset in cached image render phase
-				this._colorTransform.prepend((<IContainer> this._asset).transform.colorTransform);
+				this._colorTransform.prepend(container.transform.colorTransform);
 			} else {
-				this._colorTransform.copyFrom((<IContainer> this._asset).transform.colorTransform);
+				this._colorTransform.copyFrom(container.transform.colorTransform);
 			}
 
 			/*
 			// if we will use getter - it return empty blend in USE_UNSAFE_BLEND = false
-			if ((<any> (<IContainer> this._asset))._blendMode === BlendMode.OVERLAY) {
+			if ((<any> container)._blendMode === BlendMode.OVERLAY) {
 				// apply 0.5 alpha for object with `overlay` because we not support it now
 				this._colorTransform.alphaMultiplier *= 0.5;
 			}*/
@@ -334,8 +333,10 @@ export class ContainerNode extends AbstractionBase implements INode {
 	 */
 	public getMaskId(): number {
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.MASK_ID) {
-			this._maskId = ((<IContainer> this._asset).maskId != -1)
-				? (<IContainer> this._asset).maskId
+			const container: IContainer = this.container;
+
+			this._maskId = (container.maskId != -1)
+				? container.maskId
 				: (this._parent)
 					? this._parent.getMaskId()
 					: -1;
@@ -347,16 +348,17 @@ export class ContainerNode extends AbstractionBase implements INode {
 	}
 
 	public getMasks(update: boolean = false): ContainerNode[] {
-		if (!update) {
+		if (!update)
 			return this._masks;
-		}
 
-		if ((<IContainer> this._asset).masks) {
-			const len = (<IContainer> this._asset).masks.length;
+		const container: IContainer = this.container;
+
+		if (container.masks) {
+			const len = container.masks.length;
 			this._masks.length = len;
 
 			for (let i = 0; i < len; i++) {
-				this._masks[i] = (<View> this._pool).getNode((<IContainer> this._asset).masks[i]);
+				this._masks[i] = (<View> this._pool).getNode(container.masks[i]);
 			}
 		} else {
 			this._masks.length = 0;
@@ -474,15 +476,13 @@ export class ContainerNode extends AbstractionBase implements INode {
 	}
 
 	public init(container: IContainer, pool: View) {
-		super.init(container, pool);
+		super.init(container, pool, true);
 
 		container._initNode(this);
 
 		container._containerNodes[pool.id] = this;
 
 		this._hierarchicalPropsDirty = HierarchicalProperty.ALL;
-
-		this._activeTransform = (<IContainer> this._asset).transform;
 	}
 
 	public getLocalNode(): ContainerNode {
@@ -506,7 +506,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 			const view = new View(projection, this.view.stage);
 			view.backgroundAlpha = 0;
 
-			this._localNode = view.getNode(<IContainer> this._asset);
+			this._localNode = view.getNode(this.container);
 			this._localNode.transformDisabled = true;
 			this._localNode.setParent(this);
 		}
@@ -522,13 +522,15 @@ export class ContainerNode extends AbstractionBase implements INode {
 	}
 
 	public onClear(): void {
+		const container: IContainer = this.container;
 
-		delete (<IContainer> this._asset)._containerNodes[this.view.id];
+		if (container)
+			delete container._containerNodes[this.view.id];
 
 		this.clearLocalNode();
 
-		for (let i: number = 0; i < this._masks.length; i++)
-			this._masks[i].onClear();
+		// for (let i: number = 0; i < this._masks.length; i++)
+		// 	this._masks[i].onClear();
 
 		this._masks.length = 0;
 
@@ -538,8 +540,8 @@ export class ContainerNode extends AbstractionBase implements INode {
 			this._pickObjectNode = null;
 		}
 
-		for (let i: number = 0; i < this._numChildNodes; i++)
-			this._childNodes[i].onClear();
+		// for (let i: number = 0; i < this._numChildNodes; i++)
+		// 	this._childNodes[i].onClear();
 
 		this._childNodes.length = 0;
 		this._numChildNodes = 0;
@@ -613,7 +615,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.VISIBLE) {
 			this._invisible = this._transformDisabled
 				? false
-				: !(<IContainer> this._asset).visible || this.parent?.isInvisible();
+				: !this.container.visible || this.parent?.isInvisible();
 
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.VISIBLE;
 		}
@@ -660,8 +662,10 @@ export class ContainerNode extends AbstractionBase implements INode {
 		if (!traverser.enterNode(this))
 			return;
 
-		if (!(<IContainer> this._asset).maskMode && this._scrollRect !== (<IContainer> this._asset).scrollRect) {
-			this._scrollRect = (<IContainer> this._asset).scrollRect;
+		const container: IContainer = this.container;
+
+		if (!container.maskMode && this._scrollRect !== container.scrollRect) {
+			this._scrollRect = container.scrollRect;
 
 			if (this._scrollRectNode) {
 				this._scrollRectNode.setParent(null);
@@ -669,8 +673,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 			}
 
 			if (this._scrollRect) {
-				this._scrollRectNode = (<IContainer> this._asset).getScrollRectPrimitive()
-					.getAbstraction<ContainerNode>(<IAbstractionPool> this._pool);
+				this._scrollRectNode = this._pool.abstractions.getAbstraction<ContainerNode>(container.getScrollRectPrimitive());
 
 				this._scrollRectNode.container.scrollRect = this._scrollRect;
 				this._scrollRectNode.setParent(this);
@@ -684,7 +687,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 	}
 
 	public addChildAt(entity: IContainer, index: number): ContainerNode {
-		const node = entity.getAbstraction<ContainerNode>(<IAbstractionPool> this._pool);
+		const node = this._pool.abstractions.getAbstraction<ContainerNode>(entity);
 
 		node.setParent(this);
 
@@ -731,12 +734,12 @@ export class ContainerNode extends AbstractionBase implements INode {
 	}
 
 	public isMouseDisabled(): boolean {
-		return this.isInvisible() || !(<IContainer> this._asset).mouseEnabled || this.parent?.isMouseChildrenDisabled();
+		return this.isInvisible() || !this.container.mouseEnabled || this.parent?.isMouseChildrenDisabled();
 	}
 
 	public isMouseChildrenDisabled(): boolean {
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.MOUSE_ENABLED) {
-			this._mouseChildrenDisabled = !(<IContainer> this._asset).mouseChildren || this.parent?.isMouseChildrenDisabled();
+			this._mouseChildrenDisabled = !this.container.mouseChildren || this.parent?.isMouseChildrenDisabled();
 
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.MOUSE_ENABLED;
 		}

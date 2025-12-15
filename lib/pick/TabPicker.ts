@@ -1,10 +1,10 @@
 import { Vector3D, AbstractionBase, IAbstractionPool } from '@awayjs/core';
 
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
-import { INode } from '../partition/INode';
 
 import { ITabContainer } from '../base/ITabContainer';
 import { ContainerNode } from '../partition/ContainerNode';
+import { INode } from '../partition/INode';
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.
@@ -17,15 +17,15 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser {
 
 	/**
      *
-     * @returns {ContainerNode}
+     * @returns {INode}
      */
 	public get node(): INode {
 		return <INode> this._asset;
 	}
 
-	private _tabNodes: ContainerNode[] = [];
-	private _customTabNodes: ContainerNode[][] = [];
-	private _customTabNodesSorted: ContainerNode[] = [];
+	private _tabNodes: INode[] = [];
+	private _customTabNodes: INode[][] = [];
+	private _customTabNodesSorted: INode[] = [];
 
 	/**
 	 * Creates a new <code>RaycastPicker</code> object.
@@ -43,7 +43,7 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser {
 
 		const snapGridY: number = 10;
 		let len: number = 0;
-		const orderedOnY: ContainerNode[][] = [];
+		const orderedOnY: INode[][] = [];
 		let i: number = 0;
 		let e: number = 0;
 		if (this._customTabNodes.length > 0) {
@@ -103,11 +103,11 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser {
 		this._invalid = false;
 	}
 
-	public getTraverser(node: ContainerNode): IPartitionTraverser {
+	public getTraverser(node: INode): IPartitionTraverser {
 		return this;
 	}
 
-	public getNextTabEntity(currentFocus: ContainerNode): ContainerNode {
+	public getNextTabEntity(currentFocus: INode): INode {
 		if (this._invalid)
 			this.traverse();
 
@@ -182,7 +182,7 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser {
 
 	}
 
-	public getPrevTabEntity(currentFocus: ContainerNode): ContainerNode {
+	public getPrevTabEntity(currentFocus: INode): INode {
 		if (this._invalid)
 			this.traverse();
 
@@ -278,7 +278,7 @@ export class TabPicker extends AbstractionBase implements IPartitionTraverser {
 	 *
 	 * @param entity
 	 */
-	public applyEntity(node: ContainerNode): void {
+	public applyEntity(node: INode): void {
 		const tabContainer = <ITabContainer> node.container;
 		if (tabContainer.tabEnabled) {
 			if (tabContainer.assetType != '[asset TextField]' || (<any> tabContainer).type == 'input') {

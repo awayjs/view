@@ -1,4 +1,4 @@
-import { IAsset, Plane3D, Vector3D } from '@awayjs/core';
+import { IAbstraction, Plane3D, Vector3D } from '@awayjs/core';
 
 import { ContainerNode } from './ContainerNode';
 
@@ -13,7 +13,7 @@ import { View } from '../View';
  *
  * @class away.pool.INode
  */
-export interface INode extends IAsset
+export interface INode extends IAbstraction
 {
 	readonly view: View;
 

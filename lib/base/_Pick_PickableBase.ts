@@ -13,8 +13,8 @@ export class _Pick_PickableBase extends AbstractionBase {
 	protected _orientedSphereBounds: Sphere;
 	protected _orientedSphereBoundsDirty = true;
 
-	public get entity(): PickEntity {
-		return this._useWeak ? (<WeakRef<PickEntity>> this._pool).deref() : <PickEntity> this._pool;
+	public get pickable(): IPickable {
+		return this._useWeak ? (<WeakRef<IPickable>> this._asset).deref() : <IPickable> this._asset;
 	}
 
 	/**
@@ -27,8 +27,6 @@ export class _Pick_PickableBase extends AbstractionBase {
 	public init(pickable: IPickable, entity: PickEntity): void {
 		super.init(pickable, entity, true);
 
-		entity.addPickable(this);
-
 		pickable._pickObjects[entity.id] = this;
 	}
 
@@ -40,13 +38,10 @@ export class _Pick_PickableBase extends AbstractionBase {
 	}
 
 	public onClear(): void {
-		const entity = this.entity;
-		if (entity) {
-			entity.removePickable(this);
-			delete (<IPickable> this.asset)._pickObjects[entity.id];
-		} else {
-			delete (<IPickable> this.asset)._pickObjects[this._poolId];
-		}
+		const pickable = this.pickable;
+
+		if (pickable)
+			delete pickable._pickObjects[(<PickEntity> this._pool).id];
 
 		this._orientedBoxBounds = null;
 		this._orientedBoxBoundsDirty = true;

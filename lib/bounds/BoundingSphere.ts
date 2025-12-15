@@ -1,6 +1,8 @@
 import { Matrix3D, PlaneClassification, Plane3D, Sphere, Vector3D } from '@awayjs/core';
 
 import { BoundingVolumeBase } from './BoundingVolumeBase';
+import { BoundingVolumePool } from './BoundingVolumePool';
+import { ContainerNode } from '../partition/ContainerNode';
 
 export class BoundingSphere extends BoundingVolumeBase {
 	private _matrix3D: Matrix3D;
@@ -63,7 +65,7 @@ export class BoundingSphere extends BoundingVolumeBase {
 		if (c < 0)
 			c = -c;
 
-		const rr: Number = (a + b + c) * this._radius;
+ 		const rr: number = (a + b + c) * this._radius;
 
 		return dd > rr ? PlaneClassification.FRONT : dd < -rr ? PlaneClassification.BACK : PlaneClassification.INTERSECT;
 	}
@@ -71,18 +73,17 @@ export class BoundingSphere extends BoundingVolumeBase {
 	public _update(): void {
 		super._update();
 
-		const picker = this.pool.picker;
+		const targetCoordinateSpace: ContainerNode = <ContainerNode> this._asset;
+		const picker = (<BoundingVolumePool> this._pool).picker;
 
 		let matrix3D: Matrix3D;
-		if (this._targetCoordinateSpace) {
-			if (this._targetCoordinateSpace == picker.node) {
-				matrix3D = picker.node.container.transform.matrix3D;
-			} else {
-				matrix3D = picker.node.getMatrix3D().clone();
+		if (targetCoordinateSpace == picker.node) {
+			matrix3D = picker.node.container.transform.matrix3D;
+		} else {
+			matrix3D = picker.node.getMatrix3D().clone();
 
-				if (this._targetCoordinateSpace.parent)
-					matrix3D.append(this._targetCoordinateSpace.parent.getInverseMatrix3D());
-			}
+			if (targetCoordinateSpace.parent)
+				matrix3D.append(targetCoordinateSpace.parent.getInverseMatrix3D());
 		}
 
 		this._sphere = picker._getSphereBoundsInternal(null, matrix3D, this._strokeFlag, this._fastFlag, this._sphere);

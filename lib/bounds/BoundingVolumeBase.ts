@@ -1,44 +1,35 @@
 import { Plane3D, Vector3D, AbstractMethodError, AbstractionBase, TransformEvent } from '@awayjs/core';
 
 import { BoundingVolumePool } from './BoundingVolumePool';
-import { ContainerNode } from '../partition/ContainerNode';
 import { ContainerNodeEvent } from '../events/ContainerNodeEvent';
 import { INode } from '../partition/INode';
 
 export class BoundingVolumeBase extends AbstractionBase {
 	private _onInvalidateMatrix3DDelegate: (event: TransformEvent) => void;
 
-	protected _targetCoordinateSpace: ContainerNode;
 	protected _strokeFlag: boolean;
 	protected _fastFlag: boolean;
 	//protected _boundsPrimitive:Sprite;
 
-	public get pool(): BoundingVolumePool {
-		return this._useWeak ? (<WeakRef<BoundingVolumePool>> this._pool).deref() : <BoundingVolumePool> this._pool;
-	}
+	public init(targetCoordinateSpace: INode, pool: BoundingVolumePool): void {
+		super.init(targetCoordinateSpace, pool);
 
-	public init(asset: ContainerNode, pool: BoundingVolumePool): void {
-		super.init(asset, pool, true);
-
-		const picker = this.pool.picker;
-		this._targetCoordinateSpace = asset;
+		const picker = pool.picker;
 		this._strokeFlag = pool.strokeFlag;
 		this._fastFlag = pool.fastFlag;
 
 		this._onInvalidateMatrix3DDelegate = (event: TransformEvent) => this._onInvalidateMatrix3D(event);
 
-		picker.addBoundingVolume(this);
-
-		if (this._targetCoordinateSpace != picker.node) {
+		if (targetCoordinateSpace != picker.node) {
 			let targetEntity: INode = picker.node;
 
-			while (targetEntity && targetEntity != this._targetCoordinateSpace) {
+			while (targetEntity && targetEntity != targetCoordinateSpace) {
 				targetEntity.container.transform.addEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
 				targetEntity = targetEntity.parent;
 			}
 
 			if (!targetEntity) //case when targetCoordinateSpace is not part of the same displaylist ancestry
-				this._targetCoordinateSpace.addEventListener(ContainerNodeEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+				targetCoordinateSpace.addEventListener(ContainerNodeEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
 
 		}
 	}
@@ -48,25 +39,20 @@ export class BoundingVolumeBase extends AbstractionBase {
 	}
 
 	public onClear(): void {
-		const picker = this.pool?.picker;
+		const targetCoordinateSpace: INode = <INode> this._asset;
+		const picker = (<BoundingVolumePool> this._pool).picker;
 
-		if (picker) {
-			picker.removeBoundingVolume(this);
+		if (picker && targetCoordinateSpace != picker.node) {
+			let targetEntity: INode = picker.node;
 
-			if (this._targetCoordinateSpace != picker.node) {
-				let targetEntity: INode = picker.node;
-
-				while (targetEntity && targetEntity != this._targetCoordinateSpace) {
-					targetEntity.container.transform.removeEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
-					targetEntity = targetEntity.parent;
-				}
-
-				if (!targetEntity) //case when targetCoordinateSpace is not part of the same displaylist ancestry
-					this._targetCoordinateSpace.removeEventListener(ContainerNodeEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+			while (targetEntity && targetEntity != targetCoordinateSpace) {
+				targetEntity.container?.transform.removeEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+				targetEntity = targetEntity.parent;
 			}
-		}
 
-		this._targetCoordinateSpace = null;
+			if (!targetEntity) //case when targetCoordinateSpace is not part of the same displaylist ancestry
+				targetCoordinateSpace.removeEventListener(ContainerNodeEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+		}
 
 		super.onClear();
 		//this._boundsPrimitive = null;
