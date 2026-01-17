@@ -409,8 +409,8 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 		return store.length ? store.pop() : new PickEntity._pickPickableClassPool[pickable.assetType]();
 	}
 
-	public storeAbstraction(abstraction: _Pick_PickableBase): void {
-		PickEntity._store[abstraction.pickable.assetType].push(abstraction);
+	public storeAbstraction(abstraction: _Pick_PickableBase, assetType: string): void {
+		PickEntity._store[assetType].push(abstraction);
 	}
 
 	/**

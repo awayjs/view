@@ -3,7 +3,6 @@ import { Vector3D, AbstractionBase, IAbstractionPool } from '@awayjs/core';
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
 
 import { ITabContainer } from '../base/ITabContainer';
-import { ContainerNode } from '../partition/ContainerNode';
 import { INode } from '../partition/INode';
 
 /**

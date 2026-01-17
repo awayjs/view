@@ -115,6 +115,27 @@ export class ContainerNode extends AbstractionBase implements INode {
 		return this._renderToImage;
 	}
 
+	public get scrollRect(): Rectangle {
+		const container = this.container;
+		const scrollRect = container.scrollRect;
+
+		if (!!this._scrollRect != !!scrollRect) {
+			this._scrollRect = scrollRect;
+
+			if (this._scrollRect) {
+				this._scrollRectNode = (<View> this._pool).getNode(container.getScrollRectPrimitive());
+
+				//this._scrollRectNode.container.scrollRect = this._scrollRect;
+				this._scrollRectNode.setParent(this);
+			} else if (this._scrollRectNode) {
+				this._scrollRectNode.setParent(null);
+				this._scrollRectNode = null;
+			}
+		}
+
+		return this._scrollRect;
+	}
+
 	public get boundsVisible(): boolean {
 		return false;
 	}
@@ -242,10 +263,8 @@ export class ContainerNode extends AbstractionBase implements INode {
 				// 		- move objects with scrollRect by negative scrollRect position
 				// 		- move scrollRect-masks by positive scrollRect position
 
-				if (!container.maskMode && container.scrollRect)
+				if (container.scrollRect)
 					this._matrix3D.prependTranslation(-container.scrollRect.x, -container.scrollRect.y, 0);
-				else if (container.maskMode && container.scrollRect)
-					this._matrix3D.prependTranslation(container.scrollRect.x, container.scrollRect.y, 0);
 
 			} else {
 				this._matrix3D.copyFrom(ContainerNode._nullTransform.matrix3D);
@@ -363,6 +382,9 @@ export class ContainerNode extends AbstractionBase implements INode {
 		} else {
 			this._masks.length = 0;
 		}
+
+		if (this.scrollRect)
+			this._masks.push(this._scrollRectNode);
 
 		return this._masks;
 	}
@@ -529,6 +551,8 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		this.clearLocalNode();
 
+		this._maskOwners = null;
+
 		// for (let i: number = 0; i < this._masks.length; i++)
 		// 	this._masks[i].onClear();
 
@@ -662,24 +686,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 		if (!traverser.enterNode(this))
 			return;
 
-		const container: IContainer = this.container;
-
-		if (!container.maskMode && this._scrollRect !== container.scrollRect) {
-			this._scrollRect = container.scrollRect;
-
-			if (this._scrollRectNode) {
-				this._scrollRectNode.setParent(null);
-				this._scrollRectNode = null;
-			}
-
-			if (this._scrollRect) {
-				this._scrollRectNode = this._pool.abstractions.getAbstraction<ContainerNode>(container.getScrollRectPrimitive());
-
-				this._scrollRectNode.container.scrollRect = this._scrollRect;
-				this._scrollRectNode.setParent(this);
-			}
-		}
-
 		traverser.applyEntity(this);
 
 		for (let i: number = 0; i < this._numChildNodes; i++)
@@ -782,6 +788,9 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		if (this._localNode)
 			this._localNode.invalidateHierarchicalProperty(property);
+
+		if (this._scrollRectNode)
+			this._scrollRectNode.invalidateHierarchicalProperty(property);
 
 		if (property & HierarchicalProperty.SCENE_TRANSFORM) {
 			this._positionDirty = true;
