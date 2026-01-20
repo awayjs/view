@@ -102,7 +102,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 		const renderToImage = this.isRenderable() && (
 			cacheAsBitmap ||
 			filters && filters.length > 0 ||
-			(blendMode && blendMode !== BlendMode.LAYER && blendMode !== BlendMode.NORMAL && (StageSettings.USE_NON_NATIVE_BLEND || isNativeBlend(blendMode)))
+			(blendMode && blendMode !== BlendMode.NORMAL && (StageSettings.USE_NON_NATIVE_BLEND || isNativeBlend(blendMode)))
 		);
 
 		if (this._renderToImage !== renderToImage) {
@@ -549,7 +549,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 		if (container)
 			delete container._containerNodes[this.view.id];
 
-		this.clearLocalNode();
+		this._localNode = null;
 
 		this._maskOwners = null;
 
