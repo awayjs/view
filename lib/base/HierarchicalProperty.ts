@@ -40,5 +40,10 @@ export enum HierarchicalProperty {
 	/**
 	 *
 	 */
-	ALL = 127,
+	ROOT = 128,
+
+	/**
+	 *
+	 */
+	ALL = 255,
 }

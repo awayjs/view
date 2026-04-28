@@ -37,6 +37,8 @@ export interface INode extends IAbstraction
 
 	getMaskId(): number;
 
+	getRoot(): INode;
+
 	getBoundsPrimitive(pickGroup: PickGroup): ContainerNode;
 
 	isIntersectingRay(rootEntity: INode, rayPosition: Vector3D, rayDirection: Vector3D, pickGroup: PickGroup): boolean;

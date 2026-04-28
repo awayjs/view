@@ -57,7 +57,8 @@ export class ContainerNode extends AbstractionBase implements INode {
 	private _maskOwners: ContainerNode[];
 	private _masks: ContainerNode[] = [];
 
-	protected _parent: ContainerNode;
+	private _parent: ContainerNode;
+	private _root: ContainerNode;
 	protected _childNodes: Array<ContainerNode> = new Array<ContainerNode>();
 	protected _numChildNodes: number = 0;
 
@@ -175,6 +176,16 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 	public get transformDisabled(): boolean {
 		return this._transformDisabled;
+	}
+
+	public getRoot(local: boolean = false): ContainerNode {
+		if (this._hierarchicalPropsDirty & HierarchicalProperty.ROOT) {
+			this._root = this._transformDisabled && local || !this._parent
+				? this
+				: this._parent.getRoot(local);
+		}
+
+		return this._root;
 	}
 
 	public getScale9Container(): IContainer {
@@ -500,6 +511,8 @@ export class ContainerNode extends AbstractionBase implements INode {
 	public init(container: IContainer, pool: View) {
 		super.init(container, pool, true);
 
+		this._root = this;
+
 		container._initNode(this);
 
 		container._containerNodes[pool.id] = this;
@@ -582,6 +595,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 		this._transformDisabled = false;
 
 		this._parent = null;
+		this._root = null;
 
 		super.clear();
 
