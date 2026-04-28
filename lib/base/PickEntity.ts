@@ -185,8 +185,8 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 						continue;
 
 					if (this.pickGroup
-							.getBoundsPicker(node)
-							._hitTestPointInternal(rootEntity, x, y, shapeFlag, true)
+						.getBoundsPicker(node)
+						._hitTestPointInternal(rootEntity, x, y, shapeFlag, true)
 					) {
 						maskHit = true;
 						break;
@@ -452,8 +452,8 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 						continue;
 
 					if (this.pickGroup
-							.getRaycastPicker(node)
-							._getCollisionInternal(globalRayPosition, globalRayDirection, true, true, null)
+						.getRaycastPicker(node)
+						._getCollisionInternal(globalRayPosition, globalRayDirection, true, true, null)
 					) {
 						maskHit = true;
 						break;
