@@ -12,7 +12,7 @@ export interface IPartitionTraverser
 {
 	node: INode;
 
-	getTraverser(node: ContainerNode): IPartitionTraverser;
+	getTraverser(node: ContainerNode): IPartitionTraverser | void;
 
 	/**
 	 * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
