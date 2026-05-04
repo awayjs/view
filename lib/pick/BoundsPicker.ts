@@ -42,6 +42,11 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 	private _boundsPickers: IBoundsPicker[] = [];
 
+	private _orientedBoxBounds: Box[] = [];
+	private _orientedBoxBoundsDirty: boolean[] = [true, true];
+	private _orientedSphereBounds: Sphere[] = [];
+	private _orientedSphereBoundsDirty: boolean[] = [true, true];
+
 	/**
      *
      * @returns {ContainerNode}
@@ -236,6 +241,11 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	public onInvalidate(): void {
 		super.onInvalidate();
 
+		this._orientedBoxBoundsDirty[0] = true;
+		this._orientedBoxBoundsDirty[1] = true;
+		this._orientedSphereBoundsDirty[0] = true;
+		this._orientedSphereBoundsDirty[1] = true;
+
 		for (const key in this._boundingVolumePools)
 			this._boundingVolumePools[key].abstractions.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onInvalidate());
 	}
@@ -377,7 +387,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	}
 
 	public _getBoxBoundsInternal(
-		matrix3D: Matrix3D = null,
+		invTargetMatrix: Matrix3D = null,
 		strokeFlag: boolean = true,
 		fastFlag: boolean = true,
 		cache: Box = null,
@@ -391,21 +401,34 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		if (numPickers > 0) {
 			const node: INode = <INode> this._asset;
 			const m: Matrix3D = new Matrix3D();
-			for (let i: number = 0; i < numPickers; ++i) {
-				if (this._boundsPickers[i].node != node) {
-					if (matrix3D)
-						m.copyFrom(matrix3D);
-					else
-						m.identity();
 
-					m.prepend(this._boundsPickers[i].node.container.transform.matrix3D);
-					if (this._boundsPickers[i].node.container._registrationMatrix3D)
-						m.prepend(this._boundsPickers[i].node.container._registrationMatrix3D);
+			if (fastFlag) {
+				let obb: Box;
+				const strokeIndex: number = strokeFlag ? 1 : 0;
 
-					target = this._boundsPickers[i]._getBoxBoundsInternal(m, strokeFlag, fastFlag, cache, target);
+				if (this._orientedBoxBoundsDirty[strokeIndex]) {
+					this._orientedBoxBoundsDirty[strokeIndex] = false;
+					for (let i: number = 0; i < numPickers; ++i) {
+						if (this._boundsPickers[i].node != node) { //check if PickEntity
+							obb = this._boundsPickers[i]._getBoxBoundsInternal(this._boundsPickers[i].node.container.transform.matrix3D, strokeFlag, fastFlag, this._orientedBoxBounds[strokeIndex], obb);
+						} else {
+							obb = this._boundsPickers[i]._getBoxBoundsInternal(null, strokeFlag, fastFlag, this._orientedBoxBounds[strokeIndex], obb);
+						}
+					}
+					this._orientedBoxBounds[strokeIndex] = obb;
 				} else {
-					target = this._boundsPickers[i]._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, target);
+					obb = this._orientedBoxBounds[strokeIndex];
 				}
+
+				if (obb != null) {
+					target = (invTargetMatrix)
+						? invTargetMatrix.transformBox(obb).union(target, target || cache)
+						: obb.union(target, target || cache);
+				}
+
+			} else {
+				for (let i: number = 0; i < numPickers; ++i)
+					target = this._boundsPickers[i]._getBoxBoundsInternal(invTargetMatrix, strokeFlag, fastFlag, cache, target);
 			}
 		}
 
@@ -485,6 +508,10 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		this._boundingVolumePools = null;
 
 		this._boundsPickers.length = 0;
+		this._orientedBoxBoundsDirty[0] = true;
+		this._orientedBoxBoundsDirty[1] = true;
+		this._orientedSphereBoundsDirty[0] = true;
+		this._orientedSphereBoundsDirty[1] = true;
 	}
 
 	/**
