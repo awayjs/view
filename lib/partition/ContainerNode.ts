@@ -778,9 +778,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 		if (this._pickObjectNode)
 			this._pickObjectNode.invalidateHierarchicalProperty(property);
 
-		if (this._localNode)
-			this._localNode.invalidateHierarchicalProperty(property);
-
 		if (this._scrollRectNode)
 			this._scrollRectNode.invalidateHierarchicalProperty(property);
 
