@@ -26,7 +26,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 	private static _nullTransform: Transform = new Transform();
 	private static _tempVector3D: Vector3D = new Vector3D();
-	private static _nullColorTransform = new ColorTransform();
+	public static nullColorTransform = new ColorTransform();
 
 	private _invalidateMatrix3DEvent: ContainerNodeEvent;
 	private _invalidateColorTransformEvent: ContainerNodeEvent;
@@ -48,7 +48,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 	private _inverseMatrix3DDirty: boolean = true;
 	private _orientationMatrix: Matrix3D;
 	private _maskDisabled: boolean = false;
-	private _colorTransformDisabled: boolean = false;
 	private _transformDisabled: boolean = false;
 
 	private _invisible: boolean;
@@ -145,18 +144,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 		return <View> this._pool;
 	}
 
-	/**
-	 * Allow disable/enable colorTransform for this node independent of transform, this required for cache phase
-	 * @param value
-	 */
-	public set colorTransformDisabled(value: boolean) {
-		this._colorTransformDisabled = value;
-	}
-
-	public get colorTransformDisabled() {
-		return this._colorTransformDisabled;
-	}
-
 	public set maskDisabled(value: boolean) {
 		this._maskDisabled = value;
 	}
@@ -171,7 +158,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		this._maskDisabled = value;
 		this._transformDisabled = value;
-		this._colorTransformDisabled = value;
 	}
 
 	public get transformDisabled(): boolean {
@@ -321,18 +307,11 @@ export class ContainerNode extends AbstractionBase implements INode {
 	}
 
 	public getColorTransform(): ColorTransform {
-		if (this._colorTransformDisabled) {
-			return ContainerNode._nullColorTransform;
-		}
 
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.COLOR_TRANSFORM) {
 			const container: IContainer = this.container;
 
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.COLOR_TRANSFORM;
-
-			if (this._colorTransformDisabled) {
-				return ContainerNode._nullColorTransform;
-			}
 
 			if (!this._colorTransform)
 				this._colorTransform = new ColorTransform();
@@ -354,7 +333,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		}
 
-		return this._colorTransform || ContainerNode._nullColorTransform;
+		return this._colorTransform || ContainerNode.nullColorTransform;
 	}
 
 	/**
@@ -591,7 +570,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 		this._scale9Container = null;
 		this._inverseMatrix3DDirty = true;
 		this._maskDisabled = false;
-		this._colorTransformDisabled = false;
 		this._transformDisabled = false;
 
 		this._parent = null;
