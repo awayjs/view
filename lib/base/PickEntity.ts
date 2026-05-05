@@ -277,7 +277,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 			let matrix3D;
 
 			if (invTargetMatrix) { // a null invTargetMatrix means local coords to the node so matrix3D is identity
-				matrix3D = (<ContainerNode> this._asset).getMatrix3D().clone()
+				matrix3D = (<ContainerNode> this._asset).getMatrix3D().clone();
 				matrix3D.append(invTargetMatrix);
 			}
 

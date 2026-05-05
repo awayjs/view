@@ -439,16 +439,16 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 			// 	}
 
 			// } else {
-				matrix3D = invTargetMatrix? invTargetMatrix : (<ContainerNode> this._asset).getInverseMatrix3D();
+			matrix3D = invTargetMatrix ? invTargetMatrix : (<ContainerNode> this._asset).getInverseMatrix3D();
 
-				for (let i: number = 0; i < numPickers; ++i)
-					target = this._boundsPickers[i]
-						._getBoxBoundsInternal(
-							matrix3D,
-							strokeFlag,
-							fastFlag,
-							cache, 
-							target);
+			for (let i: number = 0; i < numPickers; ++i)
+				target = this._boundsPickers[i]
+					._getBoxBoundsInternal(
+						matrix3D,
+						strokeFlag,
+						fastFlag,
+						cache,
+						target);
 			// }
 		}
 
