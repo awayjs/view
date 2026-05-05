@@ -96,18 +96,12 @@ export class BoundingBox extends BoundingVolumeBase {
 		const targetCoordinateSpace: ContainerNode = <ContainerNode> this._asset;
 		const picker = (<BoundingVolumePool> this._pool).picker;
 
-		let matrix3D: Matrix3D;
-		if (targetCoordinateSpace != picker.node) {
-			if (targetCoordinateSpace == picker.node.parent) {
-				matrix3D = picker.node.container.transform.matrix3D;
-			} else {
-				matrix3D = picker.node.getMatrix3D().clone();
+		// a null invTargetMatrix means local coords to the node
+		const invTargetMatrix: Matrix3D = (targetCoordinateSpace != picker.node)
+			? targetCoordinateSpace.getInverseMatrix3D()
+			: null;
 
-				matrix3D.append(targetCoordinateSpace.getInverseMatrix3D());
-			}
-		}
-
-		this._box = picker._getBoxBoundsInternal(matrix3D, this._strokeFlag, this._fastFlag, this._box);
+		this._box = picker._getBoxBoundsInternal(invTargetMatrix, this._strokeFlag, this._fastFlag, this._box);
 
 		if (this._box == null)
 			return;

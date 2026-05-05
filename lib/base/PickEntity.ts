@@ -260,23 +260,27 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	}
 
 	public _getBoxBoundsInternal(
-		matrix3D: Matrix3D = null,
+		invTargetMatrix: Matrix3D = null,
 		strokeFlag: boolean = true,
 		fastFlag: boolean = true,
 		cache: Box = null,
 		target: Box = null): Box
 	// eslint-disable-next-line brace-style
 	{
-		//TODO: this is required to reset invalidation on HierarchicalProperty.SCENE_TRANSFORM
-		//Should no longer be required once BoundsPicker uses isolated node trees
-		(<ContainerNode> this._asset).getMatrix3D();
-
 		if (this._invalid)
 			this._update();
 
 		const numPickables: number = this._activePickables.length;
 
 		if (numPickables) {
+
+			let matrix3D;
+
+			if (invTargetMatrix) { // a null invTargetMatrix means local coords to the node so matrix3D is identity
+				matrix3D = (<ContainerNode> this._asset).getMatrix3D().clone()
+				matrix3D.append(invTargetMatrix);
+			}
+
 			if (fastFlag) {
 				let obb: Box;
 				const strokeIndex: number = strokeFlag ? 1 : 0;

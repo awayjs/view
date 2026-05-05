@@ -13,7 +13,7 @@ export interface IBoundsPicker extends IEventDispatcher
 
 	_hitTestPointInternal(rootNode: INode, x: number, y: number, shapeFlag?: boolean, maskFlag?: boolean): boolean
 
-	_getBoxBoundsInternal(matrix3D?: Matrix3D, strokeFlag?: boolean, fastFlag?: boolean, cache?: Box, target?: Box): Box
+	_getBoxBoundsInternal(invTargetMatrix?: Matrix3D, strokeFlag?: boolean, fastFlag?: boolean, cache?: Box, target?: Box): Box
 
 	_getSphereBoundsInternal(center?: Vector3D, matrix3D?: Matrix3D, strokeFlag?: boolean, fastFlag?: boolean, cache?: Sphere, target?: Sphere): Sphere
 

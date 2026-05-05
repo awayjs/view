@@ -42,10 +42,10 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 	private _boundsPickers: IBoundsPicker[] = [];
 
-	private _orientedBoxBounds: Box[] = [];
-	private _orientedBoxBoundsDirty: boolean[] = [true, true];
-	private _orientedSphereBounds: Sphere[] = [];
-	private _orientedSphereBoundsDirty: boolean[] = [true, true];
+	// private _orientedBoxBounds: Box[] = [];
+	// private _orientedBoxBoundsDirty: boolean[] = [true, true];
+	// private _orientedSphereBounds: Sphere[] = [];
+	// private _orientedSphereBoundsDirty: boolean[] = [true, true];
 
 	/**
      *
@@ -241,10 +241,10 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	public onInvalidate(): void {
 		super.onInvalidate();
 
-		this._orientedBoxBoundsDirty[0] = true;
-		this._orientedBoxBoundsDirty[1] = true;
-		this._orientedSphereBoundsDirty[0] = true;
-		this._orientedSphereBoundsDirty[1] = true;
+		// this._orientedBoxBoundsDirty[0] = true;
+		// this._orientedBoxBoundsDirty[1] = true;
+		// this._orientedSphereBoundsDirty[0] = true;
+		// this._orientedSphereBoundsDirty[1] = true;
 
 		for (const key in this._boundingVolumePools)
 			this._boundingVolumePools[key].abstractions.forEach((boundingVolume: BoundingVolumeBase) => boundingVolume.onInvalidate());
@@ -258,11 +258,11 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	}
 
 	public getTraverser(node: INode): IPartitionTraverser {
-		const traverser: BoundsPicker = this._pickGroup.getBoundsPicker(node);
+		// const traverser: BoundsPicker = this._pickGroup.getBoundsPicker(node);
 
-		this._boundsPickers.push(traverser);
+		// this._boundsPickers.push(traverser);
 
-		return traverser;
+		return this;
 	}
 
 	/**
@@ -402,34 +402,54 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 			const node: INode = <INode> this._asset;
 			const m: Matrix3D = new Matrix3D();
 
-			if (fastFlag) {
-				let obb: Box;
-				const strokeIndex: number = strokeFlag ? 1 : 0;
+			let matrix3D;
 
-				if (this._orientedBoxBoundsDirty[strokeIndex]) {
-					this._orientedBoxBoundsDirty[strokeIndex] = false;
-					for (let i: number = 0; i < numPickers; ++i) {
-						if (this._boundsPickers[i].node != node) { //check if PickEntity
-							obb = this._boundsPickers[i]._getBoxBoundsInternal(this._boundsPickers[i].node.container.transform.matrix3D, strokeFlag, fastFlag, this._orientedBoxBounds[strokeIndex], obb);
-						} else {
-							obb = this._boundsPickers[i]._getBoxBoundsInternal(null, strokeFlag, fastFlag, this._orientedBoxBounds[strokeIndex], obb);
-						}
-					}
-					this._orientedBoxBounds[strokeIndex] = obb;
-				} else {
-					obb = this._orientedBoxBounds[strokeIndex];
-				}
+			// if (fastFlag) {
+			// 	let obb: Box;
+			// 	const strokeIndex: number = strokeFlag ? 1 : 0;
+			// 	const invMatrix3D = (<ContainerNode> this._asset).getInverseMatrix3D().clone();
 
-				if (obb != null) {
-					target = (invTargetMatrix)
-						? invTargetMatrix.transformBox(obb).union(target, target || cache)
-						: obb.union(target, target || cache);
-				}
+			// 	if (invTargetMatrix) { // a null invTargetMatrix means local coords to the node so matrix3D is identity
+			// 		matrix3D = (<ContainerNode> this._asset).getMatrix3D().clone()
+			// 		matrix3D.append(invTargetMatrix);
+			// 	}
 
-			} else {
+			// 	if (this._orientedBoxBoundsDirty[strokeIndex]) {
+			// 		this._orientedBoxBoundsDirty[strokeIndex] = false;
+			// 		for (let i: number = 0; i < numPickers; ++i) {
+			// 			obb = this._boundsPickers[i]
+			// 				._getBoxBoundsInternal(
+			// 					this._boundsPickers[i].node != node
+			// 						? invMatrix3D
+			// 						: null,
+			// 					strokeFlag,
+			// 					fastFlag,
+			// 					this._orientedBoxBounds[strokeIndex],
+			// 					obb);
+			// 		}
+			// 		this._orientedBoxBounds[strokeIndex] = obb;
+			// 	} else {
+			// 		obb = this._orientedBoxBounds[strokeIndex];
+			// 	}
+
+			// 	if (obb != null) {
+			// 		target = (matrix3D)
+			// 			? matrix3D.transformBox(obb).union(target, target || cache)
+			// 			: obb.union(target, target || cache);
+			// 	}
+
+			// } else {
+				matrix3D = invTargetMatrix? invTargetMatrix : (<ContainerNode> this._asset).getInverseMatrix3D();
+
 				for (let i: number = 0; i < numPickers; ++i)
-					target = this._boundsPickers[i]._getBoxBoundsInternal(invTargetMatrix, strokeFlag, fastFlag, cache, target);
-			}
+					target = this._boundsPickers[i]
+						._getBoxBoundsInternal(
+							matrix3D,
+							strokeFlag,
+							fastFlag,
+							cache, 
+							target);
+			// }
 		}
 
 		return target;
@@ -508,10 +528,10 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 		this._boundingVolumePools = null;
 
 		this._boundsPickers.length = 0;
-		this._orientedBoxBoundsDirty[0] = true;
-		this._orientedBoxBoundsDirty[1] = true;
-		this._orientedSphereBoundsDirty[0] = true;
-		this._orientedSphereBoundsDirty[1] = true;
+		// this._orientedBoxBoundsDirty[0] = true;
+		// this._orientedBoxBoundsDirty[1] = true;
+		// this._orientedSphereBoundsDirty[0] = true;
+		// this._orientedSphereBoundsDirty[1] = true;
 	}
 
 	/**
