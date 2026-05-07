@@ -757,14 +757,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 	}
 
 	public invalidateHierarchicalProperty(property: HierarchicalProperty): void {
-		// property dirty check not working for ColorTransform
-		// will emit every change
-		// todo Fixme
-		if (property & HierarchicalProperty.COLOR_TRANSFORM) {
-
-			// eslint-disable-next-line max-len
-			this.dispatchEvent(this._invalidateColorTransformEvent || (this._invalidateColorTransformEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_COLOR_TRANSFORM)));
-		}
 
 		const propertyDirty: number = (this._hierarchicalPropsDirty ^ property) & property;
 		if (!propertyDirty)
@@ -780,6 +772,11 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		if (this._scrollRectNode)
 			this._scrollRectNode.invalidateHierarchicalProperty(property);
+
+		if (property & HierarchicalProperty.COLOR_TRANSFORM) {
+			this.dispatchEvent(this._invalidateColorTransformEvent
+				|| (this._invalidateColorTransformEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_COLOR_TRANSFORM)));
+		}
 
 		if (property & HierarchicalProperty.SCENE_TRANSFORM) {
 			this._positionDirty = true;
