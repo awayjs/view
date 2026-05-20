@@ -272,7 +272,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	 * @param node The Partition3DNode object to frustum-test.
 	 */
 	public enterNode(node: INode): boolean {
-		return true;
+		return !(node.container.assetType == '[asset TextSprite]');
 	}
 
 	public getBoundingVolume(target: INode = null, type: BoundingVolumeType = null): BoundingVolumeBase {
