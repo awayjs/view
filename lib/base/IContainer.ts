@@ -50,7 +50,9 @@ export interface IContainer extends IAsset
 
 	maskMode: boolean;
 
-	masks: Array<IContainer>;
+	mask: IContainer | undefined;
+
+	timelineMasks: IContainer[] | undefined;
 
 	blendMode: BlendMode;
 

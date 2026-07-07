@@ -25,7 +25,7 @@ export interface INode extends IAbstraction
 
 	boundsVisible: boolean;
 
-	parent: ContainerNode;
+	parent: ContainerNode | undefined;
 
 	_collectionMark: number;
 

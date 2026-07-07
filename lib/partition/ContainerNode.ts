@@ -33,7 +33,8 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 	private _localNode: ContainerNode;
 	private _pickObject: IContainer;
-	private _pickObjectNode: ContainerNode;
+	private _bitmapMaskNode: ContainerNode | undefined;
+	private _pickObjectNode: ContainerNode | undefined;
 	private _scrollRect: Rectangle;
 	private _scrollRectNode: ContainerNode;
 	private _renderToImage: boolean = false;
@@ -56,7 +57,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 	private _maskOwners: ContainerNode[];
 	private _masks: ContainerNode[] = [];
 
-	private _parent: ContainerNode;
+	private _parent: ContainerNode | undefined;
 	private _root: ContainerNode;
 	protected _childNodes: Array<ContainerNode> = new Array<ContainerNode>();
 	protected _numChildNodes: number = 0;
@@ -64,7 +65,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 	public _hierarchicalPropsDirty: HierarchicalProperty = HierarchicalProperty.ALL;
 	public _collectionMark: number;// = 0;
 
-	public get parent(): ContainerNode {
+	public get parent(): ContainerNode | undefined {
 		return this._parent;
 	}
 
@@ -88,7 +89,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 					this._pickObjectNode.setParent(this);
 
 			} else {
-				this._pickObjectNode.setParent(null);
+				this._pickObjectNode.setParent(undefined);
 				this._pickObjectNode = null;
 			}
 		}
@@ -113,6 +114,24 @@ export class ContainerNode extends AbstractionBase implements INode {
 		}
 
 		return this._renderToImage;
+	}
+
+	public get bitmapMaskNode(): ContainerNode | undefined {
+		const container: IContainer = this.container;
+		const node: ContainerNode | undefined
+			 = container.mask? (<View> this._pool).getNode(container.mask) : undefined;
+
+		if (this.renderToImage && node?.renderToImage) {
+			if (this._bitmapMaskNode != node) {
+				this._bitmapMaskNode = node;
+				//this._bitmapMaskNode.setParent(this);
+			}
+		} else if (this._bitmapMaskNode) {
+			//this._bitmapMaskNode.setParent(undefined);
+			this._bitmapMaskNode = undefined;
+		}
+
+		return this._bitmapMaskNode;
 	}
 
 	public get scrollRect(): Rectangle {
@@ -361,14 +380,21 @@ export class ContainerNode extends AbstractionBase implements INode {
 			return this._masks;
 
 		const container: IContainer = this.container;
+		const scriptMask: IContainer | undefined = this.bitmapMaskNode? undefined : container.mask;
+		const timelineMasks: IContainer[] | undefined = container.timelineMasks;
 
-		if (container.masks) {
-			const len = container.masks.length;
+		if (timelineMasks) {
+			const len = timelineMasks.length;
 			this._masks.length = len;
 
 			for (let i = 0; i < len; i++) {
-				this._masks[i] = (<View> this._pool).getNode(container.masks[i]);
+				this._masks[i] = (<View> this._pool).getNode(timelineMasks[i]);
 			}
+			if (scriptMask && !timelineMasks.includes(scriptMask))
+				this._masks.push((<View> this._pool).getNode(scriptMask));
+
+		} else if (scriptMask) {
+			this._masks = [(<View> this._pool).getNode(scriptMask)];
 		} else {
 			this._masks.length = 0;
 		}
@@ -552,7 +578,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		if (this._pickObject) {
 			this._pickObject = null;
-			this._pickObjectNode.setParent(null);
+			this._pickObjectNode.setParent(undefined);
 			this._pickObjectNode = null;
 		}
 
@@ -770,6 +796,9 @@ export class ContainerNode extends AbstractionBase implements INode {
 		if (this._pickObjectNode)
 			this._pickObjectNode.invalidateHierarchicalProperty(property);
 
+		if (this._bitmapMaskNode)
+			this._bitmapMaskNode.invalidateHierarchicalProperty(property);
+
 		if (this._scrollRectNode)
 			this._scrollRectNode.invalidateHierarchicalProperty(property);
 
@@ -789,7 +818,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 		}
 	}
 
-	public setParent(parent: ContainerNode): void {
+	public setParent(parent: ContainerNode | undefined): void {
 
 		if (this._parent)
 			this.clear();
