@@ -814,8 +814,9 @@ export class ContainerNode extends AbstractionBase implements INode {
 			this.dispatchEvent(this._invalidateMatrix3DEvent
 				|| (this._invalidateMatrix3DEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_MATRIX3D)));
 
-			this.invalidate();
 		}
+
+		this.invalidate();
 	}
 
 	public setParent(parent: ContainerNode | undefined): void {
