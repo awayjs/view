@@ -119,7 +119,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 	public get bitmapMaskNode(): ContainerNode | undefined {
 		const container: IContainer = this.container;
 		const node: ContainerNode | undefined
-			 = container.mask? (<View> this._pool).getNode(container.mask) : undefined;
+			 = container.mask ? (<View> this._pool).getNode(container.mask) : undefined;
 
 		if (this.renderToImage && node?.renderToImage) {
 			if (this._bitmapMaskNode != node) {
@@ -380,7 +380,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 			return this._masks;
 
 		const container: IContainer = this.container;
-		const scriptMask: IContainer | undefined = this.bitmapMaskNode? undefined : container.mask;
+		const scriptMask: IContainer | undefined = this.bitmapMaskNode ? undefined : container.mask;
 		const timelineMasks: IContainer[] | undefined = container.timelineMasks;
 
 		if (timelineMasks) {
