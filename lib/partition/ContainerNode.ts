@@ -646,7 +646,12 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		super.invalidate();
 
-		if (this._parent)
+		// Do not bubble partition invalidates into a cache localNode
+		// (transformDisabled). Hold-frame timeline mtx writes were walking
+		// child→localNode→CacheRenderer.onInvalidate and rebuilding RTTs
+		// every frame (E8 Diggy whole-title). Real content changes mark the
+		// cache via markContentDirty (materials / add-remove / child moves).
+		if (this._parent && !this._parent.transformDisabled)
 			this._parent.invalidate();
 	}
 
@@ -710,6 +715,22 @@ export class ContainerNode extends AbstractionBase implements INode {
 			this._childNodes[i].acceptTraverser(traverser);
 	}
 
+
+	private _markCacheRenderersDirty(): void {
+		let node: ContainerNode | undefined = this;
+		while (node) {
+			const ros = (<any> node.container)?._renderObjects;
+			if (ros) {
+				for (const key in ros) {
+					const ro = ros[key];
+					if (ro && typeof ro.markContentDirty === 'function')
+						ro.markContentDirty();
+				}
+			}
+			node = node.parent;
+		}
+	}
+
 	public addChildAt(entity: IContainer, index: number): ContainerNode {
 		const node = this._pool.abstractions.getAbstraction<ContainerNode>(entity);
 
@@ -723,6 +744,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 		this._numChildNodes++;
 
 		this.invalidate();
+		this._markCacheRenderersDirty();
 
 		return node;
 	}
@@ -737,6 +759,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 		node.setParent(null);
 
 		this.invalidate();
+		this._markCacheRenderersDirty();
 
 		return node;
 	}
@@ -790,17 +813,25 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		this._hierarchicalPropsDirty |= propertyDirty;
 
-		for (let i = 0; i < this._childNodes.length; ++i)
-			this._childNodes[i].invalidateHierarchicalProperty(property);
+		// Cache localNode is transformDisabled (identity in RTT space). Parent/scene
+		// transform must not recurse into the cached subtree or call invalidate() —
+		// that dirties CacheRenderer and rebuilds the RTT every frame a parent moves.
+		// Blit-quad updates go through CacheRenderer.onInvalidateSceneTransform on
+		// the outer node instead (see renderer E4/E8).
+		const sceneOnly = propertyDirty === HierarchicalProperty.SCENE_TRANSFORM;
+		if (!(this._transformDisabled && sceneOnly)) {
+			for (let i = 0; i < this._childNodes.length; ++i)
+				this._childNodes[i].invalidateHierarchicalProperty(property);
 
-		if (this._pickObjectNode)
-			this._pickObjectNode.invalidateHierarchicalProperty(property);
+			if (this._pickObjectNode)
+				this._pickObjectNode.invalidateHierarchicalProperty(property);
 
-		if (this._bitmapMaskNode)
-			this._bitmapMaskNode.invalidateHierarchicalProperty(property);
+			if (this._bitmapMaskNode)
+				this._bitmapMaskNode.invalidateHierarchicalProperty(property);
 
-		if (this._scrollRectNode)
-			this._scrollRectNode.invalidateHierarchicalProperty(property);
+			if (this._scrollRectNode)
+				this._scrollRectNode.invalidateHierarchicalProperty(property);
+		}
 
 		if (property & HierarchicalProperty.COLOR_TRANSFORM) {
 			this.dispatchEvent(this._invalidateColorTransformEvent
@@ -814,7 +845,14 @@ export class ContainerNode extends AbstractionBase implements INode {
 			this.dispatchEvent(this._invalidateMatrix3DEvent
 				|| (this._invalidateMatrix3DEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_MATRIX3D)));
 
+			// Child moved in cache RTT space — update bitmap (timeline no-ops
+			// identical matrices so hold-frames do not take this path).
+			if (!this._transformDisabled && this._parent && this._parent.transformDisabled)
+				this._markCacheRenderersDirty();
 		}
+
+		if (this._transformDisabled && sceneOnly)
+			return;
 
 		this.invalidate();
 	}
