@@ -153,7 +153,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 		return false;
 	}
 
-
 	public set transformDisabled(value: boolean) {
 		if (this._transformDisabled == value)
 			return;
@@ -491,7 +490,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 		super.init(container, root, true);
 
 		//a root node is its own root
-		this._root = (container == root)? this : root.getNode(root);
+		this._root = (container == root) ? this : root.getNode(root);
 
 		container._initNode(this);
 
@@ -661,7 +660,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		if (!traverser.enterNode(this))
 			return;
-		
+
 		if (this.bitmapMaskNode)
 			this.bitmapMaskNode.acceptTraverser(traverser);
 
