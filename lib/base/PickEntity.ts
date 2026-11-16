@@ -11,7 +11,7 @@ import {
 	AbstractionSet
 } from '@awayjs/core';
 
-import { PickGroup } from '../PickGroup';
+import { PickPool } from '../PickGroup';
 import { _Pick_PickableBase } from './_Pick_PickableBase';
 import { _IPick_PickableClass } from './_IPick_PickableClass';
 import { PickingCollision } from '../pick/PickingCollision';
@@ -62,8 +62,8 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	/**
 	 *
 	 */
-	public get pickGroup(): PickGroup {
-		return (<PickGroup> this._pool);
+	public get pickPool(): PickPool {
+		return (<PickPool> this._pool);
 	}
 
 	public shapeFlag: boolean = false;
@@ -77,10 +77,10 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 	/**
 	 * //TODO
 	 */
-	public init(node: INode, pickGroup: PickGroup) {
-		super.init(node, pickGroup);
+	public init(node: INode, pickPool: PickPool) {
+		super.init(node, pickPool);
 
-		this._pickingCollision = new PickingCollision(this.node, this.pickGroup);
+		this._pickingCollision = new PickingCollision(this.node, this.pickPool);
 
 		this._boundingVolumePools = {};
 	}
@@ -184,7 +184,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 					if (!node.isDescendant(rootEntity))
 						continue;
 
-					if (this.pickGroup
+					if (this.pickPool
 						.getBoundsPicker(node)
 						._hitTestPointInternal(rootEntity, x, y, shapeFlag, true)
 					) {
@@ -455,7 +455,7 @@ export class PickEntity extends AbstractionBase implements IAbstractionPool, IEn
 					if (!node.isDescendant(rootEntity))
 						continue;
 
-					if (this.pickGroup
+					if (this.pickPool
 						.getRaycastPicker(node)
 						._getCollisionInternal(globalRayPosition, globalRayDirection, true, true, null)
 					) {

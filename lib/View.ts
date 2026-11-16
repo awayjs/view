@@ -29,8 +29,7 @@ import { ViewEvent } from './events/ViewEvent';
 import { ContainerNode } from './partition/ContainerNode';
 import { INode } from './partition/INode';
 
-export class View extends AssetBase implements IAbstractionPool {
-	private static _store: INode[] = [];
+export class View extends AssetBase {
 
 	private _shareContext: boolean;
 	private _rect: Rectangle = new Rectangle();
@@ -58,8 +57,6 @@ export class View extends AssetBase implements IAbstractionPool {
 	private _onInvalidateSizeDelegate: (event: StageEvent | AssetEvent) => void;
 	private _onInvalidateViewMatrix3DDelegate: (event: ProjectionEvent) => void;
 	private _onInvalidateFrustumMatrix3DDelegate: (event: ProjectionEvent) => void;
-
-	public readonly abstractions: AbstractionSet;
 
 	/**
      *
@@ -336,8 +333,6 @@ export class View extends AssetBase implements IAbstractionPool {
 
 		super();
 
-		this.abstractions = new AbstractionSet(this);
-
 		this._components[0] = this._offset;
 		this._components[2] = this._scale;
 
@@ -365,18 +360,6 @@ export class View extends AssetBase implements IAbstractionPool {
 		this._updateDimensions();
 		this._updateFocalLength();
 		this._updatePixelRatio();
-	}
-
-	public requestAbstraction(_asset: IContainer): INode {
-		return View._store.length ? View._store.pop() : new ContainerNode();
-	}
-
-	public storeAbstraction(abstraction: INode): void {
-		View._store.push(abstraction);
-	}
-
-	public getNode(entity: IContainer): ContainerNode {
-		return this.abstractions.getAbstraction<ContainerNode>(entity);
 	}
 
 	public clear(

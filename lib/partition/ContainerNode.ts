@@ -16,7 +16,7 @@ import { INode } from './INode';
 import { PickGroup } from '../PickGroup';
 import { HierarchicalProperty } from '../base/HierarchicalProperty';
 import { IContainer } from '../base/IContainer';
-import { BlendMode, Settings as StageSettings, isNativeBlend } from '@awayjs/stage';
+import { BlendMode, Stage, Settings as StageSettings, isNativeBlend } from '@awayjs/stage';
 import { AlignmentMode } from '../base/AlignmentMode';
 import { OrientationMode } from '../base/OrientationMode';
 import { ContainerNodeEvent } from '../events/ContainerNodeEvent';
@@ -31,7 +31,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 	private _invalidateMatrix3DEvent: ContainerNodeEvent;
 	private _invalidateColorTransformEvent: ContainerNodeEvent;
 
-	private _localNode: ContainerNode;
+	private _localView: View;
 	private _pickObject: IContainer;
 	private _bitmapMaskNode: ContainerNode | undefined;
 	private _pickObjectNode: ContainerNode | undefined;
@@ -48,7 +48,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 	private _inverseMatrix3D: Matrix3D;
 	private _inverseMatrix3DDirty: boolean = true;
 	private _orientationMatrix: Matrix3D;
-	private _maskDisabled: boolean = false;
 	private _transformDisabled: boolean = false;
 
 	private _invisible: boolean;
@@ -56,9 +55,9 @@ export class ContainerNode extends AbstractionBase implements INode {
 	private _mouseChildrenDisabled: boolean;
 	private _maskOwners: ContainerNode[];
 	private _masks: ContainerNode[] = [];
+	private _root: INode;
 
 	private _parent: ContainerNode | undefined;
-	private _root: ContainerNode;
 	protected _childNodes: Array<ContainerNode> = new Array<ContainerNode>();
 	protected _numChildNodes: number = 0;
 
@@ -83,7 +82,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 			this._pickObject = container.pickObject;
 
 			if (this._pickObject) {
-				this._pickObjectNode = this._pool.abstractions.getAbstraction<ContainerNode>(this._pickObject);
+				this._pickObjectNode = (<IContainer> this._pool).getNode(this._pickObject);
 
 				if (this._pickObject.pickObjectFromTimeline)
 					this._pickObjectNode.setParent(this);
@@ -99,19 +98,14 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 	public get renderToImage(): boolean {
 		const { blendMode, filters, cacheAsBitmap } = this.container;
-
-		const renderToImage = this.isRenderable() && (
+		this._renderToImage = this.isRenderable() && (
 			cacheAsBitmap ||
 			filters && filters.length > 0 ||
-			(blendMode && blendMode !== BlendMode.NORMAL && (StageSettings.USE_NON_NATIVE_BLEND || isNativeBlend(blendMode)))
+			Boolean(blendMode && blendMode !== BlendMode.NORMAL && (StageSettings.USE_NON_NATIVE_BLEND || isNativeBlend(blendMode)))
 		);
 
-		if (this._renderToImage !== renderToImage) {
-			this._renderToImage = renderToImage;
-
-			if (!this._renderToImage)
-				this.clearLocalNode();
-		}
+		if (!this._renderToImage)
+			this._localView = null;
 
 		return this._renderToImage;
 	}
@@ -119,7 +113,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 	public get bitmapMaskNode(): ContainerNode | undefined {
 		const container: IContainer = this.container;
 		const node: ContainerNode | undefined
-			 = container.mask ? (<View> this._pool).getNode(container.mask) : undefined;
+			 = container.mask ? (<IContainer> this._pool).getNode(container.mask) : undefined;
 
 		if (this.renderToImage && node?.renderToImage) {
 			if (this._bitmapMaskNode != node) {
@@ -142,7 +136,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 			this._scrollRect = scrollRect;
 
 			if (this._scrollRect) {
-				this._scrollRectNode = (<View> this._pool).getNode(container.getScrollRectPrimitive());
+				this._scrollRectNode = (<IContainer> this._pool).getNode(container.getScrollRectPrimitive());
 
 				//this._scrollRectNode.container.scrollRect = this._scrollRect;
 				this._scrollRectNode.setParent(this);
@@ -159,23 +153,11 @@ export class ContainerNode extends AbstractionBase implements INode {
 		return false;
 	}
 
-	public get view(): View {
-		return <View> this._pool;
-	}
-
-	public set maskDisabled(value: boolean) {
-		this._maskDisabled = value;
-	}
-
-	public get maskDisabled() {
-		return this._maskDisabled;
-	}
 
 	public set transformDisabled(value: boolean) {
 		if (this._transformDisabled == value)
 			return;
 
-		this._maskDisabled = value;
 		this._transformDisabled = value;
 	}
 
@@ -183,13 +165,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 		return this._transformDisabled;
 	}
 
-	public getRoot(local: boolean = false): ContainerNode {
-		if (this._hierarchicalPropsDirty & HierarchicalProperty.ROOT) {
-			this._root = this._transformDisabled && local || !this._parent
-				? this
-				: this._parent.getRoot(local);
-		}
-
+	public get root(): INode {
 		return this._root;
 	}
 
@@ -388,13 +364,13 @@ export class ContainerNode extends AbstractionBase implements INode {
 			this._masks.length = len;
 
 			for (let i = 0; i < len; i++) {
-				this._masks[i] = (<View> this._pool).getNode(timelineMasks[i]);
+				this._masks[i] = (<IContainer> this._pool).getNode(timelineMasks[i]);
 			}
 			if (scriptMask && !timelineMasks.includes(scriptMask))
-				this._masks.push((<View> this._pool).getNode(scriptMask));
+				this._masks.push((<IContainer> this._pool).getNode(scriptMask));
 
 		} else if (scriptMask) {
-			this._masks = [(<View> this._pool).getNode(scriptMask)];
+			this._masks = [(<IContainer> this._pool).getNode(scriptMask)];
 		} else {
 			this._masks.length = 0;
 		}
@@ -408,15 +384,13 @@ export class ContainerNode extends AbstractionBase implements INode {
 	public getMaskOwners(): ContainerNode[] {
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.MASKS) {
 			const masks = this.getMasks(true);
-			this._maskOwners = this._maskDisabled
-				? null
-				: (this._parent?.getMaskOwners() && this.getMaskId() == -1)
-					? masks.length
-						? this._parent.getMaskOwners().concat([this])
-						: this._parent.getMaskOwners().concat()
-					: masks.length
-						? [this]
-						: null;
+			this._maskOwners = (this._parent?.getMaskOwners() && this.getMaskId() == -1)
+				? masks.length
+					? this._parent.getMaskOwners().concat([this])
+					: this._parent.getMaskOwners().concat()
+				: masks.length
+					? [this]
+					: null;
 
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.MASKS;
 		}
@@ -513,21 +487,22 @@ export class ContainerNode extends AbstractionBase implements INode {
 		return null;
 	}
 
-	public init(container: IContainer, pool: View) {
-		super.init(container, pool, true);
+	public init(container: IContainer, root: IContainer) {
+		super.init(container, root, true);
 
-		this._root = this;
+		//a root node is its own root
+		this._root = (container == root)? this : root.getNode(root);
 
 		container._initNode(this);
 
-		container._containerNodes[pool.id] = this;
+		container._containerNodes[root.id] = this;
 
 		this._hierarchicalPropsDirty = HierarchicalProperty.ALL;
 	}
 
-	public getLocalNode(): ContainerNode {
+	public getLocalView(stage: Stage): View {
 
-		if (!this._localNode) {
+		if (!this._localView) {
 			/**
 			* projection is not simple object
 			* not needed spawn it for every cached partition
@@ -543,31 +518,20 @@ export class ContainerNode extends AbstractionBase implements INode {
 			projection.transform.moveTo(0, 0, -1000);
 			projection.transform.lookAt(new Vector3D());
 
-			const view = new View(projection, this.view.stage);
-			view.backgroundAlpha = 0;
-
-			this._localNode = view.getNode(this.container);
-			this._localNode.transformDisabled = true;
-			this._localNode.setParent(this);
+			this._localView = new View(projection, stage);
+			this._localView.backgroundAlpha = 0;
 		}
 
-		return this._localNode;
-	}
-
-	public clearLocalNode(): void {
-		if (this._localNode) {
-			this._localNode.onClear();
-			this._localNode = null;
-		}
+		return this._localView;
 	}
 
 	public onClear(): void {
 		const container: IContainer = this.container;
 
 		if (container)
-			delete container._containerNodes[this.view.id];
+			delete container._containerNodes[this._pool.id];
 
-		this._localNode = null;
+		this._localView = null;
 
 		this._maskOwners = null;
 
@@ -595,11 +559,8 @@ export class ContainerNode extends AbstractionBase implements INode {
 		this._positionDirty = false;
 		this._scale9Container = null;
 		this._inverseMatrix3DDirty = true;
-		this._maskDisabled = false;
-		this._transformDisabled = false;
 
 		this._parent = null;
-		this._root = null;
 
 		super.clear();
 
@@ -617,9 +578,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		for (let i: number = 0; i < this._masks.length; i++)
 			this._masks[i].clear();
-
-		if (this._localNode)
-			this._localNode.clear();
 
 		for (let i: number = 0; i < this._numChildNodes; i++)
 			this._childNodes[i].clear();
@@ -703,6 +661,9 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		if (!traverser.enterNode(this))
 			return;
+		
+		if (this.bitmapMaskNode)
+			this.bitmapMaskNode.acceptTraverser(traverser);
 
 		traverser.applyEntity(this);
 
@@ -711,7 +672,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 	}
 
 	public addChildAt(entity: IContainer, index: number): ContainerNode {
-		const node = this._pool.abstractions.getAbstraction<ContainerNode>(entity);
+		const node = (<IContainer> this._pool).getNode(entity);
 
 		node.setParent(this);
 

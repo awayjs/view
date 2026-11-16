@@ -1,4 +1,4 @@
-import { IAsset, Matrix3D, Rectangle, Transform } from '@awayjs/core';
+import { IAbstractionPool, IAsset, Matrix3D, Rectangle, Transform } from '@awayjs/core';
 import { BlendMode } from '@awayjs/stage';
 
 import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
@@ -8,9 +8,11 @@ import { AlignmentMode } from './AlignmentMode';
 import { IEntity } from './IEntity';
 import { OrientationMode } from './OrientationMode';
 
-export interface IContainer extends IAsset
+export interface IContainer extends IAsset, IAbstractionPool
 {
 	_containerNodes: Record<number, ContainerNode>;
+
+	getNode(container: IContainer): ContainerNode;
 
 	pickObjectFromTimeline: boolean;
 

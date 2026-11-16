@@ -15,7 +15,7 @@ import { View } from '../View';
  */
 export interface INode extends IAbstraction
 {
-	readonly view: View;
+	readonly root: INode;
 
 	//bounds:BoundingVolumeBase;
 
@@ -36,8 +36,6 @@ export interface INode extends IAbstraction
 	isInvisible(): boolean;
 
 	getMaskId(): number;
-
-	getRoot(): INode;
 
 	getBoundsPrimitive(pickGroup: PickGroup): ContainerNode;
 

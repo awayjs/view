@@ -33,7 +33,7 @@ export class BoundingBox extends BoundingVolumeBase {
 			this._update();
 
 		if (this._box == null)
-			return;
+			return false;
 
 		for (let i: number = 0; i < numPlanes; ++i) {
 

@@ -9,7 +9,7 @@ import {
 
 import { IPartitionTraverser } from '../partition/IPartitionTraverser';
 
-import { BoundsPickerPool, PickGroup } from '../PickGroup';
+import { BoundsPickerPool, PickPool } from '../PickGroup';
 import { BoundingVolumePool } from '../bounds/BoundingVolumePool';
 import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
 import { BoundingVolumeBase } from '../bounds/BoundingVolumeBase';
@@ -38,9 +38,11 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 
 	private _boundingVolumePools: Record<string, BoundingVolumePool>;
 
-	private _pickGroup: PickGroup;
+	private _pickPool: PickPool;
 
 	private _boundsPickers: IBoundsPicker[] = [];
+
+	private _maskId: number;
 
 	// private _orientedBoxBounds: Box[] = [];
 	// private _orientedBoxBoundsDirty: boolean[] = [true, true];
@@ -233,7 +235,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	public init(node: INode, pool: BoundsPickerPool) {
 		super.init(node, pool);
 
-		this._pickGroup = pool.pickGroup;
+		this._pickPool = pool.pickPool;
 
 		this._boundingVolumePools = {};
 	}
@@ -253,12 +255,13 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	public traverse(): void {
 		this._invalid = false;
 		this._boundsPickers.length = 0;
+		this._maskId = (<ContainerNode> this._asset).getMaskId();
 		(<INode> this._asset).acceptTraverser(this);
 
 	}
 
 	public getTraverser(node: INode): IPartitionTraverser {
-		// const traverser: BoundsPicker = this._pickGroup.getBoundsPicker(node);
+		// const traverser: BoundsPicker = this._pickPool.getBoundsPicker(node);
 
 		// this._boundsPickers.push(traverser);
 
@@ -272,7 +275,7 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	 * @param node The Partition3DNode object to frustum-test.
 	 */
 	public enterNode(node: INode): boolean {
-		return !(node.container.assetType == '[asset TextSprite]');
+		return !(node.container.assetType == '[asset TextSprite]') && node.getMaskId() == this._maskId;
 	}
 
 	public getBoundingVolume(target: INode = null, type: BoundingVolumeType = null): BoundingVolumeBase {
@@ -540,9 +543,9 @@ export class BoundsPicker extends AbstractionBase implements IPartitionTraverser
 	 */
 	public applyEntity(node: INode): void {
 		if (node.container.getEntity())
-			this._boundsPickers.push(this._pickGroup.abstractions.getAbstraction<PickEntity>(node));
+			this._boundsPickers.push(this._pickPool.abstractions.getAbstraction<PickEntity>(node));
 		else
 			//check if we have a PickEntity abstraction and if so, clear it!
-			this._pickGroup.abstractions.checkAbstraction(node)?.onClear();
+			this._pickPool.abstractions.checkAbstraction(node)?.onClear();
 	}
 }

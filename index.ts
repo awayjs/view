@@ -33,5 +33,5 @@ export {RaycastPicker} from "./lib/pick/RaycastPicker";
 export {BoundsPicker} from "./lib/pick/BoundsPicker";
 export {TabPicker} from "./lib/pick/TabPicker";
 
-export {PickGroup} from "./lib/PickGroup";
+export {PickGroup, PickPool} from "./lib/PickGroup";
 export {View} from "./lib/View";

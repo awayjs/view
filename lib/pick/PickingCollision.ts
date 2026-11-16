@@ -1,6 +1,6 @@
 import { Point, Vector3D } from '@awayjs/core';
 
-import { PickGroup } from '../PickGroup';
+import { PickPool } from '../PickGroup';
 import { ContainerNode } from '../partition/ContainerNode';
 import { INode } from '../partition/INode';
 import { IPickable } from '../base/IPickable';
@@ -26,7 +26,7 @@ export class PickingCollision {
 	/**
 	 * The pickGroup to which this collision object belongs.
 	 */
-	public pickGroup: PickGroup;
+	public pickPool: PickPool;
 
 	/**
 	 * The pickable associated with a collision.
@@ -88,8 +88,8 @@ export class PickingCollision {
 	 *
 	 * @param entity The entity to which this collision object belongs.
 	 */
-	constructor(containerNode: ContainerNode, pickGroup: PickGroup) {
+	constructor(containerNode: ContainerNode, pickPool: PickPool) {
 		this.containerNode = containerNode;
-		this.pickGroup = pickGroup;
+		this.pickPool = pickPool;
 	}
 }
