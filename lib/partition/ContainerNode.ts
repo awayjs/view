@@ -119,10 +119,16 @@ export class ContainerNode extends AbstractionBase implements INode {
 			if (this._bitmapMaskNode != node) {
 				this._bitmapMaskNode = node;
 				//this._bitmapMaskNode.setParent(this);
+
+				// the script mask is no longer a stencil mask
+				this.invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 			}
 		} else if (this._bitmapMaskNode) {
 			//this._bitmapMaskNode.setParent(undefined);
 			this._bitmapMaskNode = undefined;
+
+			// the script mask (if any) is a stencil mask again
+			this.invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 		}
 
 		return this._bitmapMaskNode;
