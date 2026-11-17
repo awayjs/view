@@ -12,6 +12,12 @@ export interface IPartitionTraverser
 {
 	node: INode;
 
+	/**
+	 * True only while a node visits its bitmap mask node after its entity and children.
+	 * Traversers that apply bitmap masks check this in getTraverser; others can ignore it.
+	 */
+	isBitmapMaskVisit?: boolean;
+
 	getTraverser(node: ContainerNode): IPartitionTraverser | void;
 
 	/**
