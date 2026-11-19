@@ -661,13 +661,19 @@ export class ContainerNode extends AbstractionBase implements INode {
 		if (!traverser.enterNode(this))
 			return;
 
-		if (this.bitmapMaskNode)
-			this.bitmapMaskNode.acceptTraverser(traverser);
-
 		traverser.applyEntity(this);
 
 		for (let i: number = 0; i < this._numChildNodes; i++)
 			this._childNodes[i].acceptTraverser(traverser);
+
+		// a bitmap mask is visited last, so renderers apply it over all other content of this node.
+		// Only this visit is flagged: any other visit of the mask node is rejected by its mask id.
+		const bitmapMaskNode: ContainerNode | undefined = this.bitmapMaskNode;
+		if (bitmapMaskNode) {
+			traverser.isBitmapMaskVisit = true;
+			bitmapMaskNode.acceptTraverser(traverser);
+			traverser.isBitmapMaskVisit = false;
+		}
 	}
 
 	public addChildAt(entity: IContainer, index: number): ContainerNode {
