@@ -28,6 +28,14 @@ export class ContainerNode extends AbstractionBase implements INode {
 	private static _tempVector3D: Vector3D = new Vector3D();
 	public static nullColorTransform = new ColorTransform();
 
+	/**
+	 * Incremented when the partition tree's cache-relevant structure changes:
+	 * a node is added, removed or reparented, renderToImage toggles, or a
+	 * mask assignment changes. Renderers use this to rebuild child-cache
+	 * lists only on those changes, not on transform or filter updates.
+	 */
+	public static structureMark: number = 0;
+
 	private _invalidateMatrix3DEvent: ContainerNodeEvent;
 	private _invalidateColorTransformEvent: ContainerNodeEvent;
 
@@ -98,11 +106,16 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 	public get renderToImage(): boolean {
 		const { blendMode, filters, cacheAsBitmap } = this.container;
-		this._renderToImage = this.isRenderable() && (
+		const renderToImage = this.isRenderable() && (
 			cacheAsBitmap ||
 			filters && filters.length > 0 ||
 			Boolean(blendMode && blendMode !== BlendMode.NORMAL && (StageSettings.USE_NON_NATIVE_BLEND || isNativeBlend(blendMode)))
 		);
+
+		if (renderToImage != this._renderToImage)
+			ContainerNode.structureMark++;
+
+		this._renderToImage = renderToImage;
 
 		if (!this._renderToImage)
 			this._localView = null;
@@ -121,6 +134,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 				//this._bitmapMaskNode.setParent(this);
 
 				// the script mask is no longer a stencil mask
+				ContainerNode.structureMark++;
 				this.invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 			}
 		} else if (this._bitmapMaskNode) {
@@ -128,6 +142,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 			this._bitmapMaskNode = undefined;
 
 			// the script mask (if any) is a stencil mask again
+			ContainerNode.structureMark++;
 			this.invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 		}
 
@@ -344,11 +359,16 @@ export class ContainerNode extends AbstractionBase implements INode {
 		if (this._hierarchicalPropsDirty & HierarchicalProperty.MASK_ID) {
 			const container: IContainer = this.container;
 
-			this._maskId = (container.maskId != -1)
+			const maskId = (container.maskId != -1)
 				? container.maskId
 				: (this._parent)
 					? this._parent.getMaskId()
 					: -1;
+
+			if (maskId != this._maskId)
+				ContainerNode.structureMark++;
+
+			this._maskId = maskId;
 
 			this._hierarchicalPropsDirty ^= HierarchicalProperty.MASK_ID;
 		}
@@ -798,6 +818,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		this._parent = parent;
 
+		ContainerNode.structureMark++;
 		this.invalidateHierarchicalProperty(HierarchicalProperty.ALL);
 	}
 }
