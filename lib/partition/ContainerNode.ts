@@ -28,16 +28,9 @@ export class ContainerNode extends AbstractionBase implements INode {
 	private static _tempVector3D: Vector3D = new Vector3D();
 	public static nullColorTransform = new ColorTransform();
 
-	/**
-	 * Incremented when the partition tree's cache-relevant structure changes:
-	 * a node is added, removed or reparented, renderToImage toggles, or a
-	 * mask assignment changes. Renderers use this to rebuild child-cache
-	 * lists only on those changes, not on transform or filter updates.
-	 */
-	public static structureMark: number = 0;
-
 	private _invalidateMatrix3DEvent: ContainerNodeEvent;
 	private _invalidateColorTransformEvent: ContainerNodeEvent;
+	private _invalidateStructureEvent: ContainerNodeEvent;
 
 	private _localView: View;
 	private _pickObject: IContainer;
@@ -113,7 +106,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 		);
 
 		if (renderToImage != this._renderToImage)
-			ContainerNode.structureMark++;
+			this.invalidateStructure();
 
 		this._renderToImage = renderToImage;
 
@@ -134,7 +127,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 				//this._bitmapMaskNode.setParent(this);
 
 				// the script mask is no longer a stencil mask
-				ContainerNode.structureMark++;
+				this.invalidateStructure();
 				this.invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 			}
 		} else if (this._bitmapMaskNode) {
@@ -142,7 +135,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 			this._bitmapMaskNode = undefined;
 
 			// the script mask (if any) is a stencil mask again
-			ContainerNode.structureMark++;
+			this.invalidateStructure();
 			this.invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 		}
 
@@ -366,7 +359,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 					: -1;
 
 			if (maskId != this._maskId)
-				ContainerNode.structureMark++;
+				this.invalidateStructure();
 
 			this._maskId = maskId;
 
@@ -714,6 +707,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		this._numChildNodes++;
 
+		this.invalidateStructure();
 		this.invalidate();
 
 		return node;
@@ -728,6 +722,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		node.setParent(null);
 
+		this.invalidateStructure();
 		this.invalidate();
 
 		return node;
@@ -818,7 +813,19 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		this._parent = parent;
 
-		ContainerNode.structureMark++;
 		this.invalidateHierarchicalProperty(HierarchicalProperty.ALL);
+	}
+
+	/**
+	 * Notify ancestors that the partition tree's cache-relevant structure
+	 * changed. Walks the parent chain like invalidate(), but is not consumed
+	 * by the per-frame _invalid flag, and is not fired for transform updates.
+	 */
+	public invalidateStructure(): void {
+		this.dispatchEvent(this._invalidateStructureEvent
+			|| (this._invalidateStructureEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_STRUCTURE)));
+
+		if (this._parent)
+			this._parent.invalidateStructure();
 	}
 }
