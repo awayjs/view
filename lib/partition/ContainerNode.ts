@@ -29,7 +29,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 	public static nullColorTransform = new ColorTransform();
 
 	private _invalidateMatrix3DEvent: ContainerNodeEvent;
-	private _invalidateColorTransformEvent: ContainerNodeEvent;
 
 	private _localView: View | undefined;
 	private _pickObject: IContainer
@@ -757,11 +756,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		if (this._scrollRectNode)
 			this._scrollRectNode.invalidateHierarchicalProperty(property);
-
-		if (property & HierarchicalProperty.COLOR_TRANSFORM) {
-			this.dispatchEvent(this._invalidateColorTransformEvent
-				|| (this._invalidateColorTransformEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_COLOR_TRANSFORM)));
-		}
 
 		if (property & HierarchicalProperty.SCENE_TRANSFORM) {
 			this._positionDirty = true;
