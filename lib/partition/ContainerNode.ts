@@ -31,9 +31,8 @@ export class ContainerNode extends AbstractionBase implements INode {
 	private _invalidateMatrix3DEvent: ContainerNodeEvent;
 	private _invalidateColorTransformEvent: ContainerNodeEvent;
 
-	private _localView: View;
-	private _pickObject: IContainer;
-	private _bitmapMaskNode: ContainerNode | undefined;
+	private _localView: View | undefined;
+	private _pickObject: IContainer
 	private _pickObjectNode: ContainerNode | undefined;
 	private _scrollRect: Rectangle;
 	private _scrollRectNode: ContainerNode;
@@ -76,7 +75,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 		return this._useWeak ? (<WeakRef<IContainer>> this._asset).deref() : <IContainer> this._asset;
 	}
 
-	public get pickObjectNode(): ContainerNode {
+	public get pickObjectNode(): ContainerNode | undefined {
 		const container = this.container;
 		if (this._pickObject != container.pickObject) {
 			this._pickObject = container.pickObject;
@@ -87,9 +86,9 @@ export class ContainerNode extends AbstractionBase implements INode {
 				if (this._pickObject.pickObjectFromTimeline)
 					this._pickObjectNode.setParent(this);
 
-			} else {
+			} else if (this._pickObjectNode) {
 				this._pickObjectNode.setParent(undefined);
-				this._pickObjectNode = null;
+				this._pickObjectNode = undefined;
 			}
 		}
 
@@ -105,33 +104,21 @@ export class ContainerNode extends AbstractionBase implements INode {
 		);
 
 		if (!this._renderToImage)
-			this._localView = null;
+			this._localView = undefined;
 
 		return this._renderToImage;
 	}
 
 	public get bitmapMaskNode(): ContainerNode | undefined {
-		const container: IContainer = this.container;
-		const node: ContainerNode | undefined
-			 = container.mask ? (<IContainer> this._pool).getNode(container.mask) : undefined;
+		const mask: IContainer | undefined = this.container.mask;
 
-		if (this.renderToImage && node?.renderToImage) {
-			if (this._bitmapMaskNode != node) {
-				this._bitmapMaskNode = node;
-				//this._bitmapMaskNode.setParent(this);
+		//early out for no scriptMask or no renderToImage on the container
+		if (!mask || !this.renderToImage)
+			return undefined;
 
-				// the script mask is no longer a stencil mask
-				this.invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
-			}
-		} else if (this._bitmapMaskNode) {
-			//this._bitmapMaskNode.setParent(undefined);
-			this._bitmapMaskNode = undefined;
+		const node: ContainerNode = (<IContainer> this._pool).getNode(mask);
 
-			// the script mask (if any) is a stencil mask again
-			this.invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
-		}
-
-		return this._bitmapMaskNode;
+		return node.renderToImage ? node : undefined;
 	}
 
 	public get scrollRect(): Rectangle {
@@ -767,9 +754,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		if (this._pickObjectNode)
 			this._pickObjectNode.invalidateHierarchicalProperty(property);
-
-		if (this._bitmapMaskNode)
-			this._bitmapMaskNode.invalidateHierarchicalProperty(property);
 
 		if (this._scrollRectNode)
 			this._scrollRectNode.invalidateHierarchicalProperty(property);
