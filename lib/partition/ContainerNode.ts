@@ -808,14 +808,16 @@ export class ContainerNode extends AbstractionBase implements INode {
 						this._parent.invalidate();
 
 					// A mask may not be parented to its owner, so parent.invalidate()
-					// does not reach the cached owner. Invalidate each owner that
-					// lists this container as its script or timeline mask.
+					// does not reach the cached owner. Invalidate the mask's own
+					// renderer (needed when the mask itself is cached) and each
+					// owner that lists this container as its script or timeline mask.
+					// getMaskOwners() is the inherited list of nodes that mask this
+					// node, not a reverse list of this mask's owners, so owners are
+					// found from the existing partition root.
 					if (this.container.maskId != -1) {
+						this.invalidate();
 						const mask = this.container;
-						let root: ContainerNode = this._parent || this;
-						while (root._parent)
-							root = root._parent;
-						const stack: ContainerNode[] = [root];
+						const stack: ContainerNode[] = [<ContainerNode> this._root];
 						while (stack.length) {
 							const node = stack.pop();
 							const container = node.container;
@@ -828,6 +830,10 @@ export class ContainerNode extends AbstractionBase implements INode {
 						}
 					}
 				}
+
+				// getMatrix3D() clears SCENE_TRANSFORM. Restore it so a later
+				// getMatrix3D() can recompute (e.g. after transformDisabled is set).
+				this._hierarchicalPropsDirty |= HierarchicalProperty.SCENE_TRANSFORM;
 			}
 		}
 
