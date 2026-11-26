@@ -160,6 +160,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 			return;
 
 		this._transformDisabled = value;
+		this.invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
 
 	public get transformDisabled(): boolean {
@@ -830,10 +831,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 						}
 					}
 				}
-
-				// getMatrix3D() clears SCENE_TRANSFORM. Restore it so a later
-				// getMatrix3D() can recompute (e.g. after transformDisabled is set).
-				this._hierarchicalPropsDirty |= HierarchicalProperty.SCENE_TRANSFORM;
 			}
 		}
 
