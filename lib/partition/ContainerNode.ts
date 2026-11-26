@@ -33,6 +33,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 	private _localView: View | undefined;
 	private _pickObject: IContainer
 	private _pickObjectNode: ContainerNode | undefined;
+	private _bitmapMaskNode: ContainerNode | undefined;
 	private _scrollRect: Rectangle;
 	private _scrollRectNode: ContainerNode;
 	private _renderToImage: boolean = false;
@@ -56,18 +57,14 @@ export class ContainerNode extends AbstractionBase implements INode {
 	private _root: INode;
 
 	private _parent: ContainerNode | undefined;
-	protected _childNodes: Array<ContainerNode> = new Array<ContainerNode>();
-	protected _numChildNodes: number = 0;
+	private _childNodes: ContainerNode[] = [];
+	private _numChildNodes: number = 0;
 
 	public _hierarchicalPropsDirty: HierarchicalProperty = HierarchicalProperty.ALL;
 	public _collectionMark: number;// = 0;
 
 	public get parent(): ContainerNode | undefined {
 		return this._parent;
-	}
-
-	public get numChildNodes(): number {
-		return this._numChildNodes;
 	}
 
 	public get container(): IContainer {
@@ -112,12 +109,25 @@ export class ContainerNode extends AbstractionBase implements INode {
 		const mask: IContainer | undefined = this.container.mask;
 
 		//early out for no scriptMask or no renderToImage on the container
-		if (!mask || !this.renderToImage)
-			return undefined;
+		if (mask && this.renderToImage) {
+			const node: ContainerNode = (<IContainer> this._pool).getNode(mask);
 
-		const node: ContainerNode = (<IContainer> this._pool).getNode(mask);
+			const bitmapMaskNode = node.renderToImage ? node : undefined;
 
-		return node.renderToImage ? node : undefined;
+			if (this._bitmapMaskNode != bitmapMaskNode) {
+
+				if (this._bitmapMaskNode) 
+					this._bitmapMaskNode.onClear();
+
+				this._bitmapMaskNode = bitmapMaskNode;
+			}
+		} else if (this._bitmapMaskNode) {
+			this._bitmapMaskNode.onClear();
+
+			this._bitmapMaskNode = undefined
+		}
+
+		return this._bitmapMaskNode;
 	}
 
 	public get scrollRect(): Rectangle {
@@ -537,8 +547,10 @@ export class ContainerNode extends AbstractionBase implements INode {
 			this._pickObjectNode = null;
 		}
 
-		// for (let i: number = 0; i < this._numChildNodes; i++)
-		// 	this._childNodes[i].onClear();
+		if (this._bitmapMaskNode) {
+			this._bitmapMaskNode.onClear();
+			this._bitmapMaskNode = undefined;
+		}
 
 		this._childNodes.length = 0;
 		this._numChildNodes = 0;
@@ -575,6 +587,9 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		if (this._pickObject)
 			this._pickObjectNode.clear();
+
+		if (this._bitmapMaskNode)
+			this._bitmapMaskNode.clear();
 	}
 
 	public isInFrustum(
