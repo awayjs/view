@@ -802,10 +802,32 @@ export class ContainerNode extends AbstractionBase implements INode {
 					|| n[4] !== c4 || n[5] !== c5 || n[6] !== c6
 					|| n[8] !== c8 || n[9] !== c9 || n[10] !== c10)
 					this.invalidate();
-				else if (parentRaw
-					&& p12 === parentRaw[12] && p13 === parentRaw[13] && p14 === parentRaw[14]
-					&& (n[12] !== c12 || n[13] !== c13 || n[14] !== c14))
-					this._parent.invalidate();
+				else if (n[12] !== c12 || n[13] !== c13 || n[14] !== c14) {
+					if (parentRaw
+						&& p12 === parentRaw[12] && p13 === parentRaw[13] && p14 === parentRaw[14])
+						this._parent.invalidate();
+
+					// A mask may not be parented to its owner, so parent.invalidate()
+					// does not reach the cached owner. Invalidate each owner that
+					// lists this container as its script or timeline mask.
+					if (this.container.maskId != -1) {
+						const mask = this.container;
+						let root: ContainerNode = this._parent || this;
+						while (root._parent)
+							root = root._parent;
+						const stack: ContainerNode[] = [root];
+						while (stack.length) {
+							const node = stack.pop();
+							const container = node.container;
+							const timelineMasks = container.timelineMasks;
+							if (container.mask === mask
+								|| (timelineMasks && timelineMasks.indexOf(mask) != -1))
+								node.invalidate();
+							for (let i = 0; i < node._childNodes.length; i++)
+								stack.push(node._childNodes[i]);
+						}
+					}
+				}
 			}
 		}
 
