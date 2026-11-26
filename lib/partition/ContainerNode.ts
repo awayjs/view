@@ -761,6 +761,23 @@ export class ContainerNode extends AbstractionBase implements INode {
 		if (!propertyDirty)
 			return;
 
+		// _matrix3D still holds the last computed scene matrix when SCENE_TRANSFORM is newly dirty
+		let c0 = 0, c1 = 0, c2 = 0, c4 = 0, c5 = 0, c6 = 0, c8 = 0, c9 = 0, c10 = 0, c12 = 0, c13 = 0, c14 = 0;
+		let p12 = 0, p13 = 0, p14 = 0;
+		const parentRaw = this._parent ? this._parent._matrix3D._rawData : null;
+		if (propertyDirty & HierarchicalProperty.SCENE_TRANSFORM) {
+			const raw = this._matrix3D._rawData;
+			c0 = raw[0]; c1 = raw[1]; c2 = raw[2];
+			c4 = raw[4]; c5 = raw[5]; c6 = raw[6];
+			c8 = raw[8]; c9 = raw[9]; c10 = raw[10];
+			c12 = raw[12]; c13 = raw[13]; c14 = raw[14];
+			if (parentRaw) {
+				p12 = parentRaw[12];
+				p13 = parentRaw[13];
+				p14 = parentRaw[14];
+			}
+		}
+
 		this._hierarchicalPropsDirty |= propertyDirty;
 
 		for (let i = 0; i < this._childNodes.length; ++i)
@@ -779,9 +796,21 @@ export class ContainerNode extends AbstractionBase implements INode {
 			this.dispatchEvent(this._invalidateMatrix3DEvent
 				|| (this._invalidateMatrix3DEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_MATRIX3D)));
 
+			if (propertyDirty & HierarchicalProperty.SCENE_TRANSFORM) {
+				const n = this.getMatrix3D()._rawData;
+				if (n[0] !== c0 || n[1] !== c1 || n[2] !== c2
+					|| n[4] !== c4 || n[5] !== c5 || n[6] !== c6
+					|| n[8] !== c8 || n[9] !== c9 || n[10] !== c10)
+					this.invalidate();
+				else if (parentRaw
+					&& p12 === parentRaw[12] && p13 === parentRaw[13] && p14 === parentRaw[14]
+					&& (n[12] !== c12 || n[13] !== c13 || n[14] !== c14))
+					this._parent.invalidate();
+			}
 		}
 
-		this.invalidate();
+		if (propertyDirty & ~HierarchicalProperty.SCENE_TRANSFORM)
+			this.invalidate();
 	}
 
 	public setParent(parent: ContainerNode | undefined): void {
