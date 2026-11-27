@@ -811,7 +811,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 			if ((property & HierarchicalProperty.SCENE_POSITION)
 				&& (container.mask || (container.timelineMasks && container.timelineMasks.length)))
 				this.invalidate();
-			const owners = container._maskOwners;
+			const owners = container._maskedOwners;
 			if (owners) {
 				for (let i = 0; i < owners.length; i++) {
 					const nodes = owners[i]._containerNodes;
