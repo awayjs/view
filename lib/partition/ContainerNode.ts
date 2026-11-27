@@ -763,10 +763,12 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		const propertyDirty: number = (this._hierarchicalPropsDirty ^ property) & property;
 		if (!propertyDirty) {
-			// A later local translation in the same tick (bits already set by
-			// a parent's move) must still notify the parent cache.
-			if (property === HierarchicalProperty.SCENE_POSITION && this._parent)
-				this._parent.invalidate();
+			// The bit means this node has not recomputed since it last
+			// moved, not that it is moving this tick. Still notify this
+			// node's abstractions (pad / PickEntity). The parent is
+			// notified from the originator (the transform listener).
+			if (property === HierarchicalProperty.SCENE_POSITION)
+				super.invalidate();
 			return;
 		}
 
@@ -791,14 +793,9 @@ export class ContainerNode extends AbstractionBase implements INode {
 
 		if (propertyDirty === HierarchicalProperty.SCENE_POSITION) {
 			// Notify abstractions without setting this._invalid, so a later
-			// same-tick content change can still recache.
+			// same-tick content change can still recache. Parent notify is
+			// done by the originator, not from this propagation.
 			super.invalidate();
-			// Only the node that actually moved notifies its parent. Children
-			// receiving a parent's move see the parent already dirty and must
-			// not recache it.
-			if (this._parent
-				&& !(this._parent._hierarchicalPropsDirty & HierarchicalProperty.SCENE_POSITION))
-				this._parent.invalidate();
 		} else {
 			this.invalidate();
 		}
