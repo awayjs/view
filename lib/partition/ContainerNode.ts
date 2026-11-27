@@ -231,7 +231,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 	}
 
 	public getMatrix3D(): Matrix3D {
-		if (this._hierarchicalPropsDirty & HierarchicalProperty.SCENE_TRANSFORM) {
+		if (this._hierarchicalPropsDirty & (HierarchicalProperty.SCENE_TRANSFORM | HierarchicalProperty.SCENE_POSITION)) {
 			const container: IContainer = this.container;
 
 			if (!this._transformDisabled) {
@@ -264,7 +264,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 				this._matrix3D.copyFrom(ContainerNode._nullTransform.matrix3D);
 			}
 
-			this._hierarchicalPropsDirty ^= HierarchicalProperty.SCENE_TRANSFORM;
+			this._hierarchicalPropsDirty &= ~(HierarchicalProperty.SCENE_TRANSFORM | HierarchicalProperty.SCENE_POSITION);
 
 			//TODO: refactor controller API
 			if (container['_iController'])
@@ -762,23 +762,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 		if (!propertyDirty)
 			return;
 
-		// _matrix3D still holds the last computed scene matrix when SCENE_TRANSFORM is newly dirty
-		let c0 = 0, c1 = 0, c2 = 0, c4 = 0, c5 = 0, c6 = 0, c8 = 0, c9 = 0, c10 = 0, c12 = 0, c13 = 0, c14 = 0;
-		let p12 = 0, p13 = 0, p14 = 0;
-		const parentRaw = this._parent ? this._parent._matrix3D._rawData : null;
-		if (propertyDirty & HierarchicalProperty.SCENE_TRANSFORM) {
-			const raw = this._matrix3D._rawData;
-			c0 = raw[0]; c1 = raw[1]; c2 = raw[2];
-			c4 = raw[4]; c5 = raw[5]; c6 = raw[6];
-			c8 = raw[8]; c9 = raw[9]; c10 = raw[10];
-			c12 = raw[12]; c13 = raw[13]; c14 = raw[14];
-			if (parentRaw) {
-				p12 = parentRaw[12];
-				p13 = parentRaw[13];
-				p14 = parentRaw[14];
-			}
-		}
-
 		this._hierarchicalPropsDirty |= propertyDirty;
 
 		for (let i = 0; i < this._childNodes.length; ++i)
@@ -790,52 +773,35 @@ export class ContainerNode extends AbstractionBase implements INode {
 		if (this._scrollRectNode)
 			this._scrollRectNode.invalidateHierarchicalProperty(property);
 
-		if (property & HierarchicalProperty.SCENE_TRANSFORM) {
+		if (property & (HierarchicalProperty.SCENE_TRANSFORM | HierarchicalProperty.SCENE_POSITION)) {
 			this._positionDirty = true;
 			this._inverseMatrix3DDirty = true;
 
 			this.dispatchEvent(this._invalidateMatrix3DEvent
 				|| (this._invalidateMatrix3DEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_MATRIX3D)));
-
-			if (propertyDirty & HierarchicalProperty.SCENE_TRANSFORM) {
-				const n = this.getMatrix3D()._rawData;
-				if (n[0] !== c0 || n[1] !== c1 || n[2] !== c2
-					|| n[4] !== c4 || n[5] !== c5 || n[6] !== c6
-					|| n[8] !== c8 || n[9] !== c9 || n[10] !== c10)
-					this.invalidate();
-				else if (n[12] !== c12 || n[13] !== c13 || n[14] !== c14) {
-					if (parentRaw
-						&& p12 === parentRaw[12] && p13 === parentRaw[13] && p14 === parentRaw[14])
-						this._parent.invalidate();
-
-					// A mask may not be parented to its owner, so parent.invalidate()
-					// does not reach the cached owner. Invalidate the mask's own
-					// renderer (needed when the mask itself is cached) and each
-					// owner that lists this container as its script or timeline mask.
-					// getMaskOwners() is the inherited list of nodes that mask this
-					// node, not a reverse list of this mask's owners, so owners are
-					// found from the existing partition root.
-					if (this.container.maskId != -1) {
-						this.invalidate();
-						const mask = this.container;
-						const stack: ContainerNode[] = [<ContainerNode> this._root];
-						while (stack.length) {
-							const node = stack.pop();
-							const container = node.container;
-							const timelineMasks = container.timelineMasks;
-							if (container.mask === mask
-								|| (timelineMasks && timelineMasks.indexOf(mask) != -1))
-								node.invalidate();
-							for (let i = 0; i < node._childNodes.length; i++)
-								stack.push(node._childNodes[i]);
-						}
-					}
-				}
-			}
 		}
 
-		if (propertyDirty & ~HierarchicalProperty.SCENE_TRANSFORM)
-			this.invalidate();
+		this.invalidate();
+
+		// A mask may not be parented to its owner, so the invalidate() bubble
+		// does not reach the cached owner. Owners are found from the existing
+		// partition root: getMaskOwners() is the inherited list of nodes that
+		// mask this node, not a reverse list of this mask's owners.
+		if ((propertyDirty & (HierarchicalProperty.SCENE_TRANSFORM | HierarchicalProperty.SCENE_POSITION))
+			&& this.container.maskId != -1) {
+			const mask = this.container;
+			const stack: ContainerNode[] = [<ContainerNode> this._root];
+			while (stack.length) {
+				const node = stack.pop();
+				const container = node.container;
+				const timelineMasks = container.timelineMasks;
+				if (container.mask === mask
+					|| (timelineMasks && timelineMasks.indexOf(mask) != -1))
+					node.invalidate();
+				for (let i = 0; i < node._childNodes.length; i++)
+					stack.push(node._childNodes[i]);
+			}
+		}
 	}
 
 	public setParent(parent: ContainerNode | undefined): void {

@@ -40,7 +40,7 @@ export enum HierarchicalProperty {
 	/**
 	 *
 	 */
-	ROOT = 128,
+	SCENE_POSITION = 128,
 
 	/**
 	 *
