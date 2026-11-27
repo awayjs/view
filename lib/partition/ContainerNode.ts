@@ -117,12 +117,12 @@ export class ContainerNode extends AbstractionBase implements INode {
 			if (this._bitmapMaskNode != bitmapMaskNode) {
 
 				if (this._bitmapMaskNode)
-					this._bitmapMaskNode.onClear();
+					this._bitmapMaskNode.clear();
 
 				this._bitmapMaskNode = bitmapMaskNode;
 			}
 		} else if (this._bitmapMaskNode) {
-			this._bitmapMaskNode.onClear();
+			this._bitmapMaskNode.clear();
 
 			this._bitmapMaskNode = undefined;
 		}
@@ -549,7 +549,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 		}
 
 		if (this._bitmapMaskNode) {
-			this._bitmapMaskNode.onClear();
+			this._bitmapMaskNode.clear();
 			this._bitmapMaskNode = undefined;
 		}
 
