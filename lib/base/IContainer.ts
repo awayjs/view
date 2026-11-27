@@ -56,6 +56,10 @@ export interface IContainer extends IAsset, IAbstractionPool
 
 	timelineMasks: IContainer[] | undefined;
 
+	// Display objects that use this object as a script or timeline mask.
+	// A shared timeline mask has more than one entry.
+	_maskOwners: IContainer[] | undefined;
+
 	blendMode: BlendMode;
 
 	alignmentMode: AlignmentMode;

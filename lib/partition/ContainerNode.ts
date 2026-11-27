@@ -767,39 +767,59 @@ export class ContainerNode extends AbstractionBase implements INode {
 			// moved, not that it is moving this tick. Still notify this
 			// node's abstractions (pad / PickEntity). The parent is
 			// notified from the originator (the transform listener).
-			if (property === HierarchicalProperty.SCENE_POSITION)
-				super.invalidate();
-			return;
-		}
-
-		this._hierarchicalPropsDirty |= propertyDirty;
-
-		for (let i = 0; i < this._childNodes.length; ++i)
-			this._childNodes[i].invalidateHierarchicalProperty(property);
-
-		if (this._pickObjectNode)
-			this._pickObjectNode.invalidateHierarchicalProperty(property);
-
-		if (this._scrollRectNode)
-			this._scrollRectNode.invalidateHierarchicalProperty(property);
-
-		if (property & (HierarchicalProperty.SCENE_TRANSFORM | HierarchicalProperty.SCENE_POSITION)) {
-			this._positionDirty = true;
-			this._inverseMatrix3DDirty = true;
-
-			this.dispatchEvent(this._invalidateMatrix3DEvent
-				|| (this._invalidateMatrix3DEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_MATRIX3D)));
-		}
-
-		if (propertyDirty === HierarchicalProperty.SCENE_POSITION) {
-			// Notify abstractions without setting this._invalid, so a later
-			// same-tick content change can still recache. Parent notify is
-			// done by the originator, not from this propagation.
+			if (property !== HierarchicalProperty.SCENE_POSITION)
+				return;
 			super.invalidate();
 		} else {
-			this.invalidate();
+			this._hierarchicalPropsDirty |= propertyDirty;
+
+			for (let i = 0; i < this._childNodes.length; ++i)
+				this._childNodes[i].invalidateHierarchicalProperty(property);
+
+			if (this._pickObjectNode)
+				this._pickObjectNode.invalidateHierarchicalProperty(property);
+
+			if (this._scrollRectNode)
+				this._scrollRectNode.invalidateHierarchicalProperty(property);
+
+			if (property & (HierarchicalProperty.SCENE_TRANSFORM | HierarchicalProperty.SCENE_POSITION)) {
+				this._positionDirty = true;
+				this._inverseMatrix3DDirty = true;
+
+				this.dispatchEvent(this._invalidateMatrix3DEvent
+					|| (this._invalidateMatrix3DEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_MATRIX3D)));
+			}
+
+			if (propertyDirty === HierarchicalProperty.SCENE_POSITION) {
+				// Notify abstractions without setting this._invalid, so a later
+				// same-tick content change can still recache. Parent notify is
+				// done by the originator, not from this propagation.
+				super.invalidate();
+			} else {
+				this.invalidate();
+			}
 		}
 
+		// A cached owner with a baked-in mask must recache when it moves
+		// relative to that mask, including when an ancestor moved (the
+		// originator listener does not fire on the owner or the mask).
+		// IHP already visits every descendant; only nodes with masks or
+		// mask-owners do any extra work. A shared timeline mask may have
+		// more than one owner.
+		if (property & (HierarchicalProperty.SCENE_POSITION | HierarchicalProperty.SCENE_TRANSFORM)) {
+			const container = this.container;
+			if ((property & HierarchicalProperty.SCENE_POSITION)
+				&& (container.mask || (container.timelineMasks && container.timelineMasks.length)))
+				this.invalidate();
+			const owners = container._maskOwners;
+			if (owners) {
+				for (let i = 0; i < owners.length; i++) {
+					const nodes = owners[i]._containerNodes;
+					for (const key in nodes)
+						nodes[key].invalidate();
+				}
+			}
+		}
 	}
 
 	public setParent(parent: ContainerNode | undefined): void {
