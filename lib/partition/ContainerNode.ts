@@ -813,11 +813,11 @@ export class ContainerNode extends AbstractionBase implements INode {
 				this.invalidate();
 			const owners = container._maskedOwners;
 			if (owners) {
-				for (let i = 0; i < owners.length; i++) {
-					const nodes = owners[i]._containerNodes;
+				owners.forEach((owner) => {
+					const nodes = owner._containerNodes;
 					for (const key in nodes)
 						nodes[key].invalidate();
-				}
+				});
 			}
 		}
 	}
