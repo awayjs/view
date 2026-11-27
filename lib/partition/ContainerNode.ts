@@ -160,7 +160,6 @@ export class ContainerNode extends AbstractionBase implements INode {
 			return;
 
 		this._transformDisabled = value;
-		this.invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
 
 	public get transformDisabled(): boolean {
@@ -603,6 +602,10 @@ export class ContainerNode extends AbstractionBase implements INode {
 		return !this.isInvisible();
 	}
 
+	public get invalid(): boolean {
+		return this._invalid;
+	}
+
 	public invalidate(): void {
 		if (this._invalid)
 			return;
@@ -759,8 +762,13 @@ export class ContainerNode extends AbstractionBase implements INode {
 	public invalidateHierarchicalProperty(property: HierarchicalProperty): void {
 
 		const propertyDirty: number = (this._hierarchicalPropsDirty ^ property) & property;
-		if (!propertyDirty)
+		if (!propertyDirty) {
+			// A later local translation in the same tick (bits already set by
+			// a parent's move) must still notify the parent cache.
+			if (property === HierarchicalProperty.SCENE_POSITION && this._parent)
+				this._parent.invalidate();
 			return;
+		}
 
 		this._hierarchicalPropsDirty |= propertyDirty;
 
@@ -781,27 +789,20 @@ export class ContainerNode extends AbstractionBase implements INode {
 				|| (this._invalidateMatrix3DEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_MATRIX3D)));
 		}
 
-		this.invalidate();
-
-		// A mask may not be parented to its owner, so the invalidate() bubble
-		// does not reach the cached owner. Owners are found from the existing
-		// partition root: getMaskOwners() is the inherited list of nodes that
-		// mask this node, not a reverse list of this mask's owners.
-		if ((propertyDirty & (HierarchicalProperty.SCENE_TRANSFORM | HierarchicalProperty.SCENE_POSITION))
-			&& this.container.maskId != -1) {
-			const mask = this.container;
-			const stack: ContainerNode[] = [<ContainerNode> this._root];
-			while (stack.length) {
-				const node = stack.pop();
-				const container = node.container;
-				const timelineMasks = container.timelineMasks;
-				if (container.mask === mask
-					|| (timelineMasks && timelineMasks.indexOf(mask) != -1))
-					node.invalidate();
-				for (let i = 0; i < node._childNodes.length; i++)
-					stack.push(node._childNodes[i]);
-			}
+		if (propertyDirty === HierarchicalProperty.SCENE_POSITION) {
+			// Notify abstractions without setting this._invalid, so a later
+			// same-tick content change can still recache.
+			super.invalidate();
+			// Only the node that actually moved notifies its parent. Children
+			// receiving a parent's move see the parent already dirty and must
+			// not recache it.
+			if (this._parent
+				&& !(this._parent._hierarchicalPropsDirty & HierarchicalProperty.SCENE_POSITION))
+				this._parent.invalidate();
+		} else {
+			this.invalidate();
 		}
+
 	}
 
 	public setParent(parent: ContainerNode | undefined): void {
