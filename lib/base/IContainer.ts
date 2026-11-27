@@ -1,4 +1,4 @@
-import { IAbstractionPool, IAsset, Matrix3D, Rectangle, Transform } from '@awayjs/core';
+import { IAbstractionPool, IAsset, Matrix3D, Rectangle, Transform, WeakAssetSet } from '@awayjs/core';
 import { BlendMode } from '@awayjs/stage';
 
 import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
@@ -55,6 +55,13 @@ export interface IContainer extends IAsset, IAbstractionPool
 	mask: IContainer | undefined;
 
 	timelineMasks: IContainer[] | undefined;
+
+	// Display objects that use this object as a script or timeline mask.
+	// A shared timeline mask has more than one entry.
+	// Named separately from ContainerNode._maskOwners (ancestor nodes
+	// whose masks apply to this node). WeakAssetSet so a disposed owner
+	// can be collected.
+	_maskedOwners: WeakAssetSet<IContainer> | undefined;
 
 	blendMode: BlendMode;
 

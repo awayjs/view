@@ -25,6 +25,7 @@ export class BoundingVolumeBase extends AbstractionBase {
 
 			while (targetEntity && targetEntity != targetCoordinateSpace) {
 				targetEntity.container.transform.addEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+				targetEntity.container.transform.addEventListener(TransformEvent.INVALIDATE_POSITION, this._onInvalidateMatrix3DDelegate);
 				targetEntity = targetEntity.parent;
 			}
 
@@ -47,6 +48,7 @@ export class BoundingVolumeBase extends AbstractionBase {
 
 			while (targetEntity && targetEntity != targetCoordinateSpace) {
 				targetEntity.container?.transform.removeEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+				targetEntity.container?.transform.removeEventListener(TransformEvent.INVALIDATE_POSITION, this._onInvalidateMatrix3DDelegate);
 				targetEntity = targetEntity.parent;
 			}
 

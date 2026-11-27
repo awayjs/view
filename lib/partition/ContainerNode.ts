@@ -230,7 +230,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 	}
 
 	public getMatrix3D(): Matrix3D {
-		if (this._hierarchicalPropsDirty & HierarchicalProperty.SCENE_TRANSFORM) {
+		if (this._hierarchicalPropsDirty & (HierarchicalProperty.SCENE_TRANSFORM | HierarchicalProperty.SCENE_POSITION)) {
 			const container: IContainer = this.container;
 
 			if (!this._transformDisabled) {
@@ -263,7 +263,7 @@ export class ContainerNode extends AbstractionBase implements INode {
 				this._matrix3D.copyFrom(ContainerNode._nullTransform.matrix3D);
 			}
 
-			this._hierarchicalPropsDirty ^= HierarchicalProperty.SCENE_TRANSFORM;
+			this._hierarchicalPropsDirty &= ~(HierarchicalProperty.SCENE_TRANSFORM | HierarchicalProperty.SCENE_POSITION);
 
 			//TODO: refactor controller API
 			if (container['_iController'])
@@ -602,6 +602,10 @@ export class ContainerNode extends AbstractionBase implements INode {
 		return !this.isInvisible();
 	}
 
+	public get invalid(): boolean {
+		return this._invalid;
+	}
+
 	public invalidate(): void {
 		if (this._invalid)
 			return;
@@ -758,30 +762,64 @@ export class ContainerNode extends AbstractionBase implements INode {
 	public invalidateHierarchicalProperty(property: HierarchicalProperty): void {
 
 		const propertyDirty: number = (this._hierarchicalPropsDirty ^ property) & property;
-		if (!propertyDirty)
-			return;
+		if (!propertyDirty) {
+			// The bit means this node has not recomputed since it last
+			// moved, not that it is moving this tick. Still notify this
+			// node's abstractions (pad / PickEntity). The parent is
+			// notified from the originator (the transform listener).
+			if (property !== HierarchicalProperty.SCENE_POSITION)
+				return;
+			super.invalidate();
+		} else {
+			this._hierarchicalPropsDirty |= propertyDirty;
 
-		this._hierarchicalPropsDirty |= propertyDirty;
+			for (let i = 0; i < this._childNodes.length; ++i)
+				this._childNodes[i].invalidateHierarchicalProperty(property);
 
-		for (let i = 0; i < this._childNodes.length; ++i)
-			this._childNodes[i].invalidateHierarchicalProperty(property);
+			if (this._pickObjectNode)
+				this._pickObjectNode.invalidateHierarchicalProperty(property);
 
-		if (this._pickObjectNode)
-			this._pickObjectNode.invalidateHierarchicalProperty(property);
+			if (this._scrollRectNode)
+				this._scrollRectNode.invalidateHierarchicalProperty(property);
 
-		if (this._scrollRectNode)
-			this._scrollRectNode.invalidateHierarchicalProperty(property);
+			if (property & (HierarchicalProperty.SCENE_TRANSFORM | HierarchicalProperty.SCENE_POSITION)) {
+				this._positionDirty = true;
+				this._inverseMatrix3DDirty = true;
 
-		if (property & HierarchicalProperty.SCENE_TRANSFORM) {
-			this._positionDirty = true;
-			this._inverseMatrix3DDirty = true;
+				this.dispatchEvent(this._invalidateMatrix3DEvent
+					|| (this._invalidateMatrix3DEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_MATRIX3D)));
+			}
 
-			this.dispatchEvent(this._invalidateMatrix3DEvent
-				|| (this._invalidateMatrix3DEvent = new ContainerNodeEvent(ContainerNodeEvent.INVALIDATE_MATRIX3D)));
-
+			if (propertyDirty === HierarchicalProperty.SCENE_POSITION) {
+				// Notify abstractions without setting this._invalid, so a later
+				// same-tick content change can still recache. Parent notify is
+				// done by the originator, not from this propagation.
+				super.invalidate();
+			} else {
+				this.invalidate();
+			}
 		}
 
-		this.invalidate();
+		// A cached owner with a baked-in mask must recache when it moves
+		// relative to that mask, including when an ancestor moved (the
+		// originator listener does not fire on the owner or the mask).
+		// IHP already visits every descendant; only nodes with masks or
+		// mask-owners do any extra work. A shared timeline mask may have
+		// more than one owner.
+		if (property & (HierarchicalProperty.SCENE_POSITION | HierarchicalProperty.SCENE_TRANSFORM)) {
+			const container = this.container;
+			if ((property & HierarchicalProperty.SCENE_POSITION)
+				&& (container.mask || (container.timelineMasks && container.timelineMasks.length)))
+				this.invalidate();
+			const owners = container._maskedOwners;
+			if (owners) {
+				owners.forEach((owner) => {
+					const nodes = owner._containerNodes;
+					for (const key in nodes)
+						nodes[key].invalidate();
+				});
+			}
+		}
 	}
 
 	public setParent(parent: ContainerNode | undefined): void {
